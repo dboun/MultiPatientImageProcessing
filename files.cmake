@@ -7,6 +7,6 @@ set(MOC_H_FILES
   mainwindow.h
   )
 
- set(UI_FILES
+set(UI_FILES
   mainwindow.ui
-)
+  )
