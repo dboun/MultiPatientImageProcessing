@@ -6,23 +6,41 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>986</width>
+    <height>690</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Multi-Patient Image Processing (MPIP)</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QTableWidget" name="tableWidget">
-      <column>
-       <property name="text">
-        <string>Data</string>
-       </property>
-      </column>
-     </widget>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item alignment="Qt::AlignLeft">
+       <widget class="QTreeWidget" name="patientTree">
+        <column>
+         <property name="text">
+          <string notr="true">1</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+      <item alignment="Qt::AlignLeft">
+       <widget class="QPushButton" name="pushButtonConfigure">
+        <property name="text">
+         <string>Configure actions</string>
+        </property>
+       </widget>
+      </item>
+      <item alignment="Qt::AlignLeft">
+       <widget class="QPushButton" name="pushButtonRun">
+        <property name="text">
+         <string>Run</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -31,14 +49,16 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>400</width>
-     <height>26</height>
+     <width>986</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionOpen_single_subject"/>
+    <addaction name="actionAdd_multiple_subjects"/>
     <addaction name="actionOpen_Dicom"/>
     <addaction name="actionDisplay_Metadata"/>
    </widget>
@@ -61,6 +81,16 @@
   <action name="actionDisplay_Metadata">
    <property name="text">
     <string>Display Metadata</string>
+   </property>
+  </action>
+  <action name="actionOpen_single_subject">
+   <property name="text">
+    <string>Add single subject</string>
+   </property>
+  </action>
+  <action name="actionAdd_multiple_subjects">
+   <property name="text">
+    <string>Add multiple subjects</string>
    </property>
   </action>
  </widget>

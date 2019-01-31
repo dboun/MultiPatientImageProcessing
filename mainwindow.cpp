@@ -73,7 +73,7 @@ void MainWindow::Load(QString filepath)
 
   if (dataNodes->empty())
   {
-    fprintf(stderr, "Could not open file %s \n\n", filepath.toStdString());
+    fprintf(stderr, "Could not open file %s \n\n", filepath.toStdString().c_str());
     exit(2);
   }
 
