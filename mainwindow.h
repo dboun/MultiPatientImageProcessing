@@ -32,7 +32,7 @@ private:
 
     Ui::MainWindow *ui;
     mitk::StandaloneDataStorage::Pointer m_DataStorage;
-    mitk::Image::Pointer m_FirstImage;
+    mitk::Image::Pointer m_DisplayedImage;
     //DicomReader *dicomReader;
     //DicomMetaDataDisplayWidget *dcmdisplayWidget;
 };

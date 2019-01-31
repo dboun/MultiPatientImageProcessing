@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -13,12 +16,18 @@
   <property name="windowTitle">
    <string>Multi-Patient Image Processing (MPIP)</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item alignment="Qt::AlignLeft">
        <widget class="QTreeWidget" name="patientTree">
+        <property name="styleSheet">
+         <string notr="true">background-color:darkGray</string>
+        </property>
         <column>
          <property name="text">
           <string notr="true">1</string>
@@ -28,6 +37,12 @@
       </item>
       <item alignment="Qt::AlignLeft">
        <widget class="QPushButton" name="pushButtonConfigure">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color:lightGray</string>
+        </property>
         <property name="text">
          <string>Configure actions</string>
         </property>
@@ -35,6 +50,9 @@
       </item>
       <item alignment="Qt::AlignLeft">
        <widget class="QPushButton" name="pushButtonRun">
+        <property name="styleSheet">
+         <string notr="true">background-color:lightGray</string>
+        </property>
         <property name="text">
          <string>Run</string>
         </property>
@@ -45,6 +63,9 @@
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -53,7 +74,13 @@
      <height>21</height>
     </rect>
    </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:gray</string>
+   </property>
    <widget class="QMenu" name="menuFile">
+    <property name="styleSheet">
+     <string notr="true">background-color:gray</string>
+    </property>
     <property name="title">
      <string>File</string>
     </property>
@@ -65,6 +92,12 @@
    <addaction name="menuFile"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -72,7 +105,11 @@
     <bool>false</bool>
    </attribute>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+  </widget>
   <action name="actionOpen_Dicom">
    <property name="text">
     <string>Open Dicom</string>

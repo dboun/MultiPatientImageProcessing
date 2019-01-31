@@ -69,17 +69,22 @@ void MainWindow::OnDisplayDicomMetaData()
 void MainWindow::Load(QString filepath)
 {
   // Load datanode (eg. many image formats, surface formats, etc.)
-  mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(filepath.toStdString(), *m_DataStorage);
-
-  if (dataNodes->empty())
+  if (filepath.toStdString() != "") 
   {
-    fprintf(stderr, "Could not open file %s \n\n", filepath.toStdString().c_str());
-    exit(2);
+	  mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(filepath.toStdString(), *m_DataStorage);
+  
+	if (dataNodes->empty())
+	{
+		fprintf(stderr, "BCould not open file %s \n\n", filepath.toStdString().c_str());
+		//exit(2);
+	}
+	else {
+		mitk::Image::Pointer image = dynamic_cast<mitk::Image *>(dataNodes->at(0)->GetData());
+		/*if ((m_FirstImage.IsNull()) && (image.IsNotNull()))
+		m_FirstImage = image;*/
+	}
   }
 
-  mitk::Image::Pointer image = dynamic_cast<mitk::Image *>(dataNodes->at(0)->GetData());
-  if ((m_FirstImage.IsNull()) && (image.IsNotNull()))
-    m_FirstImage = image;
 }
 
 void MainWindow::SetupWidgets()
