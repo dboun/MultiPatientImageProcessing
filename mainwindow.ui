@@ -41,20 +41,29 @@
          <bool>true</bool>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color:lightGray</string>
+         <string notr="true">QPushButton { color:white; background-color:darkGray; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; padding: 3px;}
+QPushButton:checked{ background-color: red; border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
+QPushButton:hover{ background-color: lightGray;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
+QPushButton:pressed{ background-color: darkGray;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}                 </string>
         </property>
         <property name="text">
-         <string>Configure actions</string>
+         <string>  Configure actions  </string>
         </property>
        </widget>
       </item>
       <item alignment="Qt::AlignLeft">
        <widget class="QPushButton" name="pushButtonRun">
         <property name="styleSheet">
-         <string notr="true">background-color:lightGray</string>
+         <string notr="true">QPushButton { font:22px;color:#EF5350; background-color:#D7CCC8; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; padding: 3px;}
+QPushButton:checked{ background-color: red; border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
+QPushButton:hover{ background-color: lightGray;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
+QPushButton:pressed{ background-color: darkGray;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}                 </string>
         </property>
         <property name="text">
-         <string>Run</string>
+         <string>        Run        </string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -86,6 +95,10 @@
     </property>
     <addaction name="actionOpen_single_subject"/>
     <addaction name="actionAdd_multiple_subjects"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_image_for_selected_subject"/>
+    <addaction name="actionAdd_image_for_new_subject"/>
+    <addaction name="separator"/>
     <addaction name="actionOpen_Dicom"/>
     <addaction name="actionDisplay_Metadata"/>
    </widget>
@@ -128,6 +141,16 @@
   <action name="actionAdd_multiple_subjects">
    <property name="text">
     <string>Add multiple subjects</string>
+   </property>
+  </action>
+  <action name="actionAdd_image_for_selected_subject">
+   <property name="text">
+    <string>Add image for selected subject</string>
+   </property>
+  </action>
+  <action name="actionAdd_image_for_new_subject">
+   <property name="text">
+    <string>Add image for new subject</string>
    </property>
   </action>
  </widget>

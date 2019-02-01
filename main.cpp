@@ -6,6 +6,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     MainWindow w;
 	
+	// For darker color
 	QPalette pal = QPalette();
 	pal.setColor(QPalette::Background, Qt::darkGray);
 	w.setAutoFillBackground(true);
