@@ -7,6 +7,9 @@
 #include <mitkStandaloneDataStorage.h>
 #include <mitkImage.h>
 
+//#include "GeodesicTrainingSegmentation.h"
+#include "GeodesicTrainingSegmentation.h"
+
 #include <mutex>
 #include <vector>
 
@@ -33,6 +36,7 @@ public slots:
     void OnOpenDicom();
     void OnDisplayDicomMetaData();
 	void OnOpenSingleSubject();
+	void handleConfigButton();
 
 protected:
   void Load(QString filepath);

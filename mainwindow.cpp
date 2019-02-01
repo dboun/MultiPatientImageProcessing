@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen_Dicom,SIGNAL(triggered()),this,SLOT(OnOpenDicom()));
     connect(ui->actionDisplay_Metadata,SIGNAL(triggered()),this,SLOT(OnDisplayDicomMetaData()));
 	connect(ui->actionOpen_single_subject, SIGNAL(triggered()), this, SLOT(OnOpenSingleSubject()));
+	connect(ui->pushButtonConfigure, SIGNAL(released()), this, SLOT(handleConfigButton()));
 }
 
 MainWindow::~MainWindow()
@@ -112,6 +113,17 @@ void MainWindow::OnOpenSingleSubject()
 	}
 }
 
+void MainWindow::handleConfigButton()
+{
+	QStringList apps;
+
+#ifdef BUILD_GEODESIC_TRAINING
+	apps << "Geodesic Training Segmentation";
+#endif // BUILD_GEODESIC_TRAINING
+
+
+}
+
 void MainWindow::Load(QString filepath)
 {
   // Load datanode (eg. many image formats, surface formats, etc.)
@@ -174,7 +186,7 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
 		return false;
 	}
 	
-	qDebug(std::to_string(m_Subjects[pos].size()).c_str());
+	//qDebug(std::to_string(m_Subjects[pos].size()).c_str());
 	
 	// Update tree widget
 	QTreeWidgetItem *patientToAdd = new QTreeWidgetItem(ui->patientTree);
@@ -214,13 +226,13 @@ void MainWindow::LoadAllFilesRecursive(QString directoryPath, size_t pos)
 	QStringList subdirectories = dir.entryList(m_AcceptedFileTypes,
 		QDir::Dirs | QDir::NoSymLinks);
 
-	qDebug(files.at(0).toStdString().c_str());
+	//qDebug(files.at(0).toStdString().c_str());
 
 	// Add all files to the patient list
 	for (const auto& file : files)
 	{
 		m_Subjects[pos] << directoryPath + QString("/") + file;
-		qDebug(m_Subjects[pos].at(m_Subjects[pos].size()-1).toStdString().c_str());
+		//qDebug(m_Subjects[pos].at(m_Subjects[pos].size()-1).toStdString().c_str());
 	}
 
 	// Do the same for subdirectories
