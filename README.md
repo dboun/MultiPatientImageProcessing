@@ -1,4 +1,4 @@
 # MultiPatientImageProcessing
 Bulk processing of medical images
 
-*If* GeodesicTrainingSegmentation crashes, opencv should be compiled from source with CPU_BASELINE set to: SSE2
+*If* GeodesicTrainingSegmentation crashes, update OpenCV to version 4 ([default of OpenCV now](https://github.com/opencv/opencv)). 
