@@ -4,6 +4,8 @@
 #include <QtWidgets/QMainWindow>
 #include <QMimeData>
 #include <QDragEnterEvent>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 #include <mitkStandaloneDataStorage.h>
 #include <mitkImage.h>
 
@@ -37,6 +39,7 @@ public slots:
     void OnDisplayDicomMetaData();
 	void OnOpenSingleSubject();
 	void handleConfigButton();
+	void OnTreeWidgetClicked(QTreeWidgetItem *item, int column);
 
 protected:
   void Load(QString filepath);

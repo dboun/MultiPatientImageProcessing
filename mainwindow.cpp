@@ -3,6 +3,8 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QTextStream>
+#include <QDebug>
 #include "QmitkStdMultiWidget.h"
 #include <mitkIOUtil.h>
 
@@ -28,6 +30,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDisplay_Metadata,SIGNAL(triggered()),this,SLOT(OnDisplayDicomMetaData()));
 	connect(ui->actionOpen_single_subject, SIGNAL(triggered()), this, SLOT(OnOpenSingleSubject()));
 	connect(ui->pushButtonConfigure, SIGNAL(released()), this, SLOT(handleConfigButton()));
+
+	connect(ui->patientTree, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+            this, SLOT(OnTreeWidgetClicked(QTreeWidgetItem*, int))
+	);
 }
 
 MainWindow::~MainWindow()
@@ -124,6 +130,23 @@ void MainWindow::handleConfigButton()
 
 }
 
+void MainWindow::OnTreeWidgetClicked(QTreeWidgetItem *item, int column)
+{
+	qDebug() << QString("Clicked tree column: ") << QString(column);
+	
+	// If it's a parent item
+	for (int i = 0; i < item->childCount(); i++) {
+		item->child(i)->setCheckState(0, item->checkState(0));
+	}
+
+	// If it's a child item
+	if (item->childCount() == 0 && item->checkState(0) == Qt::Checked)
+	{
+		qDebug() << m_Subjects[ui->patientTree->indexOfTopLevelItem(item->parent())].at(item->parent()->indexOfChild(item));
+		Load(m_Subjects[ui->patientTree->indexOfTopLevelItem(item->parent())].at(item->parent()->indexOfChild(item)));
+	}
+}
+
 void MainWindow::Load(QString filepath)
 {
   // Load datanode (eg. many image formats, surface formats, etc.)
@@ -173,6 +196,7 @@ void MainWindow::SetupWidgets()
 bool MainWindow::LoadSingleSubject(QString directoryPath)
 {
 	std::lock_guard<std::mutex> lg(m_SubjectsMutex); // Lock mutex (gets unlocked on function finishing)
+	qDebug() << QString("Load single subject root: ") << directoryPath;
 
 	size_t pos = m_Subjects.size(); // The position to add
 	m_Subjects.push_back( QStringList() );
@@ -183,6 +207,7 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
 
 	if (m_Subjects[pos].isEmpty()) {
 		m_Subjects.pop_back();
+		qDebug(std::string("No data found for subject").c_str());
 		return false;
 	}
 	
@@ -218,13 +243,14 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
 
 void MainWindow::LoadAllFilesRecursive(QString directoryPath, size_t pos)
 {
+	qDebug() << QString("Trying dir: ") << directoryPath;
 	QDir dir = QDir(directoryPath);
 
 	QStringList files = dir.entryList(m_AcceptedFileTypes,
 		QDir::Files | QDir::NoSymLinks);
 
-	QStringList subdirectories = dir.entryList(m_AcceptedFileTypes,
-		QDir::Dirs | QDir::NoSymLinks);
+	dir.setFilter(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+	QStringList subdirectories = dir.entryList();
 
 	//qDebug(files.at(0).toStdString().c_str());
 
@@ -238,7 +264,8 @@ void MainWindow::LoadAllFilesRecursive(QString directoryPath, size_t pos)
 	// Do the same for subdirectories
 	for (const auto& subdir : subdirectories)
 	{
-		LoadAllFilesRecursive(subdir, pos);
+		//qDebug(subdir.toStdString().c_str());
+		LoadAllFilesRecursive(directoryPath + QString("/") + subdir, pos);
 	}
 }
 
