@@ -34,6 +34,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->patientTree, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
             this, SLOT(OnTreeWidgetClicked(QTreeWidgetItem*, int))
 	);
+
+	ui->patientTree->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(ui->patientTree, SIGNAL(customContextMenuRequested(const QPoint&)),
+		this, SLOT(ShowTreeContextMenu(const QPoint&))
+	);
 }
 
 MainWindow::~MainWindow()
@@ -139,12 +144,74 @@ void MainWindow::OnTreeWidgetClicked(QTreeWidgetItem *item, int column)
 		item->child(i)->setCheckState(0, item->checkState(0));
 	}
 
-	// If it's a child item
+	// If it's a child item and it got checked
 	if (item->childCount() == 0 && item->checkState(0) == Qt::Checked)
 	{
 		qDebug() << m_Subjects[ui->patientTree->indexOfTopLevelItem(item->parent())].at(item->parent()->indexOfChild(item));
 		Load(m_Subjects[ui->patientTree->indexOfTopLevelItem(item->parent())].at(item->parent()->indexOfChild(item)));
+		item->parent()->setCheckState(0, Qt::Checked);
 	}
+	
+	// If it's a child item and now the parent has only unchecked items
+	if (item->childCount() == 0 && item->checkState(0) == Qt::Unchecked && item->parent()->checkState(0) == Qt::Checked) {
+		bool foundChecked = false;
+
+		for (int i = 0; i < item->parent()->childCount(); i++) {
+			if (item->parent()->checkState(0) == Qt::Checked) {
+				foundChecked = true;
+				qDebug() << QString("Found checked.");
+				break;
+			}
+		}
+
+		if (!foundChecked) {
+			item->parent()->setCheckState(0, Qt::Unchecked);
+		}
+	}
+}
+
+void MainWindow::ShowTreeContextMenu(const QPoint& pos)
+{
+	qDebug() << QString("Show context menu pressed");
+
+	if (ui->patientTree->itemAt(pos)) {
+
+		QMenu *contextMenu = new QMenu(ui->patientTree);
+		//QMenu contextMenu(this);
+
+		QAction action1("Remove", this);
+		action1.setShortcut(QKeySequence::Delete);
+		connect(&action1, SIGNAL(triggered()), this, SLOT(TreeContextRemoveItem()));
+		contextMenu->addAction(&action1);
+		
+		QAction action2("Set as mask", this);
+		connect(&action2, SIGNAL(triggered()), this, SLOT(TreeContextSetItemAsMask()));
+
+		if (ui->patientTree->itemAt(pos)->childCount() == 0) {
+			// The item is an image
+			qDebug() << QString(m_Subjects[ui->patientTree->indexOfTopLevelItem(ui->patientTree->itemAt(pos)->parent())].at(
+				ui->patientTree->itemAt(pos)->parent()->indexOfChild(ui->patientTree->itemAt(pos))
+			));
+
+			contextMenu->addAction(&action2);
+		}
+		
+		//contextMenu->popup(ui->patientTree->viewport()->mapToGlobal(pos));
+		contextMenu->exec(ui->patientTree->viewport()->mapToGlobal(pos));
+	}
+}
+
+void MainWindow::TreeContextRemoveItem()
+{
+
+}
+
+void MainWindow::TreeContextSetItemAsMask()
+{
+	ui->patientTree->currentItem()->setText(0, QString("<Mask>"));
+	m_SubjectsMasks[ui->patientTree->indexOfTopLevelItem(ui->patientTree->currentItem()->parent())] = m_Subjects[
+		ui->patientTree->indexOfTopLevelItem(ui->patientTree->currentItem()->parent())
+	].at(ui->patientTree->currentItem()->parent()->indexOfChild(ui->patientTree->currentItem()));
 }
 
 void MainWindow::Load(QString filepath)
@@ -200,6 +267,7 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
 
 	size_t pos = m_Subjects.size(); // The position to add
 	m_Subjects.push_back( QStringList() );
+	m_SubjectsMasks.push_back( QString() );
 
 	LoadAllFilesRecursive(directoryPath, pos);
 

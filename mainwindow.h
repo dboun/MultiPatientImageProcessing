@@ -19,50 +19,54 @@
 //class DicomMetaDataDisplayWidget;
 
 namespace Ui {
-class MainWindow;
+	class MainWindow;
 }
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+	explicit MainWindow(QWidget *parent = nullptr);
+	~MainWindow();
 
 	void dragEnterEvent(QDragEnterEvent *e) override;
 
 	void dropEvent(QDropEvent *e) override;
 	
 public slots:
-    void OnOpenDicom();
-    void OnDisplayDicomMetaData();
+	void OnOpenDicom();
+	void OnDisplayDicomMetaData();
 	void OnOpenSingleSubject();
 	void handleConfigButton();
 	void OnTreeWidgetClicked(QTreeWidgetItem *item, int column);
+	void ShowTreeContextMenu(const QPoint& pos);
+	void TreeContextRemoveItem();
+	void TreeContextSetItemAsMask();
 
 protected:
-  void Load(QString filepath);
+	void Load(QString filepath);
 
 private:
-  void SetupWidgets();
+	void SetupWidgets();
 
-  /** Loads all the images of a single patient */
-  bool LoadSingleSubject(QString directoryPath);
+	/** Loads all the images of a single patient */
+	bool LoadSingleSubject(QString directoryPath);
 
-  /** Loads all the images from a directory, and calls itself for subdirectories */
-  void LoadAllFilesRecursive(QString directoryPath, size_t pos);
+	/** Loads all the images from a directory, and calls itself for subdirectories */
+	void LoadAllFilesRecursive(QString directoryPath, size_t pos);
 
-  void SwitchSubjectAndImage(size_t subjectPos, size_t imagePos = 0);
+	void SwitchSubjectAndImage(size_t subjectPos, size_t imagePos = 0);
 
-    Ui::MainWindow *ui;
-    mitk::StandaloneDataStorage::Pointer m_DataStorage; // Used for MITK image displaying (use load to show image)
-    //mitk::Image::Pointer m_DisplayedImage;
+	Ui::MainWindow *ui;
+	mitk::StandaloneDataStorage::Pointer m_DataStorage; // Used for MITK image displaying (use load to show image)
+	//mitk::Image::Pointer m_DisplayedImage;
     
 	//DicomReader *dicomReader;
-    //DicomMetaDataDisplayWidget *dcmdisplayWidget;
+	//DicomMetaDataDisplayWidget *dcmdisplayWidget;
 
 	std::vector< QStringList > m_Subjects;
+	std::vector< QString >     m_SubjectsMasks;
 	size_t m_CurrentSubject; // index of m_Subjects
 	std::mutex m_SubjectsMutex; // Used so that no parallel additions/deletions happen simultaneously
 
