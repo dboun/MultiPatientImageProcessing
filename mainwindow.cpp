@@ -26,8 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
   connect(ui->pushButtonRun, SIGNAL(released()), this, SLOT(RunPressed()));
   connect(ui->actionOpen_Dicom, SIGNAL(triggered()), this, SLOT(OnOpenDicom()));
-  connect(ui->actionDisplay_Metadata, SIGNAL(triggered()), this, SLOT(OnDisplayDicomMetaData()));
-  connect(ui->actionOpen_single_subject, SIGNAL(triggered()), this, SLOT(OnOpenSingleSubject()));
+    connect(ui->actionOpen_single_subject, SIGNAL(triggered()), this, SLOT(OnOpenSingleSubject()));
   connect(ui->pushButtonConfigure, SIGNAL(released()), this, SLOT(handleConfigButton()));
 
   connect(ui->patientTree, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
