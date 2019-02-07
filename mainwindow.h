@@ -4,8 +4,13 @@
 #include <QtWidgets/QMainWindow>
 #include <QMimeData>
 #include <QDragEnterEvent>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 #include <mitkStandaloneDataStorage.h>
 #include <mitkImage.h>
+
+#include "Scheduler.h"
+#include "GeodesicTrainingSegmentation.h"
 
 #include <mutex>
 #include <vector>
@@ -14,52 +19,62 @@
 //class DicomMetaDataDisplayWidget;
 
 namespace Ui {
-class MainWindow;
+	class MainWindow;
 }
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+	explicit MainWindow(QWidget *parent = nullptr);
+	~MainWindow();
 
 	void dragEnterEvent(QDragEnterEvent *e) override;
 
 	void dropEvent(QDropEvent *e) override;
 	
 public slots:
-    void OnOpenDicom();
-    void OnDisplayDicomMetaData();
+	void OnOpenDicom();
+	void OnDisplayDicomMetaData();
 	void OnOpenSingleSubject();
+	void handleConfigButton();
+	void OnTreeWidgetClicked(QTreeWidgetItem *item, int column);
+	void ShowTreeContextMenu(const QPoint& pos);
+	void TreeContextRemoveItem();
+	void TreeContextSetItemAsMask();
+	void RunPressed();
+	void SchedulerResultReady(long uid);
 
 protected:
-  void Load(QString filepath);
+	void Load(QString filepath);
 
 private:
-  void SetupWidgets();
+	void SetupWidgets();
 
-  /** Loads all the images of a single patient */
-  bool LoadSingleSubject(QString directoryPath);
+	/** Loads all the images of a single patient */
+	bool LoadSingleSubject(QString directoryPath);
 
-  /** Loads all the images from a directory, and calls itself for subdirectories */
-  void LoadAllFilesRecursive(QString directoryPath, size_t pos);
+	/** Loads all the images from a directory, and calls itself for subdirectories */
+	void LoadAllFilesRecursive(QString directoryPath, QStringList& allFiles);
 
-  void SwitchSubjectAndImage(size_t subjectPos, size_t imagePos = 0);
+	void SwitchSubjectAndImage(size_t subjectPos, size_t imagePos = 0);
 
-    Ui::MainWindow *ui;
-    mitk::StandaloneDataStorage::Pointer m_DataStorage; // Used for MITK image displaying (use load to show image)
-    //mitk::Image::Pointer m_DisplayedImage;
+	Ui::MainWindow *ui;
+	mitk::StandaloneDataStorage::Pointer m_DataStorage; // Used for MITK image displaying (use load to show image)
+	//mitk::Image::Pointer m_DisplayedImage;
     
 	//DicomReader *dicomReader;
-    //DicomMetaDataDisplayWidget *dcmdisplayWidget;
+	//DicomMetaDataDisplayWidget *dcmdisplayWidget;
 
-	std::vector< QStringList > m_Subjects;
-	size_t m_CurrentSubject; // index of m_Subjects
-	std::mutex m_SubjectsMutex; // Used so that no parallel additions/deletions happen simultaneously
+	std::mutex m_TreeEditMutex; // Used so that no parallel additions/deletions happen simultaneously
 
 	QStringList m_AcceptedFileTypes = QStringList() << "*.nii.gz" << "*.dcm" << "*.dicom";
+
+	long uidNextToGive = 0;
+	std::map<long, QTreeWidgetItem*> subjectByUid;
+
+	Scheduler m_Scheduler;
 };
 
 #endif // MAINWINDOW_H
