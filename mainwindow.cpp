@@ -42,6 +42,15 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->patientTree, SIGNAL(customContextMenuRequested(const QPoint&)),
 		this, SLOT(ShowTreeContextMenu(const QPoint&))
 	);
+
+	// Shadow effect on Run button
+	QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
+	effect->setBlurRadius(1);
+	effect->setXOffset(1);
+	effect->setYOffset(1);
+	effect->setColor(Qt::black);
+
+	ui->pushButtonRun->setGraphicsEffect(effect);
 }
 
 MainWindow::~MainWindow()
@@ -331,18 +340,56 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
 	
 	// Update tree widget
 	QTreeWidgetItem *patientToAdd = new QTreeWidgetItem(ui->patientTree);
-	patientToAdd->setText(0,
-		QString::fromStdString(
-			directoryPath.toStdString().substr(
-				directoryPath.toStdString().find_last_of("/\\")+1
-			)
+	
+	QString patientName = QString::fromStdString(
+		directoryPath.toStdString().substr(
+			directoryPath.toStdString().find_last_of("/\\") + 1
 		)
 	);
+
+	//patientToAdd->setText(0, patientName);
 	patientToAdd->setCheckState(0, Qt::Checked);
 	patientToAdd->setData(0, Qt::UserRole, directoryPath);
 	patientToAdd->setData(0, Qt::UserRole + 1, uidNextToGive);
 	subjectByUid[uidNextToGive] = patientToAdd;
 	uidNextToGive++;
+
+	QProgressBar *progressBar = new QProgressBar();
+	progressBar->setMinimum(0);
+	progressBar->setMaximum(100);
+	progressBar->setValue(0);
+	progressBar->setAlignment(Qt::AlignCenter);
+	progressBar->setMinimumWidth(30);
+	progressBar->setMaximumWidth(40);
+	progressBar->setMaximumHeight(20);
+	progressBar->setStyleSheet("QProgressBar {"
+		"background-color: #4f4f4f;"
+		"color: #9a9a9a;"
+		"border-style: outset;"
+		"border-width: 2px;"
+		"border-color: #BF360C;"
+		"border-radius: 4px;"
+		"text-align: center; }"
+
+		"QProgressBar::chunk {"
+		"background-color: #F5F5F5; }"
+	);
+	//"border-color: #4FC3F7;"
+	//"QProgressBar::chunk {"
+	//"background-color: #010327; }"
+
+	QLabel *label = new QLabel(patientName);
+	label->setMaximumHeight(20);
+
+	QWidget *labelAndProgress = new QWidget();
+	labelAndProgress->setStyleSheet("background-color: rgba(0,0,0,0)");
+	labelAndProgress->setMaximumHeight(35);
+	QHBoxLayout *hLayout = new QHBoxLayout();
+	hLayout->addWidget(label, Qt::AlignLeft);
+	hLayout->addWidget(progressBar, Qt::AlignRight);
+	labelAndProgress->setLayout(hLayout);
+	
+	ui->patientTree->setItemWidget(patientToAdd, 0, labelAndProgress);
 
 	foreach(QString file, files) {
 		QTreeWidgetItem *imageItem = new QTreeWidgetItem(patientToAdd);

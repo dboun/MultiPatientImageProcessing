@@ -6,6 +6,9 @@
 #include <QDragEnterEvent>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QProgressBar>
+#include <QHBoxLayout>
+#include <QGraphicsDropShadowEffect>
 #include <mitkStandaloneDataStorage.h>
 #include <mitkImage.h>
 
