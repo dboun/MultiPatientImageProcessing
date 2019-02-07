@@ -80,7 +80,7 @@ QPushButton:pressed{ background-color: #C0CA33;border-style: outset; border-styl
      <x>0</x>
      <y>0</y>
      <width>986</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -100,7 +100,6 @@ QPushButton:pressed{ background-color: #C0CA33;border-style: outset; border-styl
     <addaction name="actionAdd_image_for_new_subject"/>
     <addaction name="separator"/>
     <addaction name="actionOpen_Dicom"/>
-    <addaction name="actionDisplay_Metadata"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
