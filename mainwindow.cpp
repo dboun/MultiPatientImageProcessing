@@ -24,8 +24,11 @@ MainWindow::MainWindow(QWidget *parent) :
     this->SetupWidgets();
 
 	setAcceptDrops(true); // For drag and drop
- 	ui->patientTree->setHeaderLabel("Select subjects");
+	m_Scheduler.connect(&m_Scheduler, SIGNAL(jobFinished(long)), this, SLOT(SchedulerResultReady(long)));
 
+	ui->patientTree->setHeaderLabel("Select subjects");
+
+	connect(ui->pushButtonRun, SIGNAL(released()), this, SLOT(RunPressed()));
     connect(ui->actionOpen_Dicom,SIGNAL(triggered()),this,SLOT(OnOpenDicom()));
     connect(ui->actionDisplay_Metadata,SIGNAL(triggered()),this,SLOT(OnDisplayDicomMetaData()));
 	connect(ui->actionOpen_single_subject, SIGNAL(triggered()), this, SLOT(OnOpenSingleSubject()));
@@ -62,14 +65,16 @@ void MainWindow::dropEvent(QDropEvent *e)
 	foreach(const QUrl &url, e->mimeData()->urls()) {
 		QString fileName = url.toLocalFile();
 		qDebug(("Dropped file:" + fileName).toStdString().c_str());
+
+		LoadSingleSubject(fileName);
 	}
 
-	// Not implemented yet message
-	QMessageBox::information(
-		this,
-		tr("MPIP"),
-		tr("Drag and drop is not implemented yet.")
-	);
+	//// Not implemented yet message
+	//QMessageBox::information(
+	//	this,
+	//	tr("MPIP"),
+	//	tr("Drag and drop is not fully implemented yet.")
+	//);
 }
 
 void MainWindow::OnOpenDicom()
@@ -105,13 +110,6 @@ void MainWindow::OnDisplayDicomMetaData()
 
 void MainWindow::OnOpenSingleSubject()
 {
-	/*QString filename = QFileDialog::getOpenFileName(
-		this,
-		"Open Document",
-		QDir::currentPath(),
-		"All files (*.*) ;; Document files (*.doc *.rtf);; PNG files (*.png)"
-	);*/
-
 	QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
 		"/home",
 		QFileDialog::ShowDirsOnly
@@ -120,7 +118,7 @@ void MainWindow::OnOpenSingleSubject()
 
 	if (!dir.isEmpty() && LoadSingleSubject(dir))
 	{
-		SwitchSubjectAndImage(m_Subjects.size() - 1);
+		SwitchSubjectAndImage(ui->patientTree->topLevelItemCount() - 1);
 	}
 }
 
@@ -147,9 +145,8 @@ void MainWindow::OnTreeWidgetClicked(QTreeWidgetItem *item, int column)
 	// If it's a child item and it got checked
 	if (item->childCount() == 0 && item->checkState(0) == Qt::Checked)
 	{
-		qDebug() << m_Subjects[ui->patientTree->indexOfTopLevelItem(item->parent())].at(item->parent()->indexOfChild(item));
-		Load(m_Subjects[ui->patientTree->indexOfTopLevelItem(item->parent())].at(item->parent()->indexOfChild(item)));
 		item->parent()->setCheckState(0, Qt::Checked);
+		Load(item->data(0, Qt::UserRole).toString());
 	}
 	
 	// If it's a child item and now the parent has only unchecked items
@@ -157,7 +154,7 @@ void MainWindow::OnTreeWidgetClicked(QTreeWidgetItem *item, int column)
 		bool foundChecked = false;
 
 		for (int i = 0; i < item->parent()->childCount(); i++) {
-			if (item->parent()->checkState(0) == Qt::Checked) {
+			if (item->parent()->child(i)->checkState(0) == Qt::Checked) {
 				foundChecked = true;
 				qDebug() << QString("Found checked.");
 				break;
@@ -177,10 +174,10 @@ void MainWindow::ShowTreeContextMenu(const QPoint& pos)
 	if (ui->patientTree->itemAt(pos)) {
 
 		QMenu *contextMenu = new QMenu(ui->patientTree);
-		//QMenu contextMenu(this);
-
+		
 		QAction action1("Remove", this);
-		action1.setShortcut(QKeySequence::Delete);
+		//action1.setShortcutContext(Qt::ApplicationShortcut);
+		//action1.setShortcut(QKeySequence::Delete);
 		connect(&action1, SIGNAL(triggered()), this, SLOT(TreeContextRemoveItem()));
 		contextMenu->addAction(&action1);
 		
@@ -189,29 +186,88 @@ void MainWindow::ShowTreeContextMenu(const QPoint& pos)
 
 		if (ui->patientTree->itemAt(pos)->childCount() == 0) {
 			// The item is an image
-			qDebug() << QString(m_Subjects[ui->patientTree->indexOfTopLevelItem(ui->patientTree->itemAt(pos)->parent())].at(
-				ui->patientTree->itemAt(pos)->parent()->indexOfChild(ui->patientTree->itemAt(pos))
-			));
+			qDebug() << ui->patientTree->itemAt(pos)->data(0, Qt::UserRole);
 
 			contextMenu->addAction(&action2);
 		}
 		
-		//contextMenu->popup(ui->patientTree->viewport()->mapToGlobal(pos));
 		contextMenu->exec(ui->patientTree->viewport()->mapToGlobal(pos));
 	}
 }
 
 void MainWindow::TreeContextRemoveItem()
 {
-
+	qDebug() << QString("Trying to delete item");
+	delete ui->patientTree->currentItem();
 }
 
 void MainWindow::TreeContextSetItemAsMask()
 {
+	for (int i = 0; i < ui->patientTree->currentItem()->parent()->childCount(); i++) {
+		ui->patientTree->currentItem()->parent()->child(i)->setText(0, 
+			ui->patientTree->currentItem()->parent()->child(i)->data(0, Qt::UserRole + 1).toString()
+		);
+	}
+
 	ui->patientTree->currentItem()->setText(0, QString("<Mask>"));
-	m_SubjectsMasks[ui->patientTree->indexOfTopLevelItem(ui->patientTree->currentItem()->parent())] = m_Subjects[
-		ui->patientTree->indexOfTopLevelItem(ui->patientTree->currentItem()->parent())
-	].at(ui->patientTree->currentItem()->parent()->indexOfChild(ui->patientTree->currentItem()));
+}
+
+void MainWindow::RunPressed()
+{
+	std::shared_ptr<Scheduler::Data> data(new Scheduler::Data());
+
+	for (int i = 0; i < ui->patientTree->topLevelItemCount(); i++)
+	{
+		if (ui->patientTree->topLevelItem(i)->checkState(0) == Qt::Checked)
+		{
+			long uid = ui->patientTree->topLevelItem(i)->data(0, Qt::UserRole + 1).toLongLong();
+			qDebug() << QString("(Run) Added uid:  ") << QString(uid);
+			data->uids.push_back(uid);
+			qDebug() << QString("(Run) Check uids: ") << QString(data->uids[data->uids.size()-1]);
+			data->patientDirectoryPath[uid] = ui->patientTree->topLevelItem(i)->data(0, Qt::UserRole).toString().toStdString();
+
+			for (int j = 0; j < ui->patientTree->topLevelItem(i)->childCount(); j++)
+			{
+				if (ui->patientTree->topLevelItem(i)->child(j)->checkState(0) == Qt::Checked) {
+					if (ui->patientTree->topLevelItem(i)->child(j)->text(0).toStdString() == "<Mask>") {
+						data->maskPath[uid] = ui->patientTree->topLevelItem(i)->child(j)->data(0, Qt::UserRole).toString().toStdString();
+					}
+					else {
+						data->imagesPaths[uid].push_back(ui->patientTree->topLevelItem(i)->child(j)->data(0, Qt::UserRole).toString().toStdString());
+					}
+				}
+			}
+
+			if (data->imagesPaths.find(uid) == data->imagesPaths.end() || data->maskPath.find(uid) == data->maskPath.end()) {
+				qDebug() << QString("(Run) Images or mask missing so the uid was dismissed");
+				data->uids.pop_back();
+			}
+		}
+	}
+
+	qDebug() << QString("Trying to run");
+	m_Scheduler.SetData(data);
+	m_Scheduler.Start();
+}
+
+void MainWindow::SchedulerResultReady(long uid)
+{
+	qDebug() << QString("SchedulerResultReady called for uid: ") << QString(uid);
+
+	if (subjectByUid[uid])
+	{
+		subjectByUid[uid]->setText(0, subjectByUid[uid]->text(0).append(QString(" [FINISHED]")));
+
+		QTreeWidgetItem *imageItem = new QTreeWidgetItem(subjectByUid[uid]);
+
+		QString file = subjectByUid[uid]->data(0, Qt::UserRole).toString() + QString("/MPIP_output/labels_res.nii.gz");
+
+		imageItem->setText(0, QString("<Segmentation>"));
+		imageItem->setCheckState(0, Qt::Checked);
+
+		imageItem->setData(0, Qt::UserRole, file);          // path to the image
+		imageItem->setData(0, Qt::UserRole + 1, QString("<Segmentation>"));
+	}
 }
 
 void MainWindow::Load(QString filepath)
@@ -262,24 +318,16 @@ void MainWindow::SetupWidgets()
 
 bool MainWindow::LoadSingleSubject(QString directoryPath)
 {
-	std::lock_guard<std::mutex> lg(m_SubjectsMutex); // Lock mutex (gets unlocked on function finishing)
+	std::lock_guard<std::mutex> lg(m_TreeEditMutex); // Lock mutex (gets unlocked on function finishing)
 	qDebug() << QString("Load single subject root: ") << directoryPath;
 
-	size_t pos = m_Subjects.size(); // The position to add
-	m_Subjects.push_back( QStringList() );
-	m_SubjectsMasks.push_back( QString() );
+	QStringList files;
+	LoadAllFilesRecursive(directoryPath, files);
 
-	LoadAllFilesRecursive(directoryPath, pos);
-
-	//qDebug(files.at(0).toStdString().c_str());
-
-	if (m_Subjects[pos].isEmpty()) {
-		m_Subjects.pop_back();
+	if (files.isEmpty()) {
 		qDebug(std::string("No data found for subject").c_str());
 		return false;
 	}
-	
-	//qDebug(std::to_string(m_Subjects[pos].size()).c_str());
 	
 	// Update tree widget
 	QTreeWidgetItem *patientToAdd = new QTreeWidgetItem(ui->patientTree);
@@ -291,54 +339,60 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
 		)
 	);
 	patientToAdd->setCheckState(0, Qt::Checked);
+	patientToAdd->setData(0, Qt::UserRole, directoryPath);
+	patientToAdd->setData(0, Qt::UserRole + 1, uidNextToGive);
+	subjectByUid[uidNextToGive] = patientToAdd;
+	uidNextToGive++;
 
-	foreach(QString file, m_Subjects[pos]) {
-		QTreeWidgetItem *styleItem = new QTreeWidgetItem(patientToAdd);
-		styleItem->setText(0,
-			QString::fromStdString(
-				file.toStdString().substr(
-					file.toStdString().find_last_of("/\\") + 1
-				)
+	foreach(QString file, files) {
+		QTreeWidgetItem *imageItem = new QTreeWidgetItem(patientToAdd);
+		
+		QString shortName = QString::fromStdString(
+			file.toStdString().substr(
+				file.toStdString().find_last_of("/\\") + 1
 			)
 		);
-		styleItem->setCheckState(0, Qt::Checked);
-		//styleItem->setData(0, Qt::UserRole, QVariant(database.weight(family, style)));
-		//styleItem->setData(0, Qt::UserRole + 1, QVariant(database.italic(family, style)));
+		
+		imageItem->setText(0, shortName);
+		imageItem->setCheckState(0, Qt::Checked);
+
+		imageItem->setData(0, Qt::UserRole, file);          // path to the image
+		imageItem->setData(0, Qt::UserRole + 1, shortName); // short name
 	}
 
 	return true;
 }
 
-void MainWindow::LoadAllFilesRecursive(QString directoryPath, size_t pos)
+void MainWindow::LoadAllFilesRecursive(QString directoryPath, QStringList& allFiles)
 {
 	qDebug() << QString("Trying dir: ") << directoryPath;
 	QDir dir = QDir(directoryPath);
 
+	// Find all files in this directory
 	QStringList files = dir.entryList(m_AcceptedFileTypes,
 		QDir::Files | QDir::NoSymLinks);
 
+	// Find all subdirectories
 	dir.setFilter(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 	QStringList subdirectories = dir.entryList();
-
-	//qDebug(files.at(0).toStdString().c_str());
 
 	// Add all files to the patient list
 	for (const auto& file : files)
 	{
-		m_Subjects[pos] << directoryPath + QString("/") + file;
-		//qDebug(m_Subjects[pos].at(m_Subjects[pos].size()-1).toStdString().c_str());
+		allFiles << directoryPath + QString("/") + file;
 	}
 
 	// Do the same for subdirectories
 	for (const auto& subdir : subdirectories)
 	{
 		//qDebug(subdir.toStdString().c_str());
-		LoadAllFilesRecursive(directoryPath + QString("/") + subdir, pos);
+		LoadAllFilesRecursive(directoryPath + QString("/") + subdir, allFiles);
 	}
 }
 
 void MainWindow::SwitchSubjectAndImage(size_t subjectPos, size_t imagePos)
 {
-	m_CurrentSubject = subjectPos;
-	Load(m_Subjects[subjectPos].at(imagePos));
+	Load(
+		ui->patientTree->topLevelItem(subjectPos)->child(imagePos)->data(0, Qt::UserRole).toString()
+	);
 }

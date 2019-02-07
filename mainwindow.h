@@ -9,7 +9,7 @@
 #include <mitkStandaloneDataStorage.h>
 #include <mitkImage.h>
 
-//#include "GeodesicTrainingSegmentation.h"
+#include "Scheduler.h"
 #include "GeodesicTrainingSegmentation.h"
 
 #include <mutex>
@@ -43,6 +43,8 @@ public slots:
 	void ShowTreeContextMenu(const QPoint& pos);
 	void TreeContextRemoveItem();
 	void TreeContextSetItemAsMask();
+	void RunPressed();
+	void SchedulerResultReady(long uid);
 
 protected:
 	void Load(QString filepath);
@@ -54,7 +56,7 @@ private:
 	bool LoadSingleSubject(QString directoryPath);
 
 	/** Loads all the images from a directory, and calls itself for subdirectories */
-	void LoadAllFilesRecursive(QString directoryPath, size_t pos);
+	void LoadAllFilesRecursive(QString directoryPath, QStringList& allFiles);
 
 	void SwitchSubjectAndImage(size_t subjectPos, size_t imagePos = 0);
 
@@ -65,12 +67,14 @@ private:
 	//DicomReader *dicomReader;
 	//DicomMetaDataDisplayWidget *dcmdisplayWidget;
 
-	std::vector< QStringList > m_Subjects;
-	std::vector< QString >     m_SubjectsMasks;
-	size_t m_CurrentSubject; // index of m_Subjects
-	std::mutex m_SubjectsMutex; // Used so that no parallel additions/deletions happen simultaneously
+	std::mutex m_TreeEditMutex; // Used so that no parallel additions/deletions happen simultaneously
 
 	QStringList m_AcceptedFileTypes = QStringList() << "*.nii.gz" << "*.dcm" << "*.dicom";
+
+	long uidNextToGive = 0;
+	std::map<long, QTreeWidgetItem*> subjectByUid;
+
+	Scheduler m_Scheduler;
 };
 
 #endif // MAINWINDOW_H
