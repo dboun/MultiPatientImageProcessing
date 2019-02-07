@@ -110,13 +110,6 @@ void MainWindow::OnOpenDicom()
     //    std::cout << " tag not found " << std::endl;
 }
 
-void MainWindow::OnDisplayDicomMetaData()
-{
-    ////dicomReader->PrintMetaData();
-    //dcmdisplayWidget->UpdateDicomData(dicomReader->GetMetaDataMap());
-    //dcmdisplayWidget->show();
-}
-
 void MainWindow::OnOpenSingleSubject()
 {
 	QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
