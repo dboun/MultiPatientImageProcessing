@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->actionAdd_image_for_new_subject->setVisible(false);
 	ui->actionAdd_multiple_subjects->setVisible(false);
 	ui->pushButtonConfigure->setVisible(false);
-	ui->actionOpen_Dicom->setVisible(false);
+	ui->actionOpen_Dicom->setVisible(true);
 
     //dicomReader = new DicomReader();
     //dcmdisplayWidget = new DicomMetaDataDisplayWidget();
@@ -332,6 +332,8 @@ void MainWindow::Load(QString filepath)
   reader->Update();
   vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
   image->ShallowCopy(reader->GetOutput());
+
+  this->WriteVTKImage(image, "inputimage.mha");
 
   this->ConstructViews(image);
 }
