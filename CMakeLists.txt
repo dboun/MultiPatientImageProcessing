@@ -2,9 +2,8 @@ cmake_minimum_required(VERSION 3.1.0)
 
 project( MPIP )
 
-# Dependencies
+find_package( MITK REQUIRED )
 find_package( OpenCV REQUIRED )
-find_package( MITK   REQUIRED )
 
 Include( mitkFunctionCheckCompilerFlags )
 
