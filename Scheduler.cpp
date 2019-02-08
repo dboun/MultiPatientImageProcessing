@@ -6,10 +6,11 @@ Scheduler::Scheduler()
 
 	qDebug() << QString("Ideal number of threads: ") << QString(threadCount);
 	
-	threadCount = (threadCount / 2 < 2) ? 2 : threadCount / 2;
+	threadCount = (threadCount / 2 + 1 < 2) ? 2 : threadCount / 2 + 1;
 	qDebug() << QString("Automatically setting max parallel jobs to: ") << QString(threadCount);
 	
 	m_MaxParallelJobs = threadCount;
+	//m_MaxParallelJobs = 4;
 }
 
 void Scheduler::Start()
