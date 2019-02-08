@@ -128,9 +128,9 @@ void MainWindow::handleConfigButton()
 {
 	QStringList apps;
 
-#ifdef BUILD_GEODESIC_TRAINING
-	apps << "Geodesic Training Segmentation";
-#endif // BUILD_GEODESIC_TRAINING
+//#ifdef BUILD_GEODESIC_TRAINING
+	//apps << "Geodesic Training Segmentation";
+//#endif // BUILD_GEODESIC_TRAINING
 
 
 }
@@ -275,10 +275,10 @@ void MainWindow::SchedulerResultReady(long uid)
 void MainWindow::Load(QString filepath)
 {
   // Load datanode (eg. many image formats, surface formats, etc.)
-  if (filepath.toStdString() != "") 
+  if (filepath.toStdString() != "")
   {
 	  mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(filepath.toStdString(), *m_DataStorage);
-  
+
 	if (dataNodes->empty())
 	{
 		fprintf(stderr, "BCould not open file %s \n\n", filepath.toStdString().c_str());
