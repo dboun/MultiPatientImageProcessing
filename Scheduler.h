@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QDebug>
-//#include <QThread>
+#include <QThread>
 
 #include <vector>
 #include <string>
@@ -11,7 +11,7 @@
 #include <mutex>
 #include <map>
 
-#include "GeodesicTrainingSegmentation.h"
+#include "ApplicationGeodesicTrainingSegmentation.h"
 
 class Scheduler: public QObject
 {
@@ -29,6 +29,8 @@ public:
 		std::map< long, std::string > resultPath;
 	} Data;
 
+	Scheduler();
+
 	void Start();
 
 	void Stop();
@@ -36,8 +38,12 @@ public:
 	void SetData(std::shared_ptr<Data> data);
 	void SetMaxParallelJobs(int maxParallelJobs);
 
+public slots:
+	void progressUpdateFromApplication(long uid, QString message, int progress);
+
 signals:
 	void jobFinished(long uid);
+	void updateProgress(long uid, int progress);
 
 private:
 	std::shared_ptr<Data> m_Data;

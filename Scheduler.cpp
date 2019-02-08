@@ -1,5 +1,18 @@
 #include "Scheduler.h"
 
+Scheduler::Scheduler()
+{
+	int threadCount = QThread::idealThreadCount();
+
+	qDebug() << QString("Ideal number of threads: ") << QString(threadCount);
+	
+	threadCount = (threadCount / 2 + 1 < 2) ? 2 : threadCount / 2 + 1;
+	qDebug() << QString("Automatically setting max parallel jobs to: ") << QString(threadCount);
+	
+	m_MaxParallelJobs = threadCount;
+	//m_MaxParallelJobs = 4;
+}
+
 void Scheduler::Start()
 {
 	if (m_Data.get() == nullptr)
@@ -30,6 +43,11 @@ void Scheduler::SetData(std::shared_ptr<Data> data)
 void Scheduler::SetMaxParallelJobs(int maxParallelJobs)
 {
 	m_MaxParallelJobs = maxParallelJobs;
+}
+
+void Scheduler::progressUpdateFromApplication(long uid, QString message, int progress)
+{
+	emit updateProgress(uid, progress);
 }
 
 void Scheduler::BackgroundCoordinator()
@@ -78,14 +96,18 @@ void Scheduler::ResultFinished(long uid)
 void Scheduler::ThreadJob(long uid, std::vector<std::string> &imagesPaths, std::string &maskPath, std::string &patientDirectoryPath)
 {
 	qDebug() << QString("Thread started for: ") << QString(uid);
+	//emit updateProgress(uid, 0);
 
-	GeodesicTrainingSegmentation::Coordinator<float, 3> geodesic; // TODO: Support 2D
+	ApplicationGeodesicTrainingSegmentation<float, 3> geodesic; // TODO: Support 2D
+	geodesic.SetUid(uid);
+	connect(&geodesic, SIGNAL(ProgressUpdateUI(long, QString, int)), this, SLOT(progressUpdateFromApplication(long, QString, int)));
 	geodesic.SetInputImages(imagesPaths);
 	geodesic.SetLabels(maskPath);
 	geodesic.SetOutputPath(patientDirectoryPath + std::string("/MPIP_output"));
 	geodesic.SetSaveAll(true);
 	geodesic.SetTimerEnabled(true);
 	geodesic.SetVerbose(true);
+	//geodesic.SetNumberOfThreads(16);
 	geodesic.Execute();
 
 	ResultFinished(uid);
