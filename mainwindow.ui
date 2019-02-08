@@ -22,48 +22,97 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item alignment="Qt::AlignLeft">
-       <widget class="QTreeWidget" name="patientTree">
-        <property name="styleSheet">
-         <string notr="true">background-color:darkGray</string>
-        </property>
-        <column>
-         <property name="text">
-          <string notr="true">1</string>
+     <widget class="QWidget" name="leftPanel" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>300</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QTreeWidget" name="patientTree">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-        </column>
-       </widget>
-      </item>
-      <item alignment="Qt::AlignLeft">
-       <widget class="QPushButton" name="pushButtonConfigure">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton { color:white; background-color:darkGray; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; padding: 3px;}
+         <property name="styleSheet">
+          <string notr="true">background-color:darkGray</string>
+         </property>
+         <column>
+          <property name="text">
+           <string notr="true">1</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonConfigure">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton { color:white; background-color:darkGray; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; padding: 3px;}
 QPushButton:checked{ background-color: red; border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
 QPushButton:hover{ background-color: lightGray;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
 QPushButton:pressed{ background-color: darkGray;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}                 </string>
-        </property>
-        <property name="text">
-         <string>  Configure actions  </string>
+         </property>
+         <property name="text">
+          <string>  Configure actions  </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonRun">
+         <property name="styleSheet">
+          <string notr="true">QPushButton { font:22px;color:black; background-color:lightblue; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; padding: 3px;}
+QPushButton:checked{ background-color: red; border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
+QPushButton:hover{ background-color: lightGray;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
+QPushButton:pressed{ background-color: darkGray;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}                 </string>
+         </property>
+         <property name="text">
+          <string>        Run       &gt;</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetDefaultConstraint</enum>
+      </property>
+      <item row="0" column="0">
+       <widget class="QVTKOpenGLWidget" name="widgetA" native="true">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(149, 162, 165);</string>
         </property>
        </widget>
       </item>
-      <item alignment="Qt::AlignLeft">
-       <widget class="QPushButton" name="pushButtonRun">
+      <item row="1" column="1">
+       <widget class="QVTKOpenGLWidget" name="widgetS" native="true">
         <property name="styleSheet">
-         <string notr="true">QPushButton { font:22px;color:black; background-color:#D4E157; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; padding: 3px;}
-QPushButton:checked{ background-color: red; border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
-QPushButton:hover{ background-color:#F0F4C3;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
-QPushButton:pressed{ background-color: #C0CA33;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}                 </string>
+         <string notr="true">background-color: rgb(149, 162, 165);</string>
         </property>
-        <property name="text">
-         <string>        Run       &gt;</string>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QVTKOpenGLWidget" name="widget3" native="true">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(149, 162, 165);</string>
         </property>
-        <property name="checkable">
-         <bool>false</bool>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QVTKOpenGLWidget" name="widgetC" native="true">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(149, 162, 165);</string>
         </property>
        </widget>
       </item>
@@ -154,6 +203,13 @@ QPushButton:pressed{ background-color: #C0CA33;border-style: outset; border-styl
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QVTKOpenGLWidget</class>
+   <extends>QWidget</extends>
+   <header>QVTKOpenGLWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

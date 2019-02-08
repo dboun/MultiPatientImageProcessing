@@ -1,12 +1,55 @@
-#include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "mainwindow.h"
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QTextStream>
 #include <QDebug>
-#include "QmitkStdMultiWidget.h"
-#include <mitkIOUtil.h>
+#include <QLabel>
+
+#include "vtkBoundedPlanePointPlacer.h"
+#include "vtkCellPicker.h"
+#include "vtkCommand.h"
+#include "vtkDICOMImageReader.h"
+#include "vtkNIFTIImageReader.h"
+#include "vtkDistanceRepresentation.h"
+#include "vtkDistanceRepresentation2D.h"
+#include "vtkOrientedGlyphContourRepresentation.h"
+#include "vtkDistanceWidget.h"
+#include <vtkGenericOpenGLRenderWindow.h>
+#include "vtkHandleRepresentation.h"
+#include "vtkImageData.h"
+#include "vtkImageMapToWindowLevelColors.h"
+#include "vtkImageSlabReslice.h"
+#include "vtkInteractorStyleImage.h"
+#include "vtkLookupTable.h"
+#include "vtkPlane.h"
+#include "vtkPlaneSource.h"
+#include "vtkPointHandleRepresentation2D.h"
+#include "vtkPointHandleRepresentation3D.h"
+#include "vtkProperty.h"
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
+#include "vtkResliceImageViewer.h"
+#include "vtkResliceCursorLineRepresentation.h"
+#include "vtkResliceCursorThickLineRepresentation.h"
+#include "vtkResliceCursorWidget.h"
+#include "vtkResliceCursorActor.h"
+#include "vtkResliceCursorPolyDataAlgorithm.h"
+#include "vtkResliceCursor.h"
+#include "vtkResliceImageViewerMeasurements.h"
+
+#include <itkImageToVTKImageFilter.h>
+#include <vtkMetaImageWriter.h>
+#include <vtkPolyData.h>
+#include <vtkXMLPolyDataWriter.h>
+#include <vtkLinearExtrusionFilter.h>
+#include <vtkPolyDataToImageStencil.h>
+#include <vtkImageStencil.h>
+#include <vtkImageData.h>
+
+//#include "QmitkStdMultiWidget.h"
+//#include <mitkIOUtil.h>
 
 //#include "DicomMetaDataDisplayWidget.h"
 
@@ -15,13 +58,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 
-  m_DataStorage = mitk::StandaloneDataStorage::New();
+  //m_DataStorage = mitk::StandaloneDataStorage::New();
 
     ui->setupUi(this);
 
     //dicomReader = new DicomReader();
     //dcmdisplayWidget = new DicomMetaDataDisplayWidget();
-    this->SetupWidgets();
+    //this->SetupWidgets();
 
 	setAcceptDrops(true); // For drag and drop
 	m_Scheduler.connect(&m_Scheduler, SIGNAL(jobFinished(long)), this, SLOT(SchedulerResultReady(long)));
@@ -88,26 +131,10 @@ void MainWindow::dropEvent(QDropEvent *e)
 
 void MainWindow::OnOpenDicom()
 {
-  QString filepath = QFileDialog::getOpenFileName(this,tr("Open File"),QDir::currentPath());
-  this->Load(filepath);
+    QString dir = QFileDialog::getOpenFileName(this, tr("Open Nifti"),
+                                                    QDir::currentPath());
+    this->Load(dir);
 
-    //QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
-    //                                                QDir::currentPath(),
-    //                                                QFileDialog::ShowDirsOnly
-    //                                                | QFileDialog::DontResolveSymlinks);
-
-    //dicomReader->SetDirectoryPath(dir.toStdString());
-    //dicomReader->ReadMetaData();
-    ////dicomReader->PrintMetaData();
-
-    ////test get tag value;
-    //std::string val,label;
-    //std::string tag = "0008|103e";//"0010|0010";
-    //bool found = dicomReader->GetTagValue(tag,label, val);
-    //if(found)
-    //    std::cout << " tag: " << tag << " description: " << label << " value: " << val << std::endl;
-    //else
-    //    std::cout << " tag not found " << std::endl;
 }
 
 void MainWindow::OnOpenSingleSubject()
@@ -252,6 +279,15 @@ void MainWindow::RunPressed()
 	m_Scheduler.Start();
 }
 
+void MainWindow::WriteVTKImage(vtkImageData* vtkimgData, std::string filename)
+{
+  vtkSmartPointer<vtkMetaImageWriter> writer =
+    vtkSmartPointer<vtkMetaImageWriter>::New();
+  writer->SetInputData(vtkimgData);
+  writer->SetFileName(filename.c_str());
+  writer->Write();
+}
+
 void MainWindow::SchedulerResultReady(long uid)
 {
 	qDebug() << QString("SchedulerResultReady called for uid: ") << QString(uid);
@@ -274,49 +310,147 @@ void MainWindow::SchedulerResultReady(long uid)
 
 void MainWindow::Load(QString filepath)
 {
-  // Load datanode (eg. many image formats, surface formats, etc.)
-  if (filepath.toStdString() != "")
-  {
-	  mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(filepath.toStdString(), *m_DataStorage);
+  std::string dirStr = filepath.toStdString();
+  vtkSmartPointer< vtkNIFTIImageReader > reader =
+    vtkSmartPointer< vtkNIFTIImageReader >::New();
 
-	if (dataNodes->empty())
-	{
-		fprintf(stderr, "BCould not open file %s \n\n", filepath.toStdString().c_str());
-		//exit(2);
-	}
-	else {
-		mitk::Image::Pointer image = dynamic_cast<mitk::Image *>(dataNodes->at(0)->GetData());
-		/*if ((m_FirstImage.IsNull()) && (image.IsNotNull()))
-		m_FirstImage = image;*/
-	}
+  reader->SetFileName(dirStr.c_str());
+  reader->Update();
+  vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
+  image->ShallowCopy(reader->GetOutput());
+
+  this->ConstructViews(image);
+}
+
+void MainWindow::ConstructViews(vtkImageData *image)
+{
+  int imageDims[3];
+  image->GetDimensions(imageDims);
+
+  for (int i = 0; i < 3; i++)
+  {
+    riw[i] = vtkSmartPointer< vtkResliceImageViewer >::New();
+    vtkNew<vtkGenericOpenGLRenderWindow> renderWindow;
+    riw[i]->SetRenderWindow(renderWindow);
   }
 
+  this->ui->widgetA->SetRenderWindow(riw[0]->GetRenderWindow());
+  riw[0]->SetupInteractor(
+    this->ui->widgetA->GetRenderWindow()->GetInteractor());
+
+  this->ui->widgetC->SetRenderWindow(riw[1]->GetRenderWindow());
+  riw[1]->SetupInteractor(
+    this->ui->widgetC->GetRenderWindow()->GetInteractor());
+
+  this->ui->widgetS->SetRenderWindow(riw[2]->GetRenderWindow());
+  riw[2]->SetupInteractor(
+    this->ui->widgetS->GetRenderWindow()->GetInteractor());
+
+  for (int i = 0; i < 3; i++)
+  {
+    // make them all share the same reslice cursor object.
+    vtkResliceCursorLineRepresentation *rep =
+      vtkResliceCursorLineRepresentation::SafeDownCast(
+        riw[i]->GetResliceCursorWidget()->GetRepresentation());
+    riw[i]->SetResliceCursor(riw[0]->GetResliceCursor());
+
+    rep->GetResliceCursorActor()->
+      GetCursorAlgorithm()->SetReslicePlaneNormal(i);
+
+    riw[i]->SetInputData(image);
+    riw[i]->SetSliceOrientation(i);
+    riw[i]->SetResliceModeToAxisAligned();
+  }
+
+  vtkSmartPointer<vtkCellPicker> picker =
+    vtkSmartPointer<vtkCellPicker>::New();
+  picker->SetTolerance(0.005);
+
+  vtkSmartPointer<vtkProperty> ipwProp =
+    vtkSmartPointer<vtkProperty>::New();
+
+  vtkSmartPointer< vtkRenderer > ren =
+    vtkSmartPointer< vtkRenderer >::New();
+
+  vtkNew<vtkGenericOpenGLRenderWindow> renderWindow;
+  this->ui->widget3->SetRenderWindow(renderWindow);
+  this->ui->widget3->GetRenderWindow()->AddRenderer(ren);
+  vtkRenderWindowInteractor *iren = this->ui->widget3->GetInteractor();
+
+  for (int i = 0; i < 3; i++)
+  {
+    planeWidget[i] = vtkSmartPointer<vtkImagePlaneWidget>::New();
+    planeWidget[i]->SetInteractor(iren);
+    planeWidget[i]->SetPicker(picker);
+    planeWidget[i]->RestrictPlaneToVolumeOn();
+    double color[3] = { 0, 0, 0 };
+    color[i] = 1;
+    planeWidget[i]->GetPlaneProperty()->SetColor(color);
+
+    color[0] /= 4.0;
+    color[1] /= 4.0;
+    color[2] /= 4.0;
+    riw[i]->GetRenderer()->SetBackground(color);
+
+    planeWidget[i]->SetTexturePlaneProperty(ipwProp);
+    planeWidget[i]->TextureInterpolateOff();
+    planeWidget[i]->SetResliceInterpolateToLinear();
+    planeWidget[i]->SetInputData(image);
+    planeWidget[i]->SetPlaneOrientation(i);
+    planeWidget[i]->SetSliceIndex(imageDims[i] / 2);
+    planeWidget[i]->DisplayTextOn();
+    planeWidget[i]->SetDefaultRenderer(ren);
+    planeWidget[i]->SetWindowLevel(1358, -27);
+    planeWidget[i]->On();
+    planeWidget[i]->InteractionOn();
+  }
 }
 
-void MainWindow::SetupWidgets()
-{
-  QmitkStdMultiWidget *multiWidget = new QmitkStdMultiWidget();
-  ui->centralWidget->layout()->addWidget(multiWidget);
+//void MainWindow::Load(QString filepath)
+//{
+ // // Load datanode (eg. many image formats, surface formats, etc.)
+ // if (filepath.toStdString() != "")
+ // {
+	//  mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(filepath.toStdString(), *m_DataStorage);
 
-  // Tell the multiWidget which DataStorage to render
-  multiWidget->SetDataStorage(m_DataStorage);
+	//if (dataNodes->empty())
+	//{
+	//	fprintf(stderr, "BCould not open file %s \n\n", filepath.toStdString().c_str());
+	//	//exit(2);
+	//}
+	//else {
+	//	mitk::Image::Pointer image = dynamic_cast<mitk::Image *>(dataNodes->at(0)->GetData());
+	//	/*if ((m_FirstImage.IsNull()) && (image.IsNotNull()))
+	//	m_FirstImage = image;*/
+	//}
+ // }
 
-  // Initialize views as axial, sagittal, coronar (from
-  // top-left to bottom)
-  auto geo = m_DataStorage->ComputeBoundingGeometry3D(m_DataStorage->GetAll());
-  mitk::RenderingManager::GetInstance()->InitializeViews(geo);
+//}
 
-  // Initialize bottom-right view as 3D view
-  multiWidget->GetRenderWindow4()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D);
-
-  // Enable standard handler for levelwindow-slider
-  multiWidget->EnableStandardLevelWindow();
-
-  // Add the displayed views to the DataStorage to see their positions in 2D and 3D
-  multiWidget->AddDisplayPlaneSubTree();
-  multiWidget->AddPlanesToDataStorage();
-  multiWidget->SetWidgetPlanesVisibility(true);
-}
+//void MainWindow::SetupWidgets()
+//{
+//  QmitkStdMultiWidget *multiWidget = new QmitkStdMultiWidget();
+//  ui->centralWidget->layout()->addWidget(multiWidget);
+//
+//  // Tell the multiWidget which DataStorage to render
+//  multiWidget->SetDataStorage(m_DataStorage);
+//
+//  // Initialize views as axial, sagittal, coronar (from
+//  // top-left to bottom)
+//  auto geo = m_DataStorage->ComputeBoundingGeometry3D(m_DataStorage->GetAll());
+//  mitk::RenderingManager::GetInstance()->InitializeViews(geo);
+//
+//  // Initialize bottom-right view as 3D view
+//  multiWidget->GetRenderWindow4()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D);
+//
+//  // Enable standard handler for levelwindow-slider
+//  multiWidget->EnableStandardLevelWindow();
+//
+//  // Add the displayed views to the DataStorage to see their positions in 2D and 3D
+//  multiWidget->AddDisplayPlaneSubTree();
+//  multiWidget->AddPlanesToDataStorage();
+//  multiWidget->SetWidgetPlanesVisibility(true);
+//}
 
 bool MainWindow::LoadSingleSubject(QString directoryPath)
 {

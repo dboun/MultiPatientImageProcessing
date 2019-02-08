@@ -9,11 +9,14 @@
 #include <QProgressBar>
 #include <QHBoxLayout>
 #include <QGraphicsDropShadowEffect>
-#include <mitkStandaloneDataStorage.h>
-#include <mitkImage.h>
+#include "vtkSmartPointer.h"
+#include "vtkResliceImageViewer.h"
+#include "vtkImagePlaneWidget.h"
+//#include <mitkStandaloneDataStorage.h>
+//#include <mitkImage.h>
 
 #include "Scheduler.h"
-#include "GeodesicTrainingSegmentation.h"
+//#include "GeodesicTrainingSegmentation.h"
 
 #include <mutex>
 #include <vector>
@@ -49,7 +52,9 @@ protected:
   void Load(QString filepath);
 
 private:
-  void SetupWidgets();
+  //void SetupWidgets();
+  void ConstructViews(vtkImageData *image);
+  void WriteVTKImage(vtkImageData*, std::string filename);
 
   /** Loads all the images of a single patient */
   bool LoadSingleSubject(QString directoryPath);
@@ -60,7 +65,7 @@ private:
   void SwitchSubjectAndImage(size_t subjectPos, size_t imagePos = 0);
 
   Ui::MainWindow *ui;
-  mitk::StandaloneDataStorage::Pointer m_DataStorage; // Used for MITK image displaying (use load to show image)
+  //mitk::StandaloneDataStorage::Pointer m_DataStorage; // Used for MITK image displaying (use load to show image)
 
   std::mutex m_TreeEditMutex; // Used so that no parallel additions/deletions happen simultaneously
 
@@ -69,7 +74,11 @@ private:
   long uidNextToGive = 0;
   std::map<long, QTreeWidgetItem*> subjectByUid;
 
+  vtkSmartPointer< vtkResliceImageViewer > riw[3];
+  vtkSmartPointer< vtkImagePlaneWidget > planeWidget[3];
+
   Scheduler m_Scheduler;
+  //QString m_dir;
 };
 
 #endif // MAINWINDOW_H
