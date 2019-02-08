@@ -19,6 +19,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
+	ui->actionAdd_image_for_selected_subject->setVisible(false);
+	ui->actionAdd_image_for_new_subject->setVisible(false);
+	ui->actionAdd_multiple_subjects->setVisible(false);
+	ui->pushButtonConfigure->setVisible(false);
+	ui->actionOpen_Dicom->setVisible(false);
+
     //dicomReader = new DicomReader();
     //dcmdisplayWidget = new DicomMetaDataDisplayWidget();
     this->SetupWidgets();
