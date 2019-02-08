@@ -227,7 +227,7 @@ void MainWindow::RunPressed()
 
 	for (int i = 0; i < ui->patientTree->topLevelItemCount(); i++)
 	{
-		if (ui->patientTree->topLevelItem(i)->checkState(0) == Qt::Checked)
+		if (ui->patientTree->topLevelItem(i) && ui->patientTree->topLevelItem(i)->checkState(0) == Qt::Checked)
 		{
 			long uid = ui->patientTree->topLevelItem(i)->data(0, Qt::UserRole + 1).toLongLong();
 			qDebug() << QString("(Run) Added uid:  ") << QString(uid);
