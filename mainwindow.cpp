@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	setAcceptDrops(true); // For drag and drop
 	m_Scheduler.connect(&m_Scheduler, SIGNAL(jobFinished(long)), this, SLOT(SchedulerResultReady(long)));
+	m_Scheduler.connect(&m_Scheduler, SIGNAL(updateProgress(long, int)), this, SLOT(UpdateProgress(long, int)));
 
 	ui->patientTree->setHeaderLabel("Select subjects");
 
@@ -258,7 +259,7 @@ void MainWindow::SchedulerResultReady(long uid)
 
 	if (subjectByUid[uid])
 	{
-		subjectByUid[uid]->setText(0, subjectByUid[uid]->text(0).append(QString(" [FINISHED]")));
+		//subjectByUid[uid]->setText(0, subjectByUid[uid]->text(0).append(QString(" [FINISHED]")));
 
 		QTreeWidgetItem *imageItem = new QTreeWidgetItem(subjectByUid[uid]);
 
@@ -270,6 +271,13 @@ void MainWindow::SchedulerResultReady(long uid)
 		imageItem->setData(0, Qt::UserRole, file);          // path to the image
 		imageItem->setData(0, Qt::UserRole + 1, QString("<Segmentation>"));
 	}
+}
+
+void MainWindow::UpdateProgress(long uid, int progress)
+{
+	QProgressBar *progressBar = subjectByUid[uid]->treeWidget()->findChild<QProgressBar*>(QString("ProgressBar") + QString(uid));
+	progressBar->setVisible(true);
+	progressBar->setValue(progress);
 }
 
 void MainWindow::Load(QString filepath)
@@ -345,9 +353,10 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
 	patientToAdd->setData(0, Qt::UserRole, directoryPath);
 	patientToAdd->setData(0, Qt::UserRole + 1, uidNextToGive);
 	subjectByUid[uidNextToGive] = patientToAdd;
-	uidNextToGive++;
 
 	QProgressBar *progressBar = new QProgressBar();
+	progressBar->setObjectName(QString("ProgressBar") + QString(uidNextToGive));
+	progressBar->setVisible(false);
 	progressBar->setMinimum(0);
 	progressBar->setMaximum(100);
 	progressBar->setValue(0);
@@ -399,6 +408,8 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
 		imageItem->setData(0, Qt::UserRole, file);          // path to the image
 		imageItem->setData(0, Qt::UserRole + 1, shortName); // short name
 	}
+
+	uidNextToGive++;
 
 	return true;
 }

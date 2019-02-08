@@ -44,6 +44,7 @@ public slots:
   void TreeContextSetItemAsMask();
   void RunPressed();
   void SchedulerResultReady(long uid);
+  void UpdateProgress(long uid, int progress);
 
 protected:
   void Load(QString filepath);
