@@ -11,7 +11,9 @@
 #include <mutex>
 #include <map>
 
+#ifdef BUILD_GEODESIC_TRAINING
 #include "ApplicationGeodesicTrainingSegmentation.h"
+#endif // ! BUILD_GEODESIC_TRAINING
 
 class Scheduler: public QObject
 {

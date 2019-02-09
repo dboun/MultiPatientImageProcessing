@@ -6,21 +6,9 @@ if (BUILD_GEODESIC_TRAINING)
   add_subdirectory(GeodesicTraining)
   set(APP_INCLUDE_DIRS ${APP_INCLUDE_DIRS} 
       "${PROJECT_SOURCE_DIR}/Applications/GeodesicTraining/GeodesicTrainingSegmentation/include/GeodesicTrainingSegmentation" 
-       CACHE INTERNAL ""
-  )
-  set(APP_INCLUDE_DIRS ${APP_INCLUDE_DIRS} 
       "${PROJECT_SOURCE_DIR}/Applications/GeodesicTraining/GeodesicTrainingSegmentation/include/GeodesicTrainingSegmentation/cbica_toolkit" 
-       CACHE INTERNAL ""
-  )
-  set(APP_INCLUDE_DIRS ${APP_INCLUDE_DIRS} 
       "${PROJECT_SOURCE_DIR}/Applications/GeodesicTraining/GeodesicTrainingSegmentation/SvmSuite/include/SvmSuite" 
-       CACHE INTERNAL ""
-  )
-  set(APP_INCLUDE_DIRS ${APP_INCLUDE_DIRS} 
       "${PROJECT_SOURCE_DIR}/Applications/GeodesicTraining/GeodesicTrainingSegmentation/RandomForestSuite/include/RandomForestSuite" 
-       CACHE INTERNAL ""
-  )
-  set(APP_INCLUDE_DIRS ${APP_INCLUDE_DIRS} 
       "${PROJECT_SOURCE_DIR}/Applications/GeodesicTraining/GeodesicTrainingSegmentation/AdaptiveGeodesicDistance/include/AdaptiveGeodesicDistance" 
        CACHE INTERNAL ""
   )
@@ -28,5 +16,10 @@ if (BUILD_GEODESIC_TRAINING)
       GeodesicTrainingSegmentation
       CACHE INTERNAL ""
   )
+  set(APP_HEADERS ${APP_HEADERS}
+      ${PROJECT_SOURCE_DIR}/Applications/ApplicationGeodesicTrainingSegmentation.h
+  )
+  set(APP_SOURCES ${APP_SOURCES}
+      ${PROJECT_SOURCE_DIR}/Applications/ApplicationGeodesicTrainingSegmentation.cpp
+  )
 endif()
-

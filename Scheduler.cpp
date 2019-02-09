@@ -96,8 +96,8 @@ void Scheduler::ResultFinished(long uid)
 void Scheduler::ThreadJob(long uid, std::vector<std::string> &imagesPaths, std::string &maskPath, std::string &patientDirectoryPath)
 {
 	qDebug() << QString("Thread started for: ") << QString(uid);
-	//emit updateProgress(uid, 0);
 
+#ifdef BUILD_GEODESIC_TRAINING
 	ApplicationGeodesicTrainingSegmentation<float, 3> geodesic; // TODO: Support 2D
 	geodesic.SetUid(uid);
 	connect(&geodesic, SIGNAL(ProgressUpdateUI(long, QString, int)), this, SLOT(progressUpdateFromApplication(long, QString, int)));
@@ -109,6 +109,7 @@ void Scheduler::ThreadJob(long uid, std::vector<std::string> &imagesPaths, std::
 	geodesic.SetVerbose(true);
 	//geodesic.SetNumberOfThreads(16);
 	geodesic.Execute();
+#endif // ! BUILD_GEODESIC_TRAINING
 
 	ResultFinished(uid);
 }
