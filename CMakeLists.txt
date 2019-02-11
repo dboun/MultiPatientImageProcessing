@@ -51,9 +51,19 @@ qt5_wrap_ui( UI_Srcs ${UI_FILES} )
 add_executable( MPIP ${CPP_FILES} ${H_FILES} ${UI_FILES} ${MOC_H_FILES} )
 qt5_use_modules( MPIP Core Gui Widgets )
 
+if (BUILD_GEODESIC_TRAINING)
+
 target_link_libraries( MPIP 
   ${VTK_LIBRARIES}
   ${ITK_LIBRARIES}
   ${OpenCV_LIBRARIES} 
-  ${APP_LIBRARIES}
+  ${APP_LIBRARIES})
+
+else(BUILD_GEODESIC_TRAINING)
+
+target_link_libraries( MPIP 
+  ${VTK_LIBRARIES}
+  #${ITK_LIBRARIES}
+  #${OpenCV_LIBRARIES} 
 )
+endif(BUILD_GEODESIC_TRAINING)

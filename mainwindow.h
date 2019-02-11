@@ -48,6 +48,8 @@ public slots:
   void RunPressed();
   void SchedulerResultReady(long uid);
   void UpdateProgress(long uid, int progress);
+  void ResetViews();
+  void Render();
 
 protected:
   void Load(QString filepath);
@@ -55,6 +57,7 @@ protected:
 private:
   //void SetupWidgets();
   void ConstructViews(vtkImageData *image);
+
   void WriteVTKImage(vtkImageData*, std::string filename);
 
   /** Loads all the images of a single patient */

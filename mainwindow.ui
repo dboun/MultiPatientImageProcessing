@@ -84,39 +84,51 @@ QPushButton:pressed{ background-color: darkGray;border-style: outset; border-sty
      </widget>
     </item>
     <item>
-     <layout class="QGridLayout" name="gridLayout">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetDefaultConstraint</enum>
-      </property>
-      <item row="0" column="0">
-       <widget class="QVTKOpenGLWidget" name="widgetA" native="true">
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(149, 162, 165);</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QVTKOpenGLWidget" name="widgetS" native="true">
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(149, 162, 165);</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QVTKOpenGLWidget" name="widget3" native="true">
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(149, 162, 165);</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QVTKOpenGLWidget" name="widgetC" native="true">
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(149, 162, 165);</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <widget class="QWidget" name="page">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Load Data</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="view">
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QVTKOpenGLWidget" name="widgetA" native="true">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(149, 162, 165);</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QVTKOpenGLWidget" name="widget3" native="true">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(149, 162, 165);</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QVTKOpenGLWidget" name="widgetC" native="true">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(149, 162, 165);</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QVTKOpenGLWidget" name="widgetS" native="true">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(149, 162, 165);</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>

@@ -52,6 +52,91 @@
 //#include <mitkIOUtil.h>
 
 //#include "DicomMetaDataDisplayWidget.h"
+class vtkResliceCursorCallback : public vtkCommand
+{
+public:
+  static vtkResliceCursorCallback *New()
+  {
+    return new vtkResliceCursorCallback;
+  }
+
+  void Execute(vtkObject *caller, unsigned long ev,
+    void *callData)
+  {
+
+    if (ev == vtkResliceCursorWidget::WindowLevelEvent ||
+      ev == vtkCommand::WindowLevelEvent ||
+      ev == vtkResliceCursorWidget::ResliceThicknessChangedEvent)
+    {
+      // Render everything
+      for (int i = 0; i < 3; i++)
+      {
+        this->RCW[i]->Render();
+      }
+      this->IPW[0]->GetInteractor()->GetRenderWindow()->Render();
+      return;
+    }
+
+    vtkImagePlaneWidget* ipw =
+      dynamic_cast<vtkImagePlaneWidget*>(caller);
+    if (ipw)
+    {
+      double* wl = static_cast<double*>(callData);
+
+      if (ipw == this->IPW[0])
+      {
+        this->IPW[1]->SetWindowLevel(wl[0], wl[1], 1);
+        this->IPW[2]->SetWindowLevel(wl[0], wl[1], 1);
+      }
+      else if (ipw == this->IPW[1])
+      {
+        this->IPW[0]->SetWindowLevel(wl[0], wl[1], 1);
+        this->IPW[2]->SetWindowLevel(wl[0], wl[1], 1);
+      }
+      else if (ipw == this->IPW[2])
+      {
+        this->IPW[0]->SetWindowLevel(wl[0], wl[1], 1);
+        this->IPW[1]->SetWindowLevel(wl[0], wl[1], 1);
+      }
+    }
+
+    vtkResliceCursorWidget *rcw = dynamic_cast<
+      vtkResliceCursorWidget *>(caller);
+    if (rcw)
+    {
+      vtkResliceCursorLineRepresentation *rep = dynamic_cast<
+        vtkResliceCursorLineRepresentation *>(rcw->GetRepresentation());
+      // Although the return value is not used, we keep the get calls
+      // in case they had side-effects
+      rep->GetResliceCursorActor()->GetCursorAlgorithm()->GetResliceCursor();
+      for (int i = 0; i < 3; i++)
+      {
+        vtkPlaneSource *ps = static_cast<vtkPlaneSource *>(
+          this->IPW[i]->GetPolyDataAlgorithm());
+        ps->SetOrigin(this->RCW[i]->GetResliceCursorRepresentation()->
+          GetPlaneSource()->GetOrigin());
+        ps->SetPoint1(this->RCW[i]->GetResliceCursorRepresentation()->
+          GetPlaneSource()->GetPoint1());
+        ps->SetPoint2(this->RCW[i]->GetResliceCursorRepresentation()->
+          GetPlaneSource()->GetPoint2());
+
+        // If the reslice plane has modified, update it on the 3D widget
+        this->IPW[i]->UpdatePlacement();
+      }
+    }
+
+    // Render everything
+    for (int i = 0; i < 3; i++)
+    {
+      this->RCW[i]->Render();
+    }
+    this->IPW[0]->GetInteractor()->GetRenderWindow()->Render();
+  }
+
+  vtkResliceCursorCallback() {}
+  vtkImagePlaneWidget* IPW[3];
+  vtkResliceCursorWidget *RCW[3];
+};
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -62,11 +147,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
+    this->ui->label->setText("Drag and Drop the Nifti data folder to load. ");
+
 	ui->actionAdd_image_for_selected_subject->setVisible(false);
 	ui->actionAdd_image_for_new_subject->setVisible(false);
 	ui->actionAdd_multiple_subjects->setVisible(false);
 	ui->pushButtonConfigure->setVisible(false);
-	ui->actionOpen_Dicom->setVisible(true);
+	ui->actionOpen_Dicom->setVisible(false);
 
     //dicomReader = new DicomReader();
     //dcmdisplayWidget = new DicomMetaDataDisplayWidget();
@@ -140,6 +227,13 @@ void MainWindow::OnOpenDicom()
 {
     QString dir = QFileDialog::getOpenFileName(this, tr("Open Nifti"),
                                                     QDir::currentPath());
+
+    if (dir.isEmpty())
+    {
+      QMessageBox::information(this, "Load Nifti Data", "Please load valid Nifti data.");
+      return;
+    }
+
     this->Load(dir);
 
 }
@@ -235,6 +329,7 @@ void MainWindow::TreeContextRemoveItem()
 {
 	qDebug() << QString("Trying to delete item");
 	delete ui->patientTree->currentItem();
+  this->ui->stackedWidget->setCurrentIndex(0);
 }
 
 void MainWindow::TreeContextSetItemAsMask()
@@ -333,9 +428,11 @@ void MainWindow::Load(QString filepath)
   vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
   image->ShallowCopy(reader->GetOutput());
 
-  this->WriteVTKImage(image, "inputimage.mha");
+  //this->WriteVTKImage(image, "inputimage.mha");
 
   this->ConstructViews(image);
+  this->ui->stackedWidget->setCurrentIndex(1);
+ 
 }
 
 void MainWindow::ConstructViews(vtkImageData *image)
@@ -420,6 +517,73 @@ void MainWindow::ConstructViews(vtkImageData *image)
     planeWidget[i]->On();
     planeWidget[i]->InteractionOn();
   }
+
+  this->Render();
+
+  vtkSmartPointer<vtkResliceCursorCallback> cbk =
+    vtkSmartPointer<vtkResliceCursorCallback>::New();
+
+  for (int i = 0; i < 3; i++)
+  {
+    cbk->IPW[i] = planeWidget[i];
+    cbk->RCW[i] = riw[i]->GetResliceCursorWidget();
+    riw[i]->GetResliceCursorWidget()->AddObserver(
+      vtkResliceCursorWidget::ResliceAxesChangedEvent, cbk);
+    riw[i]->GetResliceCursorWidget()->AddObserver(
+      vtkResliceCursorWidget::WindowLevelEvent, cbk);
+    riw[i]->GetResliceCursorWidget()->AddObserver(
+      vtkResliceCursorWidget::ResliceThicknessChangedEvent, cbk);
+    riw[i]->GetResliceCursorWidget()->AddObserver(
+      vtkResliceCursorWidget::ResetCursorEvent, cbk);
+    riw[i]->GetInteractorStyle()->AddObserver(
+      vtkCommand::WindowLevelEvent, cbk);
+
+    // Make them all share the same color map.
+    riw[i]->SetLookupTable(riw[0]->GetLookupTable());
+    planeWidget[i]->GetColorMap()->SetLookupTable(riw[0]->GetLookupTable());
+    //planeWidget[i]->GetColorMap()->SetInput(riw[i]->GetResliceCursorWidget()->GetResliceCursorRepresentation()->GetColorMap()->GetInput());
+    planeWidget[i]->SetColorMap(riw[i]->GetResliceCursorWidget()->GetResliceCursorRepresentation()->GetColorMap());
+
+  }
+
+  this->ui->widgetA->show();
+  this->ui->widgetC->show();
+  this->ui->widgetS->show();
+}
+
+
+void MainWindow::ResetViews()
+{
+  // Reset the reslice image views
+  for (int i = 0; i < 3; i++)
+  {
+    riw[i]->Reset();
+  }
+
+  // Also sync the Image plane widget on the 3D top right view with any
+  // changes to the reslice cursor.
+  for (int i = 0; i < 3; i++)
+  {
+    vtkPlaneSource *ps = static_cast<vtkPlaneSource *>(
+      planeWidget[i]->GetPolyDataAlgorithm());
+    ps->SetNormal(riw[0]->GetResliceCursor()->GetPlane(i)->GetNormal());
+    ps->SetCenter(riw[0]->GetResliceCursor()->GetPlane(i)->GetOrigin());
+
+    // If the reslice plane has modified, update it on the 3D widget
+    this->planeWidget[i]->UpdatePlacement();
+  }
+
+  // Render in response to changes.
+  this->Render();
+}
+
+void MainWindow::Render()
+{
+  for (int i = 0; i < 3; i++)
+  {
+    riw[i]->Render();
+  }
+  this->ui->widgetA->GetRenderWindow()->Render();
 }
 
 //void MainWindow::Load(QString filepath)
