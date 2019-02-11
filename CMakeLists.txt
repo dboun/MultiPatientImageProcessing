@@ -53,6 +53,8 @@ qt5_use_modules( MPIP Core Gui Widgets )
 
 if (BUILD_GEODESIC_TRAINING)
 
+message(STATUS "Linking with Geodesic Training")
+
 target_link_libraries( MPIP 
   ${VTK_LIBRARIES}
   ${ITK_LIBRARIES}
