@@ -1,13 +1,13 @@
 #include "mainwindow.h"
 #include <QSurfaceFormat>
 
-#include "QVTKOpenGLWidget.h"
+//#include "QVTKOpenGLWidget.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
 
-  QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
+  //QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
 
 
     QApplication a(argc, argv);

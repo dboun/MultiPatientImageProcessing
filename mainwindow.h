@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "MpipMitkViewer.h"
+
 #include <QtWidgets/QMainWindow>
 #include <QMimeData>
 #include <QDragEnterEvent>
@@ -9,17 +11,17 @@
 #include <QProgressBar>
 #include <QHBoxLayout>
 #include <QGraphicsDropShadowEffect>
-#include "vtkSmartPointer.h"
-#include "vtkResliceImageViewer.h"
-#include "vtkImagePlaneWidget.h"
+//#include "vtkSmartPointer.h"
+//#include "vtkResliceImageViewer.h"
+//#include "vtkImagePlaneWidget.h"
+#include <mutex>
+#include <vector>
+
 //#include <mitkStandaloneDataStorage.h>
 //#include <mitkImage.h>
 
-#include "Scheduler.h"
-//#include "GeodesicTrainingSegmentation.h"
 
-#include <mutex>
-#include <vector>
+#include "Scheduler.h"
 
 namespace Ui {
   class MainWindow;
@@ -47,18 +49,18 @@ public slots:
   void TreeContextSetItemAsMask();
   void RunPressed();
   void SchedulerResultReady(long uid);
-  void UpdateProgress(long uid, int progress);
-  void ResetViews();
-  void Render();
+  void UpdateProgress(long uid, int progress); // Updates progress for a single subject
+  //void ResetViews();
+  //void Render();
 
 protected:
   void Load(QString filepath);
 
 private:
   //void SetupWidgets();
-  void ConstructViews(vtkImageData *image);
+  //void ConstructViews(vtkImageData *image);
 
-  void WriteVTKImage(vtkImageData*, std::string filename);
+  //void WriteVTKImage(vtkImageData*, std::string filename);
 
   /** Loads all the images of a single patient */
   bool LoadSingleSubject(QString directoryPath);
@@ -78,8 +80,10 @@ private:
   long uidNextToGive = 0;
   std::map<long, QTreeWidgetItem*> subjectByUid;
 
-  vtkSmartPointer< vtkResliceImageViewer > riw[3];
-  vtkSmartPointer< vtkImagePlaneWidget > planeWidget[3];
+  MpipMitkViewer* m_MpipMitkViewer;
+
+  //vtkSmartPointer< vtkResliceImageViewer > riw[3];
+  //vtkSmartPointer< vtkImagePlaneWidget > planeWidget[3];
 
   Scheduler m_Scheduler;
   //QString m_dir;

@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 3.1.0)
 
 project( MPIP )
 
-find_package( VTK )
-include( ${VTK_USE_FILE} )
+option(BUILD_WITH_MITK "Enable building with MITK viewer/tools" ON)
+
+if(BUILD_WITH_MITK)
+  find_package( MITK REQUIRED )
+endif(BUILD_WITH_MITK)
 
 find_package( ITK REQUIRED )
 include( ${ITK_USE_FILE} )
@@ -17,6 +20,7 @@ set( CPP_FILES
   main.cpp
   Scheduler.cpp
   ApplicationBase.cpp
+  MpipMitkViewer.cpp
   ${APP_SOURCES}
 )
 
@@ -24,6 +28,7 @@ set( MOC_H_FILES
   mainwindow.h
   Scheduler.h
   ApplicationBase.h
+  MpipMitkViewer.h
   ${APP_HEADERS}
 )
 
@@ -35,6 +40,7 @@ set( H_FILES
   mainwindow.h
   Scheduler.h
   ApplicationBase.h
+  MpipMitkViewer.h
   ${APP_HEADERS}
 )
  
@@ -51,21 +57,49 @@ qt5_wrap_ui( UI_Srcs ${UI_FILES} )
 add_executable( MPIP ${CPP_FILES} ${H_FILES} ${UI_FILES} ${MOC_H_FILES} )
 qt5_use_modules( MPIP Core Gui Widgets )
 
-if (BUILD_GEODESIC_TRAINING)
+if( BUILD_WITH_MITK )
 
-message(STATUS "Linking with Geodesic Training")
+  add_definitions(-DBUILD_WITH_MITK)
+  message(STATUS "Linking with MITK")
+
+  set( LIBRARIES_TO_LINK 
+    MitkCore MitkMultilabel MitkQtWidgets MitkQtWidgetsExt
+  )
+
+else( BUILD_WITH_MITK )
+
+  remove_definitions(-DBUILD_WITH_MITK)
+  message(STATUS "Linking without MITK")
+
+  find_package( VTK REQUIRED )
+  include( ${VTK_USE_FILE} )
+
+  set( LIBRARIES_TO_LINK
+    ${VTK_LIBRARIES} 
+  )
+
+endif( BUILD_WITH_MITK )
 
 target_link_libraries( MPIP 
-  ${VTK_LIBRARIES}
-  ${ITK_LIBRARIES}
-  ${OpenCV_LIBRARIES} 
-  ${APP_LIBRARIES})
-
-else(BUILD_GEODESIC_TRAINING)
-
-target_link_libraries( MPIP 
-  ${VTK_LIBRARIES}
-  #${ITK_LIBRARIES}
-  #${OpenCV_LIBRARIES} 
+  ${LIBRARIES_TO_LINK}
+  ${APP_LIBRARIES}
 )
-endif(BUILD_GEODESIC_TRAINING)
+
+#if (BUILD_GEODESIC_TRAINING)
+
+  #message(STATUS "Linking with Geodesic Training")
+
+  #target_link_libraries( MPIP 
+    #${LIBRARIES_TO_LINK}
+    #${ITK_LIBRARIES}
+    #${OpenCV_LIBRARIES} 
+    #${APP_LIBRARIES}
+  #)
+
+#else(BUILD_GEODESIC_TRAINING)
+
+#  target_link_libraries( MPIP 
+#    ${LIBRARIES_TO_LINK}
+#  )
+
+#endif(BUILD_GEODESIC_TRAINING)
