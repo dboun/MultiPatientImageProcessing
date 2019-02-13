@@ -5,7 +5,7 @@ MpipMitkViewer::MpipMitkViewer()
 	this->InitializeWidget();
 	m_DataStorage = m_DataStorage = mitk::StandaloneDataStorage::New();
 	this->SetDataStorage(m_DataStorage);
-
+	SetupWidgets();
 	
 }
 
@@ -33,7 +33,8 @@ void MpipMitkViewer::Display(QString imagePath)
 	{
 		qDebug() << QString("MPIP: Trying to display...");
 		//mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(imagePath.toStdString()/*, *m_DataStorage*/);
-		mitk::IOUtil::Load(imagePath.toStdString(), *m_DataStorage);		
+		mitk::IOUtil::Load(imagePath.toStdString(), *m_DataStorage);	
+		m_DataStorage->Modified();
 		/*dataNodes->at(0)->SetProperty("binary", mitk::BoolProperty::New(true));
 		dataNodes->at(0)->SetProperty("name", mitk::StringProperty::New("test segmentation"));
 		dataNodes->at(0)->SetProperty("color", mitk::ColorProperty::New(1.0, 0.0, 0.0));
@@ -61,7 +62,9 @@ void MpipMitkViewer::Display(QString imagePath)
 	
 	//this->SetDataStorage(m_DataStorage);
 	//this->UpdateAllWidgets();
-	SetupWidgets();
+	//this->SetupWidgets();
+	this->ResetCrosshair();
 	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-	this->RequestUpdate();
+	//this->RequestUpdate();
+	this->ForceImmediateUpdate();
 }
