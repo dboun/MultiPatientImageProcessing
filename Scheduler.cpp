@@ -4,10 +4,10 @@ Scheduler::Scheduler()
 {
 	int threadCount = QThread::idealThreadCount();
 
-	qDebug() << QString("Ideal number of threads: ") << QString(threadCount);
+	qDebug() << QString("Ideal number of threads: ") << QString::number(threadCount);
 	
 	threadCount = (threadCount / 2 + 1 < 2) ? 2 : threadCount / 2 + 1;
-	qDebug() << QString("Automatically setting max parallel jobs to: ") << QString(threadCount);
+	qDebug() << QString("Automatically setting max parallel jobs to: ") << QString::number(threadCount);
 	
 	m_MaxParallelJobs = threadCount;
 	//m_MaxParallelJobs = 4;
@@ -61,7 +61,7 @@ void Scheduler::BackgroundCoordinator()
 
 	for (const auto& uid : m_Data->uids)
 	{
-		qDebug() << QString("(Background coordinator) Trying to run for uid: ") << QString(uid);
+		qDebug() << QString("(Background coordinator) Trying to run for uid: ") << QString::number(uid);
 
 		if (numberOfOpenThreads == m_MaxParallelJobs)
 		{
@@ -95,7 +95,7 @@ void Scheduler::ResultFinished(long uid)
 
 void Scheduler::ThreadJob(long uid, std::vector<std::string> &imagesPaths, std::string &maskPath, std::string &patientDirectoryPath)
 {
-	qDebug() << QString("Thread started for: ") << QString(uid);
+	qDebug() << QString("Thread started for: ") << QString::number(uid);
 
 //#ifdef BUILD_GEODESIC_TRAINING
 	ApplicationGeodesicTrainingSegmentation<float, 3> geodesic; // TODO: Support 2D

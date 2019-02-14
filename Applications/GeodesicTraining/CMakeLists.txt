@@ -54,7 +54,7 @@ SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_CXX_STANDARD_REQUIRED YES) 
 
 # Probably unnecessary
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:strict")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:strict")
 
 FILE( GLOB_RECURSE sources "${PROJECT_SOURCE_DIR}/src/*.*" )
 

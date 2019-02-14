@@ -351,10 +351,10 @@ void MainWindow::RunPressed()
 	{
 		if (ui->patientTree->topLevelItem(i) && ui->patientTree->topLevelItem(i)->checkState(0) == Qt::Checked)
 		{
-			long uid = ui->patientTree->topLevelItem(i)->data(0, Qt::UserRole + 1).toLongLong();
-			qDebug() << QString("(Run) Added uid:  ") << QString(uid);
+			long uid = ui->patientTree->topLevelItem(i)->data(0, Qt::UserRole + 2).toLongLong();
+			qDebug() << QString("(Run) Added uid:  ") << QString::number(uid);
 			data->uids.push_back(uid);
-			qDebug() << QString("(Run) Check uids: ") << QString(data->uids[data->uids.size()-1]);
+			qDebug() << QString("(Run) Check uids: ") << QString::number(data->uids[data->uids.size()-1]);
 			data->patientDirectoryPath[uid] = ui->patientTree->topLevelItem(i)->data(0, Qt::UserRole).toString().toStdString();
 
 			for (int j = 0; j < ui->patientTree->topLevelItem(i)->childCount(); j++)
@@ -392,7 +392,7 @@ void MainWindow::WriteVTKImage(vtkImageData* vtkimgData, std::string filename)
 
 void MainWindow::SchedulerResultReady(long uid)
 {
-	qDebug() << QString("SchedulerResultReady called for uid: ") << QString(uid);
+	qDebug() << QString("SchedulerResultReady called for uid: ") << QString::number(uid);
 
 	if (subjectByUid[uid])
 	{
@@ -412,7 +412,7 @@ void MainWindow::SchedulerResultReady(long uid)
 
 void MainWindow::UpdateProgress(long uid, int progress)
 {
-	QProgressBar *progressBar = subjectByUid[uid]->treeWidget()->findChild<QProgressBar*>(QString("ProgressBar") + QString(uid));
+	QProgressBar *progressBar = subjectByUid[uid]->treeWidget()->findChild<QProgressBar*>(QString("ProgressBar") + QString::number(uid));
 	progressBar->setVisible(true);
 	progressBar->setValue(progress);
 }
@@ -657,11 +657,11 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
 	//patientToAdd->setText(0, patientName);
 	patientToAdd->setCheckState(0, Qt::Checked);
 	patientToAdd->setData(0, Qt::UserRole, directoryPath);
-	patientToAdd->setData(0, Qt::UserRole + 1, uidNextToGive);
+	patientToAdd->setData(0, Qt::UserRole + 2, (int)uidNextToGive);
 	subjectByUid[uidNextToGive] = patientToAdd;
 
 	QProgressBar *progressBar = new QProgressBar();
-	progressBar->setObjectName(QString("ProgressBar") + QString(uidNextToGive));
+	progressBar->setObjectName(QString("ProgressBar") + QString::number(uidNextToGive));
 	progressBar->setVisible(false);
 	progressBar->setMinimum(0);
 	progressBar->setMaximum(100);
