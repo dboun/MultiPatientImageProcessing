@@ -6,11 +6,12 @@ MpipMitkViewer::MpipMitkViewer()
 	m_DataStorage = m_DataStorage = mitk::StandaloneDataStorage::New();
 	this->SetDataStorage(m_DataStorage);
 	SetupWidgets();
-	
 }
 
 void MpipMitkViewer::SetupWidgets()
 {
+	this->InitPositionTracking();
+	this->EnablePositionTracking();
 	auto geo = m_DataStorage->ComputeBoundingGeometry3D(m_DataStorage->GetAll());
 	mitk::RenderingManager::GetInstance()->InitializeViews(geo);
 
