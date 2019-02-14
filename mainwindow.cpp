@@ -171,7 +171,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_Scheduler.connect(&m_Scheduler, SIGNAL(jobFinished(long)), this, SLOT(SchedulerResultReady(long)));
 	m_Scheduler.connect(&m_Scheduler, SIGNAL(updateProgress(long, int)), this, SLOT(UpdateProgress(long, int)));
 
-	ui->patientTree->setHeaderLabel("Select subjects");
+	QStringList columnNames = QStringList() << "Select subjects" << "Progress";
+
+	ui->patientTree->setHeaderLabels(columnNames);
+	ui->patientTree->setColumnCount(2);
 
 	connect(ui->pushButtonRun, SIGNAL(released()), this, SLOT(RunPressed()));
     connect(ui->actionOpen_Dicom,SIGNAL(triggered()),this,SLOT(OnOpenDicom()));
@@ -273,11 +276,15 @@ void MainWindow::handleConfigButton()
 
 void MainWindow::OnTreeWidgetClicked(QTreeWidgetItem *item, int column)
 {
-	qDebug() << QString("Clicked tree column: ") << QString(column);
+	qDebug() << QString("Clicked tree item.");
+	
+	qDebug() << QString("Value of parent: ") << 
+		((item->checkState(0) == Qt::Checked) ? QString("Checked") : QString("Unchecked"));
 	
 	// If it's a parent item
 	for (int i = 0; i < item->childCount(); i++) {
 		item->child(i)->setCheckState(0, item->checkState(0));
+		qDebug() << QString("Changed the value of a child");
 	}
 
 	// If it's a child item and it got checked
@@ -702,16 +709,19 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
 
 	QLabel *label = new QLabel(patientName);
 	label->setMaximumHeight(20);
+	label->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
 	QWidget *labelAndProgress = new QWidget();
 	labelAndProgress->setStyleSheet("background-color: rgba(0,0,0,0)");
 	labelAndProgress->setMaximumHeight(35);
 	QHBoxLayout *hLayout = new QHBoxLayout();
-	hLayout->addWidget(label, Qt::AlignLeft);
+	//hLayout->addWidget(label, Qt::AlignLeft);
 	hLayout->addWidget(progressBar, Qt::AlignRight);
 	labelAndProgress->setLayout(hLayout);
+	labelAndProgress->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 	
-	ui->patientTree->setItemWidget(patientToAdd, 0, labelAndProgress);
+	patientToAdd->setText(0, patientName);
+	ui->patientTree->setItemWidget(patientToAdd, 1, labelAndProgress);
 
 	foreach(QString file, files) {
 		QTreeWidgetItem *imageItem = new QTreeWidgetItem(patientToAdd);
