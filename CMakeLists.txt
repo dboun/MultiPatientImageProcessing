@@ -6,8 +6,7 @@ project( ${PROJECT_NAME} VERSION 0.1.0 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
-find_package( VTK )
-include( ${VTK_USE_FILE} )
+find_package( MITK REQUIRED )
 
 add_subdirectory( Applications )
 
@@ -25,8 +24,12 @@ add_executable( MPIP ${CPP_FILES} ${H_FILES} ${UI_FILES} ${MOC_H_FILES} )
 qt5_use_modules( MPIP Core Gui Widgets )
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+set( MITK_LIBRARIES_TO_LINK 
+    MitkCore MitkMultilabel MitkQtWidgets MitkQtWidgetsExt
+)
+
 target_link_libraries( MPIP 
-  ${VTK_LIBRARIES}
+  ${MITK_LIBRARIES_TO_LINK}
   ${APP_LIBRARIES}
 )
 

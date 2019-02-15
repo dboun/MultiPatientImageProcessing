@@ -21,7 +21,8 @@
 #include <vector>
 
 #include "ui_MainWindow.h"
-#include "VtkViewer.h"
+//#include "VtkViewer.h"
+#include "MpipMitkViewer.h"
 #include "Scheduler.h"
 
 namespace Ui {
@@ -72,8 +73,8 @@ private:
   std::map<long, QTreeWidgetItem*> subjectByUid;
   Scheduler m_Scheduler;
 
-  VtkViewer* m_VtkViewer;
-
+  //VtkViewer* m_VtkViewer;
+  MpipMitkViewer* m_MpipMitkViewer;
 };
 
 #endif // MAINWINDOW_H

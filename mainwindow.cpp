@@ -4,13 +4,15 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-  m_VtkViewer = new VtkViewer();
+  //m_VtkViewer = new VtkViewer();
+  m_MpipMitkViewer = new MpipMitkViewer();
 
   ui->setupUi(this);
 
   // Replace viewerContainer with viewer of choice
   QGridLayout *layout = new QGridLayout(ui->viewerContainer);
-  layout->addWidget(m_VtkViewer, 0, 0);
+  //layout->addWidget(m_VtkViewer, 0, 0);
+  layout->addWidget(m_MpipMitkViewer, 0, 0);
 
   ui->actionAdd_image_for_selected_subject->setVisible(false);
   ui->actionAdd_image_for_new_subject->setVisible(false);
@@ -259,7 +261,7 @@ void MainWindow::UpdateProgress(long uid, int progress)
 
 void MainWindow::Load(QString filepath)
 {
-  m_VtkViewer->Display(filepath);
+  m_MpipMitkViewer->Display(filepath);
 }
 
 bool MainWindow::LoadSingleSubject(QString directoryPath)
