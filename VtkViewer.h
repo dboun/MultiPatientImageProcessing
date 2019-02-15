@@ -45,7 +45,6 @@
 #include <vtkPolyDataToImageStencil.h>
 #include <vtkImageStencil.h>
 #include <vtkImageData.h>
-//#include <QtVTKRenderWindows.h>
 
 #include "ui_VtkViewer.h"
 
@@ -59,7 +58,7 @@ public:
 	void Display(QString imagePath);
 
 private:
-	void SetupWidgets();
+	//void SetupWidgets();
 	void ConstructViews(vtkImageData *image);
 	void ResetViews();
 	void Render();

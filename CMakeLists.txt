@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.1.0)
 
 set( PROJECT_NAME MPIP )
-set( PROJECT_VERSION_MAJOR 0 )
-set( PROJECT_VERSION_MINOR 1 )
-set( PROJECT_VERSION_PATCH 0 )
 
-project( ${PROJECT_NAME} )
+project( ${PROJECT_NAME} VERSION 0.1.0 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
