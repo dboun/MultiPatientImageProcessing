@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>VtkViewer</class>
+ <widget class="QWidget" name="VtkViewer">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>986</width>
+    <height>690</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Multi-Patient Image Processing (MPIP)</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>349</width>
+     <height>284</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <widget class="QWidget" name="page">
+       <layout class="QVBoxLayout" name="verticalLayout_2"/>
+      </widget>
+      <widget class="QWidget" name="view">
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QVTKOpenGLWidget" name="widgetA" native="true">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(149, 162, 165);</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QVTKOpenGLWidget" name="widget3" native="true">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(149, 162, 165);</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QVTKOpenGLWidget" name="widgetC" native="true">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(149, 162, 165);</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QVTKOpenGLWidget" name="widgetS" native="true">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(149, 162, 165);</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <action name="actionOpen_Dicom">
+   <property name="text">
+    <string>Open Dicom</string>
+   </property>
+  </action>
+  <action name="actionDisplay_Metadata">
+   <property name="text">
+    <string>Display Metadata</string>
+   </property>
+  </action>
+  <action name="actionOpen_single_subject">
+   <property name="text">
+    <string>Add single subject</string>
+   </property>
+  </action>
+  <action name="actionAdd_multiple_subjects">
+   <property name="text">
+    <string>Add multiple subjects</string>
+   </property>
+  </action>
+  <action name="actionAdd_image_for_selected_subject">
+   <property name="text">
+    <string>Add image for selected subject</string>
+   </property>
+  </action>
+  <action name="actionAdd_image_for_new_subject">
+   <property name="text">
+    <string>Add image for new subject</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QVTKOpenGLWidget</class>
+   <extends>QWidget</extends>
+   <header>QVTKOpenGLWidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

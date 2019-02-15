@@ -88,45 +88,16 @@ QPushButton:pressed{ background-color: darkGray;border-style: outset; border-sty
       <widget class="QWidget" name="page">
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QLabel" name="label">
+         <widget class="QLabel" name="viewerContainer">
           <property name="text">
-           <string>Load Data</string>
+           <string/>
           </property>
          </widget>
         </item>
        </layout>
       </widget>
       <widget class="QWidget" name="view">
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-         <widget class="QVTKOpenGLWidget" name="widgetA" native="true">
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(149, 162, 165);</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QVTKOpenGLWidget" name="widget3" native="true">
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(149, 162, 165);</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QVTKOpenGLWidget" name="widgetC" native="true">
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(149, 162, 165);</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QVTKOpenGLWidget" name="widgetS" native="true">
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(149, 162, 165);</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <layout class="QGridLayout" name="gridLayout"/>
       </widget>
      </widget>
     </item>
@@ -141,7 +112,7 @@ QPushButton:pressed{ background-color: darkGray;border-style: outset; border-sty
      <x>0</x>
      <y>0</y>
      <width>986</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -215,13 +186,6 @@ QPushButton:pressed{ background-color: darkGray;border-style: outset; border-sty
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>QVTKOpenGLWidget</class>
-   <extends>QWidget</extends>
-   <header>QVTKOpenGLWidget.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

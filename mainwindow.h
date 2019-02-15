@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+
 #include <QtWidgets/QMainWindow>
 #include <QMimeData>
 #include <QDragEnterEvent>
@@ -9,17 +10,19 @@
 #include <QProgressBar>
 #include <QHBoxLayout>
 #include <QGraphicsDropShadowEffect>
-#include "vtkSmartPointer.h"
-#include "vtkResliceImageViewer.h"
-#include "vtkImagePlaneWidget.h"
-//#include <mitkStandaloneDataStorage.h>
-//#include <mitkImage.h>
-
-#include "Scheduler.h"
-//#include "GeodesicTrainingSegmentation.h"
+#include <QDir>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QTextStream>
+#include <QDebug>
+#include <QLabel>
 
 #include <mutex>
 #include <vector>
+
+#include "ui_MainWindow.h"
+#include "VtkViewer.h"
+#include "Scheduler.h"
 
 namespace Ui {
   class MainWindow;
@@ -38,7 +41,6 @@ public:
   void dropEvent(QDropEvent *e) override;
 
 public slots:
-  void OnOpenDicom();
   void OnOpenSingleSubject();
   void handleConfigButton();
   void OnTreeWidgetClicked(QTreeWidgetItem *item, int column);
@@ -47,19 +49,12 @@ public slots:
   void TreeContextSetItemAsMask();
   void RunPressed();
   void SchedulerResultReady(long uid);
-  void UpdateProgress(long uid, int progress);
-  void ResetViews();
-  void Render();
+  void UpdateProgress(long uid, int progress); // Updates progress for a single subject
 
 protected:
   void Load(QString filepath);
 
 private:
-  //void SetupWidgets();
-  void ConstructViews(vtkImageData *image);
-
-  void WriteVTKImage(vtkImageData*, std::string filename);
-
   /** Loads all the images of a single patient */
   bool LoadSingleSubject(QString directoryPath);
 
@@ -69,20 +64,16 @@ private:
   void SwitchSubjectAndImage(size_t subjectPos, size_t imagePos = 0);
 
   Ui::MainWindow *ui;
-  //mitk::StandaloneDataStorage::Pointer m_DataStorage; // Used for MITK image displaying (use load to show image)
 
   std::mutex m_TreeEditMutex; // Used so that no parallel additions/deletions happen simultaneously
 
   QStringList m_AcceptedFileTypes = QStringList() << "*.nii.gz" << "*.dcm" << "*.dicom";
-
   long uidNextToGive = 0;
   std::map<long, QTreeWidgetItem*> subjectByUid;
-
-  vtkSmartPointer< vtkResliceImageViewer > riw[3];
-  vtkSmartPointer< vtkImagePlaneWidget > planeWidget[3];
-
   Scheduler m_Scheduler;
-  //QString m_dir;
+
+  VtkViewer* m_VtkViewer;
+
 };
 
 #endif // MAINWINDOW_H

@@ -1,18 +1,29 @@
-set(CPP_FILES
-  mainwindow.cpp
-  main.cpp
+set( CPP_FILES
+  Main.cpp
+  MainWindow.cpp
+  VtkViewer.cpp
   Scheduler.cpp
   ApplicationBase.cpp
-  ApplicationGeodesicTrainingSegmentation.cpp
-  )
+  ${APP_SOURCES}
+)
 
-set(MOC_H_FILES
-  mainwindow.h
+set( MOC_H_FILES
+  MainWindow.h
+  VtkViewer.h
   Scheduler.h
   ApplicationBase.h
-  ApplicationGeodesicTrainingSegmentation.h
-  )
+  ${APP_HEADERS}
+)
 
-set(UI_FILES
-  mainwindow.ui
-  )
+set( UI_FILES
+  MainWindow.ui
+  VtkViewer.ui
+)
+
+set( H_FILES
+  MainWindow.h
+  VtkViewer.h
+  Scheduler.h
+  ApplicationBase.h
+  ${APP_HEADERS}
+)

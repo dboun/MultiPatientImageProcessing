@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "MainWindow.h"
 #include <QSurfaceFormat>
 
 #include "QVTKOpenGLWidget.h"
@@ -6,12 +6,10 @@
 
 int main(int argc, char *argv[])
 {
+	QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
 
-  QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
-
-
-    QApplication a(argc, argv);
-    MainWindow w;
+	QApplication a(argc, argv);
+	MainWindow w;
 	
 	// For darker color
 	QPalette pal = QPalette();
@@ -21,5 +19,5 @@ int main(int argc, char *argv[])
     
 	w.show();
 
-    return a.exec();
+	return a.exec();
 }
