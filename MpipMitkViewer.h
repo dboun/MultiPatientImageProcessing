@@ -20,16 +20,17 @@ public:
 
 	void Display(QString imagePath);
 	void SetupWidgets();
+  void ChangeOpacity(float value);
 
-	void mousePressEvent(QMouseEvent *e) override
-	{
-		//e->accept();
-		qDebug() << QString("MOUSE PRESSED");
-		//this->GetRenderWindow1()->mousePressEvent(e);
-		/*QMouseEvent *ev = new QMouseEvent(QEvent::MouseButtonPress, e->pos(), Qt::RightButton, QFlags<Qt::MouseButton>(Qt::NoButton),
-			QFlags<Qt::KeyboardModifier>(Qt::NoModifier));
-		QApplication::postEvent(this->GetRenderWindow1(), ev);*/
-	}
+	//void mousePressEvent(QMouseEvent *e) override
+	//{
+	//	//e->accept();
+	//	qDebug() << QString("MOUSE PRESSED");
+	//	//this->GetRenderWindow1()->mousePressEvent(e);
+	//	/*QMouseEvent *ev = new QMouseEvent(QEvent::MouseButtonPress, e->pos(), Qt::RightButton, QFlags<Qt::MouseButton>(Qt::NoButton),
+	//		QFlags<Qt::KeyboardModifier>(Qt::NoModifier));
+	//	QApplication::postEvent(this->GetRenderWindow1(), ev);*/
+	//}
 
 	//void mousePressEvent(QMouseEvent *e) override
 	//{
@@ -81,6 +82,7 @@ public:
 
 private:
 	mitk::StandaloneDataStorage::Pointer m_DataStorage;
+  int count;
 };
 
 #endif // ! MPIP_MITK_VIEWER_H

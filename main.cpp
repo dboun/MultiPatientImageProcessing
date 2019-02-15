@@ -3,9 +3,12 @@
 
 #include "QVTKOpenGLWidget.h"
 #include <QApplication>
+#include "QmitkRegisterClasses.h"
 
 int main(int argc, char *argv[])
 {
+  QmitkRegisterClasses();
+
 	QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
 
 	QApplication a(argc, argv);
