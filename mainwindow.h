@@ -34,6 +34,11 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
 public:
+  const int IMAGE_PATH_ROLE  = Qt::UserRole;
+  const int IMAGE_NAME_ROLE  = Qt::UserRole + 1;
+  const int PATIENT_UID_ROLE = Qt::UserRole + 2;
+  const int MPIP_ROLE        = Qt::UserRole + 3;
+
   explicit MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 
@@ -53,7 +58,7 @@ public slots:
   void UpdateProgress(long uid, int progress); // Updates progress for a single subject
 
 protected:
-  void Load(QString filepath);
+  void Load(QString filePath, QString overlayPath = QString());
 
 private:
   /** Loads all the images of a single patient */
@@ -62,13 +67,13 @@ private:
   /** Loads all the images from a directory, and calls itself for subdirectories */
   void LoadAllFilesRecursive(QString directoryPath, QStringList& allFiles);
 
-  void SwitchSubjectAndImage(size_t subjectPos, size_t imagePos = 0);
+  void SwitchSubjectAndImage(long uid, QString imagePath);
 
   Ui::MainWindow *ui;
 
   std::mutex m_TreeEditMutex; // Used so that no parallel additions/deletions happen simultaneously
 
-  QStringList m_AcceptedFileTypes = QStringList() << "*.nii.gz" << "*.dcm" << "*.dicom";
+  QStringList m_AcceptedFileTypes = QStringList() << "*.nii.gz" << "*.dcm" << "*.dicom" << "*.nrrd";
   long uidNextToGive = 0;
   std::map<long, QTreeWidgetItem*> subjectByUid;
   Scheduler m_Scheduler;

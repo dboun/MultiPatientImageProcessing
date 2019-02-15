@@ -89,13 +89,14 @@ void MainWindow::OnOpenSingleSubject()
 {
   QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
     "/home",
-    QFileDialog::ShowDirsOnly
-    | QFileDialog::DontResolveSymlinks
+    QFileDialog::ShowDirsOnly |
+    QFileDialog::DontResolveSymlinks
   );
 
   if (!dir.isEmpty() && LoadSingleSubject(dir))
   {
-    SwitchSubjectAndImage(ui->patientTree->topLevelItemCount() - 1);
+	// TODO : Fix this
+    //SwitchSubjectAndImage(ui->patientTree->topLevelItemCount() - 1);
   }
 }
 
@@ -127,7 +128,10 @@ void MainWindow::OnTreeWidgetClicked(QTreeWidgetItem *item, int column)
   if (item->childCount() == 0 && item->checkState(0) == Qt::Checked)
   {
     item->parent()->setCheckState(0, Qt::Checked);
-    Load(item->data(0, Qt::UserRole).toString());
+	SwitchSubjectAndImage(
+		item->parent()->data(0, PATIENT_UID_ROLE).toLongLong(),  
+		item->data(0, IMAGE_PATH_ROLE).toString()
+	);
   }
   
   // If it's a child item and now the parent has only unchecked items
@@ -167,7 +171,7 @@ void MainWindow::ShowTreeContextMenu(const QPoint& pos)
 
     if (ui->patientTree->itemAt(pos)->childCount() == 0) {
       // The item is an image
-      qDebug() << ui->patientTree->itemAt(pos)->data(0, Qt::UserRole);
+      qDebug() << ui->patientTree->itemAt(pos)->data(0, IMAGE_PATH_ROLE);
 
       contextMenu->addAction(&action2);
     }
@@ -187,7 +191,7 @@ void MainWindow::TreeContextSetItemAsMask()
 {
   for (int i = 0; i < ui->patientTree->currentItem()->parent()->childCount(); i++) {
     ui->patientTree->currentItem()->parent()->child(i)->setText(0, 
-      ui->patientTree->currentItem()->parent()->child(i)->data(0, Qt::UserRole + 1).toString()
+      ui->patientTree->currentItem()->parent()->child(i)->data(0, IMAGE_NAME_ROLE).toString()
     );
   }
 
@@ -202,20 +206,20 @@ void MainWindow::RunPressed()
   {
     if (ui->patientTree->topLevelItem(i) && ui->patientTree->topLevelItem(i)->checkState(0) == Qt::Checked)
     {
-      long uid = ui->patientTree->topLevelItem(i)->data(0, Qt::UserRole + 1).toLongLong();
+      long uid = ui->patientTree->topLevelItem(i)->data(0, PATIENT_UID_ROLE).toLongLong();
       qDebug() << QString("(Run) Added uid:  ") << QString(uid);
       data->uids.push_back(uid);
       qDebug() << QString("(Run) Check uids: ") << QString(data->uids[data->uids.size()-1]);
-      data->patientDirectoryPath[uid] = ui->patientTree->topLevelItem(i)->data(0, Qt::UserRole).toString().toStdString();
+      data->patientDirectoryPath[uid] = ui->patientTree->topLevelItem(i)->data(0, IMAGE_PATH_ROLE).toString().toStdString();
 
       for (int j = 0; j < ui->patientTree->topLevelItem(i)->childCount(); j++)
       {
         if (ui->patientTree->topLevelItem(i)->child(j)->checkState(0) == Qt::Checked) {
           if (ui->patientTree->topLevelItem(i)->child(j)->text(0).toStdString() == "<Mask>") {
-            data->maskPath[uid] = ui->patientTree->topLevelItem(i)->child(j)->data(0, Qt::UserRole).toString().toStdString();
+            data->maskPath[uid] = ui->patientTree->topLevelItem(i)->child(j)->data(0, IMAGE_PATH_ROLE).toString().toStdString();
           }
           else {
-            data->imagesPaths[uid].push_back(ui->patientTree->topLevelItem(i)->child(j)->data(0, Qt::UserRole).toString().toStdString());
+            data->imagesPaths[uid].push_back(ui->patientTree->topLevelItem(i)->child(j)->data(0, IMAGE_PATH_ROLE).toString().toStdString());
           }
         }
       }
@@ -242,13 +246,13 @@ void MainWindow::SchedulerResultReady(long uid)
 
     QTreeWidgetItem *imageItem = new QTreeWidgetItem(subjectByUid[uid]);
 
-    QString file = subjectByUid[uid]->data(0, Qt::UserRole).toString() + QString("/MPIP_output/labels_res.nii.gz");
+    QString file = subjectByUid[uid]->data(0, IMAGE_PATH_ROLE).toString() + QString("/MPIP_output/labels_res.nii.gz");
 
     imageItem->setText(0, QString("<Segmentation>"));
     imageItem->setCheckState(0, Qt::Checked);
 
-    imageItem->setData(0, Qt::UserRole, file);          // path to the image
-    imageItem->setData(0, Qt::UserRole + 1, QString("<Segmentation>"));
+    imageItem->setData(0, IMAGE_PATH_ROLE, file);          // path to the image
+    imageItem->setData(0, IMAGE_NAME_ROLE, QString("<Segmentation>"));
   }
 }
 
@@ -259,9 +263,10 @@ void MainWindow::UpdateProgress(long uid, int progress)
   progressBar->setValue(progress);
 }
 
-void MainWindow::Load(QString filepath)
+void MainWindow::Load(QString filePath, QString overlayPath)
 {
-  m_MpipMitkViewer->Display(filepath);
+  qDebug() << QString("LOADING: ") << filePath << QString(", with overlay: ") << overlayPath;
+  m_MpipMitkViewer->Display(filePath, overlayPath);
 }
 
 bool MainWindow::LoadSingleSubject(QString directoryPath)
@@ -288,8 +293,9 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
 
   //patientToAdd->setText(0, patientName);
   patientToAdd->setCheckState(0, Qt::Checked);
-  patientToAdd->setData(0, Qt::UserRole, directoryPath);
-  patientToAdd->setData(0, Qt::UserRole + 1, uidNextToGive);
+  patientToAdd->setData(0, IMAGE_PATH_ROLE, directoryPath);
+  patientToAdd->setData(0, IMAGE_NAME_ROLE, patientName);
+  patientToAdd->setData(0, PATIENT_UID_ROLE, uidNextToGive);
   subjectByUid[uidNextToGive] = patientToAdd;
 
   QProgressBar *progressBar = new QProgressBar();
@@ -346,8 +352,8 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
     imageItem->setText(0, shortName);
     imageItem->setCheckState(0, Qt::Checked);
 
-    imageItem->setData(0, Qt::UserRole, file);          // path to the image
-    imageItem->setData(0, Qt::UserRole + 1, shortName); // short name
+    imageItem->setData(0, IMAGE_PATH_ROLE, file);          // path to the image
+    imageItem->setData(0, IMAGE_NAME_ROLE, shortName); // short name
   }
 
   uidNextToGive++;
@@ -382,9 +388,37 @@ void MainWindow::LoadAllFilesRecursive(QString directoryPath, QStringList& allFi
   }
 }
 
-void MainWindow::SwitchSubjectAndImage(size_t subjectPos, size_t imagePos)
+void MainWindow::SwitchSubjectAndImage(long uid, QString imagePath)
 {
-  Load(
-    ui->patientTree->topLevelItem(subjectPos)->child(imagePos)->data(0, Qt::UserRole).toString()
-  );
+	qDebug() << QString("Switch subject ") << QString::number(uid) << QString(", imagePath=") << imagePath;
+
+	QTreeWidgetItem* currentPatient = subjectByUid[uid];
+	bool loadCalled = false;
+
+	for (int i = 0; i < currentPatient->childCount(); i++) {
+		QTreeWidgetItem* currentImage = currentPatient->child(i);
+		//QString currentImageName = currentImage->data(0, IMAGE_NAME_ROLE).toString();
+		QString currentImageText = currentImage->text(0);
+		//qDebug() << QString("Checking ") << currentImageName;
+
+		if (currentImage->checkState(0) == Qt::Checked && 
+			currentImageText.startsWith(QString("<Mask"))) 
+		{
+			QString currentImagePath = currentImage->data(0, IMAGE_PATH_ROLE).toString();
+			Load(imagePath, currentImagePath);
+			loadCalled = true;
+			break;
+		}
+	}
+
+	if (!loadCalled) {
+		if (!imagePath.isEmpty())
+		{
+			Load(imagePath);
+		}
+		else {
+			if (currentPatient->childCount() > 0) { Load(currentPatient->child(0)->data(0, IMAGE_PATH_ROLE).toString()); }
+		}
+	}
+
 }

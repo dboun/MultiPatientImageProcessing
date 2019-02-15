@@ -1,7 +1,7 @@
 #include "MainWindow.h"
-#include <QSurfaceFormat>
+//#include <QSurfaceFormat>
 
-#include "QVTKOpenGLWidget.h"
+//#include "QVTKOpenGLWidget.h"
 #include <QApplication>
 #include "QmitkRegisterClasses.h"
 
@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
   QmitkRegisterClasses();
 
-	QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
+	//QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
 
 	QApplication a(argc, argv);
 	MainWindow w;
