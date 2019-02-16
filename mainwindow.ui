@@ -39,7 +39,7 @@
           </sizepolicy>
          </property>
          <property name="styleSheet">
-          <string notr="true">background-color:rgb(97,97,97)</string>
+          <string notr="true">background-color:rgb(97,97,97);</string>
          </property>
          <column>
           <property name="text">

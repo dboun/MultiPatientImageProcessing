@@ -35,10 +35,10 @@ MainWindow::MainWindow(QWidget *parent) :
   m_Scheduler.connect(&m_Scheduler, SIGNAL(jobFinished(long)), this, SLOT(SchedulerResultReady(long)));
   m_Scheduler.connect(&m_Scheduler, SIGNAL(updateProgress(long, int)), this, SLOT(UpdateProgress(long, int)));
 
-  QStringList columnNames = QStringList() << "Select subjects" << "Progress";
+  QStringList columnNames = QStringList() << "Select subjects"; // << "Progress";
 
   ui->patientTree->setHeaderLabels(columnNames);
-  ui->patientTree->setColumnCount(2);
+  ui->patientTree->setColumnCount(1);
 
   connect(ui->pushButtonRun, SIGNAL(released()), this, SLOT(RunPressed()));
   connect(ui->actionOpen_single_subject, SIGNAL(triggered()), this, SLOT(OnOpenSingleSubject()));
@@ -61,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent) :
   effect->setColor(Qt::black);
 
   ui->pushButtonRun->setGraphicsEffect(effect);
+  ui->patientTree->setGraphicsEffect(effect);
 }
 
 MainWindow::~MainWindow()
@@ -122,41 +123,32 @@ void MainWindow::OnTreeWidgetClicked(QTreeWidgetItem *item, int column)
 {
   qDebug() << QString("Clicked tree item.");
   
-  qDebug() << QString("Value of parent: ") << 
-    ((item->checkState(0) == Qt::Checked) ? QString("Checked") : QString("Unchecked"));
-  
-  // If it's a parent item
-  for (int i = 0; i < item->childCount(); i++) {
-    item->child(i)->setCheckState(0, item->checkState(0));
-    qDebug() << QString("Changed the value of a child");
-  }
-
   // If it's a child item and it got checked
   if (item->childCount() == 0 && item->checkState(0) == Qt::Checked)
   {
-    item->parent()->setCheckState(0, Qt::Checked);
+    //item->parent()->setCheckState(0, Qt::Checked);
 	SwitchSubjectAndImage(
 		item->parent()->data(0, PATIENT_UID_ROLE).toLongLong(),  
 		item->data(0, IMAGE_PATH_ROLE).toString()
 	);
   }
   
-  // If it's a child item and now the parent has only unchecked items
-  if (item->childCount() == 0 && item->checkState(0) == Qt::Unchecked && item->parent()->checkState(0) == Qt::Checked) {
-    bool foundChecked = false;
+  //// If it's a child item and now the parent has only unchecked items
+  //if (item->childCount() == 0 && item->checkState(0) == Qt::Unchecked && item->parent()->checkState(0) == Qt::Checked) {
+  //  bool foundChecked = false;
 
-    for (int i = 0; i < item->parent()->childCount(); i++) {
-      if (item->parent()->child(i)->checkState(0) == Qt::Checked) {
-        foundChecked = true;
-        qDebug() << QString("Found checked.");
-        break;
-      }
-    }
+  //  for (int i = 0; i < item->parent()->childCount(); i++) {
+  //    if (item->parent()->child(i)->checkState(0) == Qt::Checked) {
+  //      foundChecked = true;
+  //      qDebug() << QString("Found checked.");
+  //      break;
+  //    }
+  //  }
 
-    if (!foundChecked) {
-      item->parent()->setCheckState(0, Qt::Unchecked);
-    }
-  }
+  //  if (!foundChecked) {
+  //    item->parent()->setCheckState(0, Qt::Unchecked);
+  //  }
+  //}
 }
 
 void MainWindow::ShowTreeContextMenu(const QPoint& pos)
@@ -190,7 +182,16 @@ void MainWindow::ShowTreeContextMenu(const QPoint& pos)
 void MainWindow::TreeContextRemoveItem()
 {
   qDebug() << QString("Trying to delete item");
-  delete ui->patientTree->currentItem();
+
+  if (ui->patientTree->currentItem()->childCount() == 0 &&
+	  ui->patientTree->currentItem()->parent()->childCount() == 1)
+  {
+	  delete ui->patientTree->currentItem()->parent();
+  }
+  else {
+	delete ui->patientTree->currentItem();
+  }
+
   this->ui->stackedWidget->setCurrentIndex(0);
 }
 
@@ -207,39 +208,48 @@ void MainWindow::TreeContextSetItemAsMask()
 
 void MainWindow::RunPressed()
 {
-  std::shared_ptr<Scheduler::Data> data(new Scheduler::Data());
+	std::shared_ptr<Scheduler::Data> data(new Scheduler::Data());
 
-  for (int i = 0; i < ui->patientTree->topLevelItemCount(); i++)
-  {
-    if (ui->patientTree->topLevelItem(i) && ui->patientTree->topLevelItem(i)->checkState(0) == Qt::Checked)
-    {
-      long uid = ui->patientTree->topLevelItem(i)->data(0, PATIENT_UID_ROLE).toLongLong();
-      qDebug() << QString("(Run) Added uid:  ") << QString(uid);
-      data->uids.push_back(uid);
-      qDebug() << QString("(Run) Check uids: ") << QString(data->uids[data->uids.size()-1]);
-      data->patientDirectoryPath[uid] = ui->patientTree->topLevelItem(i)->data(0, IMAGE_PATH_ROLE).toString().toStdString();
+	QTreeWidgetItem* selectedSubject;
+	QTreeWidgetItem* currentItem = ui->patientTree->currentItem();
+	
+	if (!currentItem) { return; }
 
-      for (int j = 0; j < ui->patientTree->topLevelItem(i)->childCount(); j++)
-      {
-        if (ui->patientTree->topLevelItem(i)->child(j)->checkState(0) == Qt::Checked) {
-          if (ui->patientTree->topLevelItem(i)->child(j)->text(0).toStdString() == "<Mask>") {
-            data->maskPath[uid] = ui->patientTree->topLevelItem(i)->child(j)->data(0, IMAGE_PATH_ROLE).toString().toStdString();
-          }
-          else {
-            data->imagesPaths[uid].push_back(ui->patientTree->topLevelItem(i)->child(j)->data(0, IMAGE_PATH_ROLE).toString().toStdString());
-          }
-        }
-      }
+	if (currentItem->childCount() == 0) { 
+		selectedSubject = currentItem->parent(); 
+	}
+	else {
+		selectedSubject = currentItem;
+	}
+  
+	long uid = selectedSubject->data(0, PATIENT_UID_ROLE).toLongLong();
+	qDebug() << QString("(Run) Added uid:  ") << QString(uid);
+	data->uids.push_back(uid);
+	data->patientDirectoryPath[uid] = selectedSubject->data(0, IMAGE_PATH_ROLE).toString().toStdString();
 
-      if (data->imagesPaths.find(uid) == data->imagesPaths.end() || data->maskPath.find(uid) == data->maskPath.end()) {
-        qDebug() << QString("(Run) Images or mask missing so the uid was dismissed");
-        data->uids.pop_back();
-      }
-    }
-  }
+	for (int i = 0; i < selectedSubject->childCount(); i++)
+	{
+		QTreeWidgetItem* child = selectedSubject->child(i);
+		
+		if (child->checkState(0) == Qt::Checked) {
+			if (child->text(0).toStdString() == "<Mask>") {
+				data->maskPath[uid] = child->data(0, IMAGE_PATH_ROLE).toString().toStdString();
+			}
+			else {
+				data->imagesPaths[uid].push_back(child->data(0, IMAGE_PATH_ROLE).toString().toStdString());
+			}
+		}
+	}
 
-  qDebug() << QString("Trying to run");
-  m_Scheduler.AddData(data);
+	if (data->imagesPaths.find(uid) == data->imagesPaths.end() || data->maskPath.find(uid) == data->maskPath.end()) {
+		qDebug() << QString("(Run) Images or mask missing so the uid was dismissed");
+		data->uids.pop_back();
+	}
+
+	if (data->uids.size() > 0) {
+		qDebug() << QString("Trying to run");
+		m_Scheduler.AddData(data);
+	}
 }
 
 void MainWindow::SchedulerResultReady(long uid)
@@ -290,6 +300,7 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
   
   // Update tree widget
   QTreeWidgetItem *patientToAdd = new QTreeWidgetItem(ui->patientTree);
+  patientToAdd->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
   
   QString patientName = QString::fromStdString(
     directoryPath.toStdString().substr(
@@ -298,7 +309,8 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
   );
 
   //patientToAdd->setText(0, patientName);
-  patientToAdd->setCheckState(0, Qt::Checked);
+  //patientToAdd->setCheckState(0, Qt::Checked);
+  patientToAdd->setSelected(true);
   patientToAdd->setData(0, IMAGE_PATH_ROLE, directoryPath);
   patientToAdd->setData(0, IMAGE_NAME_ROLE, patientName);
   patientToAdd->setData(0, PATIENT_UID_ROLE, uidNextToGive);
@@ -339,13 +351,13 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
   labelAndProgress->setAutoFillBackground(true);
   labelAndProgress->setMaximumHeight(35);
   QHBoxLayout *hLayout = new QHBoxLayout();
-  //hLayout->addWidget(label, Qt::AlignLeft);
+  hLayout->addWidget(label, Qt::AlignLeft);
   hLayout->addWidget(progressBar, Qt::AlignRight);
   labelAndProgress->setLayout(hLayout);
   labelAndProgress->setAttribute(Qt::WA_TransparentForMouseEvents, true);
   
-  patientToAdd->setText(0, patientName);
-  ui->patientTree->setItemWidget(patientToAdd, 1, labelAndProgress);
+  //patientToAdd->setText(0, patientName);
+  ui->patientTree->setItemWidget(patientToAdd, 0, labelAndProgress);
 
   foreach(QString file, files) {
     QTreeWidgetItem *imageItem = new QTreeWidgetItem(patientToAdd);
