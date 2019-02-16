@@ -1,7 +1,7 @@
 #ifndef VTK_VIEWER_H
 #define VTK_VIEWER_H
 
-#include <QWidget>
+#include "ViewerBase.h"
 
 #include "vtkSmartPointer.h"
 #include "vtkResliceImageViewer.h"
@@ -48,7 +48,7 @@
 
 #include "ui_VtkViewer.h"
 
-class VtkViewer : public QWidget
+class VtkViewer : public ViewerBase
 {
 	Q_OBJECT
 

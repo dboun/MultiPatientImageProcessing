@@ -21,9 +21,13 @@
 #include <vector>
 
 #include "ui_MainWindow.h"
-//#include "VtkViewer.h"
-#include "MpipMitkViewer.h"
 #include "Scheduler.h"
+#include "ViewerBase.h"
+
+#ifdef BUILD_VIEWER
+#include "MpipMitkViewer.h"
+//#include "VtkViewer.h"
+#endif
 
 namespace Ui {
   class MainWindow;
@@ -79,7 +83,7 @@ private:
   Scheduler m_Scheduler;
 
   //VtkViewer* m_VtkViewer;
-  MpipMitkViewer* m_MpipMitkViewer;
+  ViewerBase* m_Viewer;
 };
 
 #endif // MAINWINDOW_H

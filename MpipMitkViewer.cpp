@@ -1,5 +1,10 @@
 #include "MpipMitkViewer.h"
 
+#include <QDebug>
+#include <QMouseEvent>
+#include <mitkImage.h>
+#include <mitkIOUtil.h>
+#include <mitkLabelSetImage.h>
 
 MpipMitkViewer::MpipMitkViewer()
 {
@@ -7,10 +12,7 @@ MpipMitkViewer::MpipMitkViewer()
 	m_DataStorage = m_DataStorage = mitk::StandaloneDataStorage::New();
 	this->SetDataStorage(m_DataStorage);
 	SetupWidgets();
-}
 
-void MpipMitkViewer::SetupWidgets()
-{
 	this->InitPositionTracking();
 	this->EnablePositionTracking();
 	auto geo = m_DataStorage->ComputeBoundingGeometry3D(m_DataStorage->GetAll());
@@ -30,9 +32,23 @@ void MpipMitkViewer::SetupWidgets()
 
 void MpipMitkViewer::ChangeOpacity(float value)
 {
-	//the float value will come from QSlider
-	//find node
-	//change opacity
+	if (!lastOverlayPath.isEmpty()) {
+		// TODO:
+		//the float value will come from QSlider
+		//find node
+		//change opacity
+	}	
+}
+
+bool MpipMitkViewer::RemoveImageOrOverlayIfLoaded(QString path)
+{
+	// TODO
+	return true;
+}
+
+void MpipMitkViewer::SaveOverlayToFile(QString fullPath)
+{
+	// TODO
 }
 
 void MpipMitkViewer::Display(QString imagePath, QString overlayPath)
@@ -82,6 +98,8 @@ void MpipMitkViewer::Display(QString imagePath, QString overlayPath)
 		//mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(overlayPath.toStdString(), *m_DataStorage);
 		mitk::LabelSetImage::Pointer labelsImage =
 			mitk::IOUtil::Load<mitk::LabelSetImage >(overlayPath.toStdString());
+		// TODO: Look into: 
+		// void mitk::LabelSetImage::InitializeByLabeledImage (mitk::Image::Pointer image)
 
 		mitk::DataNode::Pointer newNode = mitk::DataNode::New();
 		newNode->SetName(overlayPath.toStdString().c_str());
@@ -95,7 +113,6 @@ void MpipMitkViewer::Display(QString imagePath, QString overlayPath)
 	
 	//this->SetDataStorage(m_DataStorage);
 	//this->UpdateAllWidgets();
-	//this->SetupWidgets();
 	this->ResetCrosshair();
 	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 	//this->RequestUpdate();

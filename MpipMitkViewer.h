@@ -3,24 +3,24 @@
 
 #include <QString>
 #include <QWidget>
-#include <QDebug>
-#include <QMouseEvent>
+#include <itkImage.h>
 #include <mitkStandaloneDataStorage.h>
-#include <mitkImage.h>
-#include <mitkIOUtil.h>
-#include <mitkLabelSetImage.h>
 #include "QmitkStdMultiWidget.h"
 
-class MpipMitkViewer : public QmitkStdMultiWidget
+#include "ViewerBase.h"
+
+class MpipMitkViewer : public ViewerBase, public QmitkStdMultiWidget
 {
 	Q_OBJECT
 
 public:
 	MpipMitkViewer();
 
-	void Display(QString imagePath, QString overlayPath = QString());
-	void SetupWidgets();
-	void ChangeOpacity(float value);
+	// Methods overriden from ViewerBase
+	void Display(QString imagePath, QString overlayPath = QString()) override;
+	void ChangeOpacity(float value) override;
+	bool RemoveImageOrOverlayIfLoaded(QString path) override;
+	void SaveOverlayToFile(QString fullPath) override;
 
 private:
 	mitk::StandaloneDataStorage::Pointer m_DataStorage;

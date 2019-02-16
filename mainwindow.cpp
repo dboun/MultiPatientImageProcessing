@@ -4,15 +4,20 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-  //m_VtkViewer = new VtkViewer();
-  m_MpipMitkViewer = new MpipMitkViewer();
+  
+#ifdef BUILD_VIEWER
+  m_Viewer = new MpipMitkViewer();
+  //m_Viewer = new VtkViewer();
+#else
+  m_Viewer = new ViewerBase(); // Used for developing without MITK
+#endif
 
   ui->setupUi(this);
 
   // Replace viewerContainer with viewer of choice
   QGridLayout *layout = new QGridLayout(ui->viewerContainer);
   //layout->addWidget(m_VtkViewer, 0, 0);
-  layout->addWidget(m_MpipMitkViewer, 0, 0);
+  layout->addWidget(m_Viewer, 0, 0);
 
   ui->actionAdd_image_for_selected_subject->setVisible(false);
   ui->actionAdd_image_for_new_subject->setVisible(false);
@@ -266,7 +271,7 @@ void MainWindow::UpdateProgress(long uid, int progress)
 void MainWindow::Load(QString filePath, QString overlayPath)
 {
   qDebug() << QString("LOADING: ") << filePath << QString(", with overlay: ") << overlayPath;
-  m_MpipMitkViewer->Display(filePath, overlayPath);
+  m_Viewer->Display(filePath, overlayPath);
 }
 
 bool MainWindow::LoadSingleSubject(QString directoryPath)
