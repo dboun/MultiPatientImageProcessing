@@ -149,8 +149,6 @@ QPushButton:pressed{ background-color: darkGray;border-style: outset; border-sty
     <addaction name="separator"/>
     <addaction name="actionAdd_image_for_selected_subject"/>
     <addaction name="actionAdd_image_for_new_subject"/>
-    <addaction name="separator"/>
-    <addaction name="actionOpen_Dicom"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>

@@ -16,6 +16,7 @@
 #include <QTextStream>
 #include <QDebug>
 #include <QLabel>
+#include <QString>
 
 #include <mutex>
 #include <vector>
@@ -72,6 +73,12 @@ private:
   void LoadAllFilesRecursive(QString directoryPath, QStringList& allFiles);
 
   void SwitchSubjectAndImage(long uid, QString imagePath);
+
+  void SwitchExpandedView(QTreeWidgetItem* focusItem);
+
+  void DisableRunButton();
+
+  void EnableRunButton();
 
   Ui::MainWindow *ui;
 

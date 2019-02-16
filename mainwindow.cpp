@@ -4,7 +4,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-  
 #ifdef BUILD_VIEWER
   m_Viewer = new MpipMitkViewer();
   //m_Viewer = new VtkViewer();
@@ -12,34 +11,42 @@ MainWindow::MainWindow(QWidget *parent) :
   m_Viewer = new ViewerBase(); // Used for developing without MITK
 #endif
 
-  m_Scheduler.Start();
+  m_Scheduler.Start(); 
 
   ui->setupUi(this);
+  
+  //DisableRunButton();
 
   // Replace viewerContainer with viewer of choice
   QGridLayout *layout = new QGridLayout(ui->viewerContainer);
-  //layout->addWidget(m_VtkViewer, 0, 0);
   layout->addWidget(m_Viewer, 0, 0);
 
+  // Disable unused buttons
   ui->actionAdd_image_for_selected_subject->setVisible(false);
   ui->actionAdd_image_for_new_subject->setVisible(false);
   ui->actionAdd_multiple_subjects->setVisible(false);
   ui->pushButtonConfigure->setVisible(false);
-  ui->actionOpen_Dicom->setVisible(false);
 
-  //dicomReader = new DicomReader();
-  //dcmdisplayWidget = new DicomMetaDataDisplayWidget();
-  //this->SetupWidgets();
+  // Turn drag and drop on
+  setAcceptDrops(true); 
 
-  setAcceptDrops(true); // For drag and drop
-  m_Scheduler.connect(&m_Scheduler, SIGNAL(jobFinished(long)), this, SLOT(SchedulerResultReady(long)));
-  m_Scheduler.connect(&m_Scheduler, SIGNAL(updateProgress(long, int)), this, SLOT(UpdateProgress(long, int)));
-
-  QStringList columnNames = QStringList() << "Select subjects"; // << "Progress";
-
+  // TreeWidget columns
+  QStringList columnNames = QStringList() << "  Select subjects"; // << "Progress";
   ui->patientTree->setHeaderLabels(columnNames);
   ui->patientTree->setColumnCount(1);
 
+  // Shadow effect
+  QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
+  effect->setBlurRadius(1);
+  effect->setXOffset(1);
+  effect->setYOffset(1);
+  effect->setColor(Qt::black);
+  ui->pushButtonRun->setGraphicsEffect(effect);
+  ui->patientTree->setGraphicsEffect(effect);
+
+  // Signals and Slots
+  m_Scheduler.connect(&m_Scheduler, SIGNAL(jobFinished(long)), this, SLOT(SchedulerResultReady(long)));
+  m_Scheduler.connect(&m_Scheduler, SIGNAL(updateProgress(long, int)), this, SLOT(UpdateProgress(long, int)));
   connect(ui->pushButtonRun, SIGNAL(released()), this, SLOT(RunPressed()));
   connect(ui->actionOpen_single_subject, SIGNAL(triggered()), this, SLOT(OnOpenSingleSubject()));
   connect(ui->pushButtonConfigure, SIGNAL(released()), this, SLOT(handleConfigButton()));
@@ -53,15 +60,6 @@ MainWindow::MainWindow(QWidget *parent) :
     this, SLOT(ShowTreeContextMenu(const QPoint&))
   );
 
-  // Shadow effect on Run button
-  QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
-  effect->setBlurRadius(1);
-  effect->setXOffset(1);
-  effect->setYOffset(1);
-  effect->setColor(Qt::black);
-
-  ui->pushButtonRun->setGraphicsEffect(effect);
-  ui->patientTree->setGraphicsEffect(effect);
 }
 
 MainWindow::~MainWindow()
@@ -103,8 +101,8 @@ void MainWindow::OnOpenSingleSubject()
 
   if (!dir.isEmpty() && LoadSingleSubject(dir))
   {
-	// TODO : Fix this
-    //SwitchSubjectAndImage(ui->patientTree->topLevelItemCount() - 1);
+	SwitchExpandedView(ui->patientTree->topLevelItem(ui->patientTree->topLevelItemCount() - 1));
+	// TODO : Display the first image
   }
 }
 
@@ -123,6 +121,18 @@ void MainWindow::OnTreeWidgetClicked(QTreeWidgetItem *item, int column)
 {
   qDebug() << QString("Clicked tree item.");
   
+  // Make only one expanded
+  QTreeWidgetItem* currentSelected = ui->patientTree->currentItem();
+  QTreeWidgetItem* currentTopLevelItem = (
+	  (currentSelected->childCount() == 0 && currentSelected->parent()) ?
+	    currentSelected->parent() :
+	    currentSelected
+  );
+  
+  if (currentSelected->childCount() > 0) {
+	SwitchExpandedView(currentTopLevelItem);
+  }
+
   // If it's a child item and it got checked
   if (item->childCount() == 0 && item->checkState(0) == Qt::Checked)
   {
@@ -192,7 +202,11 @@ void MainWindow::TreeContextRemoveItem()
 	delete ui->patientTree->currentItem();
   }
 
-  this->ui->stackedWidget->setCurrentIndex(0);
+  if (ui->patientTree->topLevelItemCount() > 0)
+  {
+	  SwitchExpandedView(ui->patientTree->topLevelItem(0));
+  }
+  //this->ui->stackedWidget->setCurrentIndex(0);
 }
 
 void MainWindow::TreeContextSetItemAsMask()
@@ -440,4 +454,80 @@ void MainWindow::SwitchSubjectAndImage(long uid, QString imagePath)
 		}
 	}
 
+}
+
+void MainWindow::SwitchExpandedView(QTreeWidgetItem* focusItem)
+{
+	// We are concerned about top level items (subjects)
+	if (focusItem && focusItem->childCount() == 0)
+	{
+		focusItem = focusItem->parent();
+	}
+
+	if (focusItem)
+	{
+		focusItem->setSelected(true);
+		focusItem->setExpanded(true);
+		int focusItemIndex = ui->patientTree->indexOfTopLevelItem(focusItem);
+
+		for (int i = 0; i < ui->patientTree->topLevelItemCount(); i++)
+		{
+			QTreeWidgetItem* topLevelItem = ui->patientTree->topLevelItem(i);
+			
+			if (i != focusItemIndex)
+			{
+				qDebug() << "Un-expanding item";
+				ui->patientTree->topLevelItem(i)->setSelected(false);
+				ui->patientTree->topLevelItem(i)->setExpanded(false);
+			}
+		}
+	}
+}
+
+void MainWindow::DisableRunButton()
+{
+	ui->pushButtonRun->setEnabled(false);
+	
+	QString styleSheet(" QPushButton { font:22px;color:rgba(255,255,255,135); background-color:rgba(255,255,255,20); border-style: solid;");
+	styleSheet += "border-color: darkGray; border-width: 1px; border-radius: 10px; padding: 3px;}";
+	//styleSheet += "QPushButton:checked{ background-color: rgba(0,125,0,0); border-style: outset;";
+	//styleSheet += "border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; }";
+	//styleSheet += "QPushButton:hover{ background-color: rgba(0,125,0,0); border-style: outset;";
+	//styleSheet += "border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; }";
+	//styleSheet += "QPushButton:pressed{ background-color: rgba(0,125,0,0); border-style: outset;";
+	//styleSheet += "border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; }";
+
+	ui->pushButtonRun->setStyleSheet(styleSheet);
+
+	// Shadow effect
+	QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
+	effect->setBlurRadius(0);
+	effect->setXOffset(0);
+	effect->setYOffset(0);
+	effect->setColor(Qt::lightGray);
+	ui->pushButtonRun->setGraphicsEffect(effect);
+}
+
+void MainWindow::EnableRunButton()
+{
+	ui->pushButtonRun->setEnabled(true);
+
+	QString styleSheet(" QPushButton { font:22px;color:black; background-color:lightblue; border-style: solid;");
+	styleSheet += "border-color: black; border-width: 2px; border-radius: 10px; padding: 3px;}";
+	styleSheet += "QPushButton:checked{ background-color: red; border-style: outset;";
+	styleSheet += "border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; }";
+	styleSheet += "QPushButton:hover{ background-color: lightGray; border-style: outset;";
+	styleSheet += "border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; }";
+	styleSheet += "QPushButton:pressed{ background-color: darkGray; border-style: outset;";
+	styleSheet += "border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; }";
+
+	ui->pushButtonRun->setStyleSheet(styleSheet);
+
+	// Shadow effect
+	QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
+	effect->setBlurRadius(1);
+	effect->setXOffset(1);
+	effect->setYOffset(1);
+	effect->setColor(Qt::black);
+	ui->pushButtonRun->setGraphicsEffect(effect);
 }
