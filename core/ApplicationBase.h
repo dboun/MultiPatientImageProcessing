@@ -14,6 +14,8 @@ public:
   void SetUid(long uid);
   long GetUid();
 
+  void EmitProgressUpdateForDebugging(int progress = 100);
+
 signals:
   void ProgressUpdateUI(long uid, QString message, int progress);
 

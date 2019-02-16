@@ -9,3 +9,8 @@ long ApplicationBase::GetUid()
 {
 	return uid;
 }
+
+void ApplicationBase::EmitProgressUpdateForDebugging(int progress)
+{
+	emit ProgressUpdateUI(uid, QString("Debugging"), progress);
+}

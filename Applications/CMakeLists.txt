@@ -1,6 +1,6 @@
 # Modular applications
 
-set( APP_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/Applications" )
+set( APP_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/applications" )
 unset( APP_LIBRARIES )
 unset( APP_HEADERS )
 unset( APP_SOURCES )

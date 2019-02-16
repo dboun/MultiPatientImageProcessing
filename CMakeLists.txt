@@ -6,13 +6,16 @@ project( ${PROJECT_NAME} VERSION 0.1.0 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
-add_subdirectory( Applications )
+add_subdirectory( core )
+add_subdirectory( applications )
 
 # Find all files
+include_directories( 
+  ${APP_INCLUDE_DIRS} 
+  ${CORE_INCLUDE_DIRS}
+)
+
 include( cmake/files.cmake )
-include( cmake/viewer.cmake )
- 
-include_directories( ${APP_INCLUDE_DIRS} )
 
 set( CMAKE_AUTOMOC ON )
   
@@ -24,7 +27,7 @@ qt5_use_modules( MPIP Core Gui Widgets )
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 target_link_libraries( MPIP 
-  ${VIEWER_LIBRARIES_TO_LINK}
+  MpipCore
   ${APP_LIBRARIES}
 )
 

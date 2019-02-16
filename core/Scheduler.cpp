@@ -1,5 +1,7 @@
 #include "Scheduler.h"
 
+#include "ApplicationBase.h"
+
 Scheduler::Scheduler()
 {
 	int threadCount = QThread::idealThreadCount();
@@ -109,6 +111,12 @@ void Scheduler::ThreadJob(long uid, std::vector<std::string> &imagesPaths, std::
 	geodesic.SetVerbose(true);
 	//geodesic.SetNumberOfThreads(16);
 	geodesic.Execute();
+#else
+	// For debugging
+	ApplicationBase app;
+	connect(&app, SIGNAL(ProgressUpdateUI(long, QString, int)), this, SLOT(progressUpdateFromApplication(long, QString, int)));
+	app.SetUid(uid);
+	emit app.EmitProgressUpdateForDebugging();
 #endif // ! BUILD_GEODESIC_TRAINING
 
 	ResultFinished(uid);

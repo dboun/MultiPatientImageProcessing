@@ -107,7 +107,7 @@ void MainWindow::OnOpenSingleSubject()
 
 void MainWindow::handleConfigButton()
 {
-  // Not implemented yet
+  // TODO (Not implemented yet)
   QStringList apps;
 
 //#ifdef BUILD_GEODESIC_TRAINING
@@ -335,6 +335,7 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
 
   QWidget *labelAndProgress = new QWidget();
   labelAndProgress->setStyleSheet("background-color: rgba(0,0,0,0)");
+  labelAndProgress->setAutoFillBackground(true);
   labelAndProgress->setMaximumHeight(35);
   QHBoxLayout *hLayout = new QHBoxLayout();
   //hLayout->addWidget(label, Qt::AlignLeft);
