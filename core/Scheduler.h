@@ -33,33 +33,35 @@ public:
 
 	Scheduler();
 
-	void Start();
-
-	void Stop();
-
-	void SetData(std::shared_ptr<Data> data);
+	void AddData(std::shared_ptr<Data> data);
 	void SetMaxParallelJobs(int maxParallelJobs);
 
 public slots:
 	void progressUpdateFromApplication(long uid, QString message, int progress);
+	void Start();
+	void Stop();
 
 signals:
 	void jobFinished(long uid);
 	void updateProgress(long uid, int progress);
+	void roundFinished();
 
 private:
-	std::shared_ptr<Data> m_Data;
-	int m_MaxParallelJobs = 2;
-	std::mutex m_Mutex;
-
-	int m_NumberOfUnfishedJobs;
-	std::thread m_BackgroundCoordinator;
-
 	void BackgroundCoordinator();
 
 	void ResultFinished(long uid);
 
 	void ThreadJob(long uid, std::vector<std::string> &imagesPaths, std::string &maskPath, std::string &patientDirectoryPath);
+
+
+	std::vector< std::shared_ptr<Data> > m_Data;
+	int m_MaxParallelJobs = 2;
+	std::mutex m_Mutex;
+	bool m_StopFlag = false; // Signals to not run additional samples
+	bool m_CoordinatorRunning = false;
+
+	size_t m_NumberOfUnfishedJobsThisRound;
+	std::thread m_BackgroundCoordinator;
 };
 
 #endif // SCHEDULER_H

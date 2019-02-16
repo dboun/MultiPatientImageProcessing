@@ -12,6 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
   m_Viewer = new ViewerBase(); // Used for developing without MITK
 #endif
 
+  m_Scheduler.Start();
+
   ui->setupUi(this);
 
   // Replace viewerContainer with viewer of choice
@@ -237,8 +239,7 @@ void MainWindow::RunPressed()
   }
 
   qDebug() << QString("Trying to run");
-  m_Scheduler.SetData(data);
-  m_Scheduler.Start();
+  m_Scheduler.AddData(data);
 }
 
 void MainWindow::SchedulerResultReady(long uid)

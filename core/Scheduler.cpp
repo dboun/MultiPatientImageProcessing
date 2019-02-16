@@ -17,29 +17,46 @@ Scheduler::Scheduler()
 
 void Scheduler::Start()
 {
-	if (m_Data.get() == nullptr)
+	std::lock_guard<std::mutex> lg(m_Mutex);
+	
+	m_StopFlag = false;
+
+	if (m_Data.size() == 0)
 	{
 		return;
 	}
 
-	//emit jobFinished(0);
-
-	m_NumberOfUnfishedJobs = m_Data->uids.size();
-
-	Stop();
-	m_BackgroundCoordinator = std::thread(&Scheduler::BackgroundCoordinator, this);
+	if (!m_CoordinatorRunning)
+	{
+		m_CoordinatorRunning = true;
+		if (m_BackgroundCoordinator.joinable()) { m_BackgroundCoordinator.join(); }
+		m_BackgroundCoordinator = std::thread(&Scheduler::BackgroundCoordinator, this);
+	}
 }
 
 void Scheduler::Stop()
 {
+	std::lock_guard<std::mutex> lg(m_Mutex);
+
+	m_StopFlag = true;
 	// TODO: Maybe do something for child threads?
 
 	if (m_BackgroundCoordinator.joinable()) { m_BackgroundCoordinator.join(); }
+
+	m_Data.clear();
 }
 
-void Scheduler::SetData(std::shared_ptr<Data> data)
+void Scheduler::AddData(std::shared_ptr<Data> data)
 {
-	m_Data = data;
+	std::unique_lock<std::mutex> ul(m_Mutex);
+	
+	m_Data.push_back(data);
+
+	if (!m_StopFlag && !m_CoordinatorRunning)
+	{
+		ul.unlock();
+		Start();
+	}
 }
 
 void Scheduler::SetMaxParallelJobs(int maxParallelJobs)
@@ -54,16 +71,17 @@ void Scheduler::progressUpdateFromApplication(long uid, QString message, int pro
 
 void Scheduler::BackgroundCoordinator()
 {
-	qDebug() << QString("Background coordinator started");
+	qDebug() << QString("(Background coordinator) started");
+	m_NumberOfUnfishedJobsThisRound = m_Data[0]->uids.size();
 
-	std::vector<std::thread> threads(m_Data->uids.size());
+	std::vector<std::thread> threads(m_Data[0]->uids.size());
 	int counterForThreadsVec = 0;
 	int numberOfOpenThreads = 0;
 	int oldestOpenThread = 0;
 
-	for (const auto& uid : m_Data->uids)
+	for (const auto& uid : m_Data[0]->uids)
 	{
-		qDebug() << QString("(Background coordinator) Trying to run for uid: ") << QString::number(uid);
+		qDebug() << QString("(Background coordinator) Running for uid: ") << QString::number(uid);
 
 		if (numberOfOpenThreads == m_MaxParallelJobs)
 		{
@@ -73,26 +91,36 @@ void Scheduler::BackgroundCoordinator()
 		}
 
 		numberOfOpenThreads++;
-		m_Data->resultPath[uid] = m_Data->patientDirectoryPath[uid] + std::string("/MPIP_output/labels_res.nii.gz");
+		m_Data[0]->resultPath[uid] = m_Data[0]->patientDirectoryPath[uid] + std::string("/MPIP_output/labels_res.nii.gz");
 		threads[counterForThreadsVec++] = std::thread(&Scheduler::ThreadJob, this,
-			uid, std::ref(m_Data->imagesPaths[uid]), std::ref(m_Data->maskPath[uid]), std::ref(m_Data->patientDirectoryPath[uid])
+			uid, std::ref(m_Data[0]->imagesPaths[uid]), 
+			std::ref(m_Data[0]->maskPath[uid]), std::ref(m_Data[0]->patientDirectoryPath[uid])
 		);
 	}
 
-	for (int i = oldestOpenThread; i < m_Data->uids.size(); i++) {
+	for (int i = oldestOpenThread; i < m_Data[0]->uids.size(); i++) {
 		threads[i].join();
+	}
+
+	std::lock_guard<std::mutex> lg(m_Mutex);
+	m_CoordinatorRunning = false;
+	m_Data.erase(m_Data.begin());
+
+	if (!m_StopFlag)
+	{
+		connect(this, SIGNAL(roundFinished()), this, SLOT(Start()));
+		emit roundFinished();
 	}
 }
 
 void Scheduler::ResultFinished(long uid)
 {
-	qDebug() << QString("Result finished called");
+	std::unique_lock<std::mutex> ul(m_Mutex);
+	
+	qDebug() << QString("Result finished");
 
-	std::lock_guard<std::mutex> lg(m_Mutex);
-	m_NumberOfUnfishedJobs--;
+	m_NumberOfUnfishedJobsThisRound--;
 	emit jobFinished(uid);
-
-	//...?
 }
 
 void Scheduler::ThreadJob(long uid, std::vector<std::string> &imagesPaths, std::string &maskPath, std::string &patientDirectoryPath)
