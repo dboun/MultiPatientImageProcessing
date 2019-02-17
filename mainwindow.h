@@ -23,7 +23,6 @@
 
 #include "ui_MainWindow.h"
 #include "Scheduler.h"
-#include "ViewerBase.h"
 
 #ifdef BUILD_VIEWER
 #include "MpipMitkViewer.h"
@@ -89,8 +88,10 @@ private:
   std::map<long, QTreeWidgetItem*> subjectByUid;
   Scheduler m_Scheduler;
 
+#ifdef BUILD_VIEWER
   //VtkViewer* m_VtkViewer;
-  ViewerBase* m_Viewer;
+  MpipMitkViewer* m_Viewer;
+#endif
 };
 
 #endif // MAINWINDOW_H

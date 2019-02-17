@@ -11,7 +11,6 @@ MpipMitkViewer::MpipMitkViewer()
 	this->InitializeWidget();
 	m_DataStorage = m_DataStorage = mitk::StandaloneDataStorage::New();
 	this->SetDataStorage(m_DataStorage);
-	SetupWidgets();
 
 	this->InitPositionTracking();
 	this->EnablePositionTracking();

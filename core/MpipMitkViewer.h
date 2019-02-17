@@ -3,20 +3,18 @@
 
 #include <QString>
 #include <QWidget>
-#include <itkImage.h>
 #include <mitkStandaloneDataStorage.h>
-#include "QmitkStdMultiWidget.h"
+#include <QmitkStdMultiWidget.h>
 
 #include "ViewerBase.h"
 
-class MpipMitkViewer : public ViewerBase, public QmitkStdMultiWidget
+class MpipMitkViewer : public QmitkStdMultiWidget, public ViewerBase
 {
 	Q_OBJECT
 
 public:
 	MpipMitkViewer();
 
-	// Methods overriden from ViewerBase
 	void Display(QString imagePath, QString overlayPath = QString()) override;
 	void ChangeOpacity(float value) override;
 	bool RemoveImageOrOverlayIfLoaded(QString path) override;

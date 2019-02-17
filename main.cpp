@@ -5,8 +5,8 @@
 #include <QColor>
 
 #ifdef BUILD_VIEWER
-//#include "QVTKOpenGLWidget.h"
 #include "QmitkRegisterClasses.h"
+//#include "QVTKOpenGLWidget.h"
 #endif
 
 int main(int argc, char *argv[])

@@ -3,23 +3,20 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
-{
-#ifdef BUILD_VIEWER
-  m_Viewer = new MpipMitkViewer();
-  //m_Viewer = new VtkViewer();
-#else
-  m_Viewer = new ViewerBase(); // Used for developing without MITK
-#endif
-
-  m_Scheduler.Start(); 
-
-  ui->setupUi(this);
   
-  //DisableRunButton();
+{
+  m_Scheduler.Start(); 
+  ui->setupUi(this);
 
+#ifdef BUILD_VIEWER
+  qDebug() << "Using viewer";
+  //m_Viewer = new VtkViewer();
+  m_Viewer = new MpipMitkViewer();
+	
   // Replace viewerContainer with viewer of choice
   QGridLayout *layout = new QGridLayout(ui->viewerContainer);
   layout->addWidget(m_Viewer, 0, 0);
+#endif
 
   // Disable unused buttons
   ui->actionAdd_image_for_selected_subject->setVisible(false);
@@ -296,7 +293,9 @@ void MainWindow::UpdateProgress(long uid, int progress)
 void MainWindow::Load(QString filePath, QString overlayPath)
 {
   qDebug() << QString("LOADING: ") << filePath << QString(", with overlay: ") << overlayPath;
+#ifdef BUILD_VIEWER
   m_Viewer->Display(filePath, overlayPath);
+#endif
 }
 
 bool MainWindow::LoadSingleSubject(QString directoryPath)

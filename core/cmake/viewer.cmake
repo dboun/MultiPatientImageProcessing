@@ -2,7 +2,10 @@ option(BUILD_VIEWER "Build image viewer" ON)
 
 if( BUILD_VIEWER )
   
-  add_definitions(-DBUILD_VIEWER)
+  set( CORE_DEFINITIONS_TO_ADD ${CORE_DEFINITIONS}
+  	-DBUILD_VIEWER
+  	CACHE INTERNAL ""
+  )
 
   find_package( MITK REQUIRED )
   #find_package{ VTK REQUIRED }
@@ -31,5 +34,8 @@ if( BUILD_VIEWER )
   )
 
 else()
-  remove_definitions(-DBUILD_VIEWER)
+  set( CORE_DEFINITIONS_TO_REMOVE ${CORE_DEFINITIONS_TO_REMOVE}
+    -DBUILD_VIEWER
+    CACHE INTERNAL ""
+  )
 endif()

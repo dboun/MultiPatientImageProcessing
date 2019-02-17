@@ -11,7 +11,7 @@ qt5_wrap_ui( UI_Srcs ${UI_FILES} )
 
 add_library( MpipCore ${CPP_FILES} ${H_FILES} ${UI_FILES} ${MOC_H_FILES} )
 qt5_use_modules( MpipCore Core Gui Widgets )
-SET(CMAKE_INCLUDE_CURRENT_DIR ON)
+SET( CMAKE_INCLUDE_CURRENT_DIR ON )
 
 target_link_libraries( MpipCore 
   ${VIEWER_LIBRARIES_TO_LINK}
