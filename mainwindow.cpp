@@ -344,7 +344,7 @@ bool MainWindow::LoadSingleSubject(QString directoryPath)
     "color: #9a9a9a;"
     "border-style: outset;"
     "border-width: 2px;"
-    "border-color: #BF360C;"
+    "border-color: #323232;"
     "border-radius: 4px;"
     "text-align: center; }"
 

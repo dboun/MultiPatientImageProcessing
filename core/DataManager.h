@@ -1,0 +1,143 @@
+#ifndef DATA_MANAGER_H
+#define DATA_MANAGER_H
+
+#include <QString>
+#include <QObject>
+#include <QString>
+#include <QDir>
+
+#include <vector>
+#include <map>
+#include <mutex>
+
+/** class DataManager
+*     This is a class used to provide basic data
+*     storage functionality. 
+*     It can be used by a viewer for the subjects/images, 
+*     but it can be also be used by itself.
+*/
+class DataManager : public QObject
+{
+	Q_OBJECT
+
+public:
+	DataManager();
+
+	/** struct Data
+	*   contains information about data for a subject
+	*   iid is the unique id of the data 
+	*/
+	typedef struct {
+		long iid;
+		QString name;
+		QString path;
+		QString type;
+		QString specialRole;
+		long    subjectId;
+	} Data;
+
+	/** struct Subject
+	*   contains information about a subject (and it's images etc)
+	*   uid is the unique id of the subject 
+	*/
+	typedef struct {
+		long uid;
+		QString name;
+		QString path;
+		std::vector<long> dataIds;
+	} Subject;
+
+	// /** Special role will be what is displayed instead of the 
+	// *   image name. i.e. Mask
+	// */
+	// virtual void AddSpecialRole(QString specialRole)
+	// {
+	// 	m_SpecialRoles << specialRole;
+	// }
+
+	void SetAcceptedFileTypes(QStringList& acceptedFileTypes);
+
+	// Subject Getters
+
+	std::vector<long> GetAllSubjectIds();
+	QString GetSubjectName(long uid);
+	QString GetSubjectPath(long uid);
+	std::vector<long> GetAllDataIdsOfSubject(long uid);
+
+	// Data Getters
+
+	QString GetDataName(long iid);
+	QString GetDataPath(long iid);
+	QString GetDataType(long iid);
+	QString GetDataSpecialRole(long iid);
+	long GetSubjectIdFromDataId(long iid);
+
+public slots:
+	
+	/** Add a new subject by providing the path to the directory containing the subject's images
+	@param dirPath the directory
+	@param subjectName deduced from the path if not provided 
+	@return the uid of the subject. -1 if adding failed
+	*/
+	virtual long AddSubjectAndDataByDirectoryPath(QString dirPath, QString subjectName = QString());
+
+	/** Add new subject
+	@param subjectPath the path to the directory containing the images 
+	@param subjectName deduced from the path if not provided 
+	@return the uid of the subject. -1 if adding failed
+	*/
+	long AddSubject(QString subjectPath, QString subjectName = QString());
+
+	/** Remove a subject(and its data)
+	@param uid the unique id of the subject
+	*/
+	void RemoveSubject(long uid);
+
+	/** Add data to subject
+	@param uid the subject's id. Use AddSubject for new subject
+	@param path the path to the data
+	@param specialRole if the image has a special role like 'mask' or 'model'
+	@param type user defined (like image or xml)
+	@param name deduced from the path if not provided
+	@return the image's id. -1 if adding failed
+	*/
+	long AddDataToSubject(long uid, QString path, QString specialRole = QString(), 
+		QString type = QString(), QString name = QString());
+
+	/** Remove image
+	@param iid the data's id.
+	*/
+	void RemoveData(long iid);
+
+signals:
+	void SubjectAdded(long uid);
+	void SubjectRemoved(long uid);
+	void SubjectDataChanged(long uid);
+
+protected:
+	std::map<long, Subject> m_Subjects; 
+	std::map<long, Data>    m_Data;
+	QStringList             m_SpecialRoles;
+	
+private:
+
+	template<class T, class U>
+	std::vector<T> IdsOfMap(std::map<T, U>& map)
+	{
+		std::vector<T> keys;
+		keys.reserve(map.size());
+		for (auto const& imap : map) {
+			keys.push_back(imap.first);
+		}
+		return keys;
+	}
+
+	void FindAllFilesRecursively(QString directoryPath, QStringList& allFiles);
+
+	long uidNextToGive = 0;
+	long iidNextToGive = 0;
+	std::mutex m_Mutex;
+	QStringList m_AcceptedFileTypes = QStringList() << "*";
+};
+
+#endif // ! DATA_MANAGER_H
