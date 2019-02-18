@@ -11,11 +11,15 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifdef BUILD_VIEWER
   qDebug() << "Using viewer";
   //m_Viewer = new VtkViewer();
-  m_Viewer = new MpipMitkViewer();
+  m_Viewer = new MpipMitkViewer(this);
+ //m_Viewer = new QmitkStdMultiWidget(ui->viewerContainer);
 	
   // Replace viewerContainer with viewer of choice
-  QGridLayout *layout = new QGridLayout(ui->viewerContainer);
-  layout->addWidget(m_Viewer, 0, 0);
+  //QGridLayout *layout = new QGridLayout(ui->viewerContainer);
+  //layout->addWidget(m_Viewer, 0, 0);
+  //ui->viewerContainer->setLayout(layout);
+ ui->viewerContainer->layout()->addWidget(m_Viewer);
+ 
 #endif
 
   // Disable unused buttons
@@ -57,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent) :
     this, SLOT(ShowTreeContextMenu(const QPoint&))
   );
 
+  //m_Viewer2->show();
 }
 
 MainWindow::~MainWindow()

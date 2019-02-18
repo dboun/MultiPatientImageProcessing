@@ -6,37 +6,31 @@
 #include <mitkIOUtil.h>
 #include <mitkLabelSetImage.h>
 
-MpipMitkViewer::MpipMitkViewer(QObject *parent) : QmitkStdMultiWidget(parent)
+MpipMitkViewer::MpipMitkViewer(QWidget *parent) : ViewerBase(parent)
 {
-	this->InitializeWidget();
-	m_DataStorage = m_DataStorage = mitk::StandaloneDataStorage::New();
-	this->SetDataStorage(m_DataStorage);
+  m_MitkWidget = new QmitkStdMultiWidget(this);
+  QGridLayout *layout = new QGridLayout(this);
+  layout->addWidget(m_MitkWidget, 0, 0);
 
-	this->InitPositionTracking();
-	this->EnablePositionTracking();
+	m_MitkWidget->InitializeWidget();
+	m_DataStorage = m_DataStorage = mitk::StandaloneDataStorage::New();
+  m_MitkWidget->SetDataStorage(m_DataStorage);
+
+  m_MitkWidget->InitPositionTracking();
+  m_MitkWidget->EnablePositionTracking();
 	auto geo = m_DataStorage->ComputeBoundingGeometry3D(m_DataStorage->GetAll());
 	mitk::RenderingManager::GetInstance()->InitializeViews(geo);
 
 	// Initialize bottom-right view as 3D view
-	this->GetRenderWindow4()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D);
+  m_MitkWidget->GetRenderWindow4()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D);
 
 	// Enable standard handler for levelwindow-slider
-	this->EnableStandardLevelWindow();
+  m_MitkWidget->EnableStandardLevelWindow();
 
 	// Add the displayed views to the DataStorage to see their positions in 2D and 3D
-	this->AddDisplayPlaneSubTree();
-	this->AddPlanesToDataStorage();
-	this->SetWidgetPlanesVisibility(true);
-}
-
-void MpipMitkViewer::ChangeOpacity(float value)
-{
-	if (!lastOverlayPath.isEmpty()) {
-		// TODO:
-		//the float value will come from QSlider
-		//find node
-		//change opacity
-	}	
+  m_MitkWidget->AddDisplayPlaneSubTree();
+  m_MitkWidget->AddPlanesToDataStorage();
+  m_MitkWidget->SetWidgetPlanesVisibility(true);
 }
 
 bool MpipMitkViewer::RemoveImageOrOverlayIfLoaded(QString path)
@@ -52,6 +46,8 @@ void MpipMitkViewer::SaveOverlayToFile(QString fullPath)
 
 void MpipMitkViewer::Display(QString imagePath, QString overlayPath)
 {
+  qDebug() << QString("Display called");
+
 	// Remove the previous ones
 	if (!lastImagePath.isEmpty()) {
 		m_DataStorage->Remove(
@@ -112,9 +108,10 @@ void MpipMitkViewer::Display(QString imagePath, QString overlayPath)
 	
 	//this->SetDataStorage(m_DataStorage);
 	//this->UpdateAllWidgets();
-	this->ResetCrosshair();
+  m_MitkWidget->show();
+  m_MitkWidget->ResetCrosshair();
 	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 	//this->RequestUpdate();
-	this->ForceImmediateUpdate();
+  m_MitkWidget->ForceImmediateUpdate();
 	//this->RequestUpdate();
 }

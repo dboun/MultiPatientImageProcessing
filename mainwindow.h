@@ -91,6 +91,7 @@ private:
 #ifdef BUILD_VIEWER
   //VtkViewer* m_VtkViewer;
   MpipMitkViewer* m_Viewer;
+  //QmitkStdMultiWidget* m_Viewer;
 #endif
 };
 

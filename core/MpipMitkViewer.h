@@ -8,20 +8,21 @@
 
 #include "ViewerBase.h"
 
-class MpipMitkViewer : public QmitkStdMultiWidget, public ViewerBase
+class MpipMitkViewer : public ViewerBase
 {
 	Q_OBJECT
 
 public:
-	MpipMitkViewer(QObject *parent = nullptr);
+	MpipMitkViewer(QWidget *parent = nullptr);
 
 	void Display(QString imagePath, QString overlayPath = QString()) override;
-	void ChangeOpacity(float value) override;
+//	void ChangeOpacity(float value) override;
 	bool RemoveImageOrOverlayIfLoaded(QString path) override;
 	void SaveOverlayToFile(QString fullPath) override;
 
 private:
 	mitk::StandaloneDataStorage::Pointer m_DataStorage;
+  QmitkStdMultiWidget* m_MitkWidget;
 	QString lastImagePath, lastOverlayPath;
 };
 

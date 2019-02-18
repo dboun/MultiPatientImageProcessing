@@ -86,15 +86,13 @@ QPushButton:pressed{ background-color: darkGray;border-style: outset; border-sty
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page">
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QLabel" name="viewerContainer">
-          <property name="text">
-           <string/>
-          </property>
+         <widget class="QWidget" name="viewerContainer" native="true">
+          <layout class="QHBoxLayout" name="horizontalLayout_2"/>
          </widget>
         </item>
        </layout>
@@ -131,7 +129,7 @@ QPushButton:pressed{ background-color: darkGray;border-style: outset; border-sty
      <x>0</x>
      <y>0</y>
      <width>986</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <property name="styleSheet">
