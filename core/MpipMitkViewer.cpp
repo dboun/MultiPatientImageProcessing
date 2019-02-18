@@ -6,7 +6,7 @@
 #include <mitkIOUtil.h>
 #include <mitkLabelSetImage.h>
 
-MpipMitkViewer::MpipMitkViewer()
+MpipMitkViewer::MpipMitkViewer(QObject *parent) : QmitkStdMultiWidget(parent)
 {
 	this->InitializeWidget();
 	m_DataStorage = m_DataStorage = mitk::StandaloneDataStorage::New();

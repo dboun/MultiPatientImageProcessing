@@ -21,7 +21,7 @@ class DataManager : public QObject
 	Q_OBJECT
 
 public:
-	DataManager();
+	DataManager(QObject *parent = nullptr);
 
 	/** struct Data
 	*   contains information about data for a subject
@@ -56,6 +56,7 @@ public:
 	// }
 
 	void SetAcceptedFileTypes(QStringList& acceptedFileTypes);
+	QStringList GetAcceptedFileTypes();
 
 	// Subject Getters
 

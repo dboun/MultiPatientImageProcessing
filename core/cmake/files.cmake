@@ -1,15 +1,19 @@
 set( CPP_FILES
   Scheduler.cpp
-  ApplicationBase.cpp
   DataManager.cpp
+  DataTreeView.cpp
+  DataViewBase.cpp
   ViewerBase.cpp
+  ApplicationBase.cpp
 )
 
 set( MOC_H_FILES
   Scheduler.h
-  ApplicationBase.h
   DataManager.h
+  DataTreeView.h
+  DataViewBase.h
   ViewerBase.h
+  ApplicationBase.h
 )
 
 set( UI_FILES
@@ -18,7 +22,9 @@ set( UI_FILES
 
 set( H_FILES
   Scheduler.h
-  ApplicationBase.h
   DataManager.h
+  DataTreeView.h
+  DataViewBase.h
   ViewerBase.h
+  ApplicationBase.h
 )

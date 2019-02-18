@@ -2,7 +2,7 @@
 
 #include "ApplicationBase.h"
 
-Scheduler::Scheduler()
+Scheduler::Scheduler(QObject *parent) : QObject(parent)
 {
 	int threadCount = QThread::idealThreadCount();
 

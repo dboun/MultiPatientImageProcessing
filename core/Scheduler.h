@@ -31,7 +31,7 @@ public:
 		std::map< long, std::string > resultPath;
 	} Data;
 
-	Scheduler();
+	Scheduler(QObject *parent = nullptr);
 
 	void AddData(std::shared_ptr<Data> data);
 	void SetMaxParallelJobs(int maxParallelJobs);

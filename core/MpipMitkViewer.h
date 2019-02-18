@@ -13,7 +13,7 @@ class MpipMitkViewer : public QmitkStdMultiWidget, public ViewerBase
 	Q_OBJECT
 
 public:
-	MpipMitkViewer();
+	MpipMitkViewer(QObject *parent = nullptr);
 
 	void Display(QString imagePath, QString overlayPath = QString()) override;
 	void ChangeOpacity(float value) override;

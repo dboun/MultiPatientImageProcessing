@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-DataManager::DataManager()
+DataManager::DataManager(QObject *parent) : QObject(parent)
 {
 	
 }
@@ -10,6 +10,11 @@ DataManager::DataManager()
 void DataManager::SetAcceptedFileTypes(QStringList& acceptedFileTypes)
 {
 	m_AcceptedFileTypes = acceptedFileTypes;
+}
+
+QStringList DataManager::GetAcceptedFileTypes()
+{
+	return m_AcceptedFileTypes;
 }
 
 std::vector<long> DataManager::GetAllSubjectIds()

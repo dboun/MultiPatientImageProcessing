@@ -8,7 +8,7 @@ class ApplicationBase : public QObject
   Q_OBJECT
 
 public:
-  explicit ApplicationBase(QWidget *parent = nullptr) {}
+  explicit ApplicationBase(QObject *parent = nullptr) : QObject(parent) {}
   ~ApplicationBase() {}
 
   void SetUid(long uid);
