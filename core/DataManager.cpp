@@ -138,6 +138,7 @@ long DataManager::AddSubject(QString subjectPath, QString subjectName)
 	long uid = uidNextToGive++;
 	
 	ul.unlock();
+	qDebug() << "Emit DataManager::SubjectAdded()";
 	emit SubjectAdded(uid);
 
 	return uid;
@@ -193,6 +194,7 @@ long DataManager::AddDataToSubject(long uid, QString path, QString specialRole,
 	long iid = iidNextToGive++;
 
 	ul.unlock();
+	qDebug() << "Emit DataManager::SubjectDataChanged()";
 	emit SubjectDataChanged(uid);
 
 	return iid;
@@ -248,13 +250,14 @@ void DataManager::FindAllFilesRecursively(QString directoryPath, QStringList& al
 	// Add all files to the patient list
 	for (const auto& file : files)
 	{
+		qDebug() << QString("Found file") << file;
 		allFiles << directoryPath + QString("/") + file;
 	}
 
 	// Do the same for subdirectories
 	for (const auto& subdir : subdirectories)
 	{
-    	//qDebug(subdir.toStdString().c_str());
+		qDebug() << "Found subdir" << subdir;
 		FindAllFilesRecursively(directoryPath + QString("/") + subdir, allFiles);
 	}
 }

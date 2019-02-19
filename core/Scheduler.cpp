@@ -15,6 +15,11 @@ Scheduler::Scheduler(QObject *parent) : QObject(parent)
 	//m_MaxParallelJobs = 4;
 }
 
+Scheduler::~Scheduler()
+{
+	Stop();
+}
+
 void Scheduler::Start()
 {
 	std::lock_guard<std::mutex> lg(m_Mutex);

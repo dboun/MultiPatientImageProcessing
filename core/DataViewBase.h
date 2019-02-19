@@ -19,6 +19,7 @@ public slots:
 	virtual void SubjectAddedHandler(long uid);
 	virtual void SubjectRemovedHandler(long uid);
 	virtual void SubjectDataChangedHandler(long uid);
+	virtual void UpdateProgressHandler(long uid, int progress);
 
 signals:
 	void SelectedSubjectChanged(long uid); // uid == -1 if nothing is selected

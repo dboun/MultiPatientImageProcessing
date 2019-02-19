@@ -26,18 +26,18 @@ public slots:
 	virtual void SaveOverlayToFile(QString fullPath);
 
 	// Slot for slider
-  virtual void SliderHandler(long sliderNumber, int value) {}
+	virtual void SliderHandler(long sliderNumber, int value) {}
 
 	// Slots for DataViewBase
-  virtual void SelectedSubjectChangedHandler(long uid) {}
-  virtual void SelectedDataChangedHandler(long iid) {}
+	virtual void SelectedSubjectChangedHandler(long uid) {}
+	virtual void SelectedDataChangedHandler(long iid) {}
 
 protected:
 
 	// Override this to connect custom signal 
 	// (triggered from slider's valueChanged) signal 
 	// to slot SliderHandler
-  virtual void ConnectSlider(QSlider* slider) {}
+	virtual void ConnectSlider(QSlider* slider) {}
 
 	DataManager* m_DataManager;
 	long m_SlidersCount;

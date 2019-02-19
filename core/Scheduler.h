@@ -32,6 +32,7 @@ public:
 	} Data;
 
 	Scheduler(QObject *parent = nullptr);
+	~Scheduler();
 
 	void AddData(std::shared_ptr<Data> data);
 	void SetMaxParallelJobs(int maxParallelJobs);

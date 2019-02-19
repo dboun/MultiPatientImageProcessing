@@ -1,11 +1,22 @@
 #include "DataTreeView.h"
 
 #include <QDebug>
+#include <QGridLayout>
+
 #include <algorithm>
 
 DataTreeView::DataTreeView(QWidget *parent) : DataViewBase(parent)
 {
+	// Set the QTreeWidget
 	m_TreeWidget = new QTreeWidget(this);
+	QGridLayout *layout = new QGridLayout(this);
+	layout->addWidget(m_TreeWidget, 0, 0);
+	this->setLayout(layout);
+
+	// TreeWidget columns
+	QStringList columnNames = QStringList() << "  Select subjects";
+	m_TreeWidget->setHeaderLabels(columnNames);
+	m_TreeWidget->setColumnCount(1);
 }
 
 void DataTreeView::SubjectAddedHandler(long uid)
@@ -87,6 +98,11 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 			}
 		}
 	}
+}
+
+void DataTreeView::UpdateProgressHandler(long uid, int progress)
+{
+	// TODO
 }
 
 void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)

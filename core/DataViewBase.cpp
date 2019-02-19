@@ -12,16 +12,16 @@ void DataViewBase::SetDataManager(DataManager* dataManager)
 	qDebug() << QString("DataViewBase::SetDataManager()");
 	m_DataManager = dataManager;
 
-	connect(dataManager, SIGNAL(DataManager::SubjectAdded(long)),
+	connect(dataManager, SIGNAL(SubjectAdded(long)),
             this, SLOT(SubjectAddedHandler(long))
 	);
 
-	connect(dataManager, SIGNAL(DataManager::SubjectRemoved(long)),
+	connect(dataManager, SIGNAL(SubjectRemoved(long)),
             this, SLOT(SubjectRemovedHandler(long))
 	);
 
 
-	connect(dataManager, SIGNAL(DataManager::SubjectDataChanged(long)),
+	connect(dataManager, SIGNAL(SubjectDataChanged(long)),
             this, SLOT(SubjectDataChangedHandler(long))
 	);
 
@@ -38,8 +38,12 @@ void DataViewBase::SubjectRemovedHandler(long uid)
 	qDebug() << QString("DataViewBase::SubjectRemovedHandler(long)");
 }
 
-
 void DataViewBase::SubjectDataChangedHandler(long uid)
 {
 	qDebug() << QString("DataViewBase::SubjectDataChangedHandler(long)");
+}
+
+void DataViewBase::UpdateProgressHandler(long uid, int progress)
+{
+	qDebug() << QString("DataViewBase::UpdateProgressHandler(int, long)");	
 }

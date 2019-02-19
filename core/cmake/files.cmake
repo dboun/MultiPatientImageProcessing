@@ -3,7 +3,8 @@ set( CPP_FILES
   DataManager.cpp
   DataTreeView.cpp
   DataViewBase.cpp
-  ViewerBase.cpp
+  #ViewerBase.cpp
+  ImageViewerBase.cpp
   ApplicationBase.cpp
 )
 
@@ -12,7 +13,8 @@ set( MOC_H_FILES
   DataManager.h
   DataTreeView.h
   DataViewBase.h
-  ViewerBase.h
+  #ViewerBase.h
+  ImageViewerBase.h
   ApplicationBase.h
 )
 
@@ -25,6 +27,7 @@ set( H_FILES
   DataManager.h
   DataTreeView.h
   DataViewBase.h
-  ViewerBase.h
+  #ViewerBase.h
+  ImageViewerBase.h
   ApplicationBase.h
 )

@@ -17,11 +17,13 @@ if( BUILD_VIEWER )
   set( CPP_FILES ${CPP_FILES}
     #VtkViewer.cpp
     MpipMitkViewer.cpp
+    #MitkViewer.cpp
   )
 
   set( MOC_H_FILES ${MOC_H_FILES}
     #VtkViewer.h
     MpipMitkViewer.h
+    #MitkViewer.h
   )
 
   set( UI_FILES ${UI_FILES}
@@ -31,6 +33,7 @@ if( BUILD_VIEWER )
   set( H_FILES ${H_FILES}
     #VtkViewer.h
     MpipMitkViewer.h
+    #MitkViewer.h
   )
 
 else()
