@@ -46,23 +46,9 @@ void MitkViewer::SelectedSubjectChangedHandler(long uid)
 
 	// TODO: Destroy everything that is loaded
 
-	// Get all the data ids of this subject
-	// for now assume that all the data are images
-	std::vector<long> allDataOfThisSubject = m_DataManager->GetAllDataIdsOfSubject(uid);
-
-	std::vector<QString> allImagesPaths;
-
-	for(long& iid : allDataOfThisSubject)
-	{
-		allImagesPaths.push_back(
-			m_DataManager->GetDataPath(iid);
-		);
-	}
-
-	// allImagesPaths now contain all the paths of 
-	// all the images of *this* subject
-
-	// TODO: Maybe not do much here and wait for the 
+	// Whenever a new subject is selected
+	// All its images are unchecked so there is pretty much
+	// nothing more to do here
 }
 
 void DataAddedForSelectedSubjectHandler(long iid)
@@ -80,9 +66,12 @@ void MitkViewer::SelectedDataChangedHandler(long iid)
 {
 	// This means that a different image is now in focus
 	// but the subject didn't change! Thus, there is no need
-	// for loading/unloading. Maybe for each iid
+	// for loading/unloading.
+	
+	// Not sure what exactly what the correct thing to do is
+	// Maybe for each iid
 	// keep a reference to the node that holds it
-	// and bring it forward or something
+	// and bring it forward or something.
 
 	// TODO
 }
@@ -90,8 +79,9 @@ void MitkViewer::SelectedDataChangedHandler(long iid)
 void MitkViewer::DataCheckedStateChangedHandler(long iid, bool checkState) 
 {
 	// An image got checked/unchecked in the viewer
+
 	// All the images of a new selected subject start unchecked
-	// so here we add them or remove them from the visible things
+	// so here we add them or remove them to the data storage
 
 	// TODO
 }
