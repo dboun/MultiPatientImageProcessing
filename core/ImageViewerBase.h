@@ -18,11 +18,11 @@ public:
 
 	void SetDataView(DataViewBase* dataView);
 	void SetDataManager(DataManager* dataManager);
-	long AddSlider(QSlider* slider); // Can be used multiple times
+	void SetOpacitySlider(QSlider* slider);
 
 public slots:
 	// Slot for slider
-	virtual void SliderHandler(long sliderNumber, int value);
+	virtual void OpacitySliderHandler(int value);
 
 	// Slots for DataViewBase
 	virtual void SelectedSubjectChangedHandler(long uid);
@@ -35,13 +35,7 @@ public slots:
 	virtual void SaveImageToFile(long iid);
 
 protected:
-	// Override this to connect custom signal 
-	// (triggered from slider's valueChanged) signal 
-	// to slot SliderHandler
-	virtual void ConnectSlider(QSlider* slider) {}
-
 	DataManager* m_DataManager;
-	long m_SlidersCount;
 };
 
 #endif // ! IMAGE_VIEWER_BASE_H

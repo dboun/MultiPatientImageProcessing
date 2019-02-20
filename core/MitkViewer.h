@@ -17,7 +17,7 @@ public:
 
 public slots:
 	// Slot for slider
-	void SliderHandler(long sliderNumber, int value) override;
+	void OpacitySliderHandler(int value) override;
 
 	// Slots for DataViewBase
 	void SelectedSubjectChangedHandler(long uid) override;
@@ -30,6 +30,9 @@ public slots:
 	void SaveImageToFile(long iid) override;
 
 private:
+
+	void ConnectSlider(QSlider* slider) override;
+
 	QmitkStdMultiWidget* m_MitkWidget;
 	mitk::StandaloneDataStorage::Pointer m_DataStorage;
 	long currentSubjectId = -1, currentImageId = -1;

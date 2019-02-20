@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Set the DataView
   m_DataView = new DataTreeView(ui->dataViewContainer);
-  QGridLayout *layoutDataViewer = new QGridLayout(ui->dataViewContainer);
+  /*QGridLayout*/QHBoxLayout *layoutDataViewer = new QHBoxLayout(ui->dataViewContainer);
   layoutDataViewer->addWidget(m_DataView);
   m_DataView->SetDataManager(m_DataManager);
 

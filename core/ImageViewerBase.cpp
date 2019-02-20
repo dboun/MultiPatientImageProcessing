@@ -38,16 +38,18 @@ void ImageViewerBase::SetDataManager(DataManager* dataManager)
 	m_DataManager = dataManager;
 }
 
-long ImageViewerBase::AddSlider(QSlider* slider)
+void ImageViewerBase::SetOpacitySlider(QSlider* slider)
 {
-	qDebug() << QString("ViewerBase::AddSlider()");
-	ConnectSlider(slider);
-	return m_SlidersCount++; // id for the slider
+	qDebug() << QString("ViewerBase::SetOpacitySlider()");
+
+	connect(slider, SIGNAL(valueChanged(int)),
+		this, SLOT(OpacitySliderHandler(int))
+	);
 }
 
-void ImageViewerBase::SliderHandler(long sliderNumber, int value)
+void ImageViewerBase::OpacitySliderHandler(int value)
 {
-	qDebug() << QString("ViewerBase::SliderHandler()");
+	qDebug() << QString("ViewerBase::OpacitySliderHandler()");
 }
 
 void ImageViewerBase::SelectedSubjectChangedHandler(long uid)

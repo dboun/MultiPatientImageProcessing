@@ -49,13 +49,13 @@ QPushButton:pressed{ background-color: darkGray;border-style: outset; border-sty
          </property>
         </widget>
        </item>
-       <item alignment="Qt::AlignLeft">
+       <item alignment="Qt::AlignHCenter">
         <widget class="QPushButton" name="pushButtonRun">
          <property name="styleSheet">
-          <string notr="true">QPushButton { font:22px;color:black; background-color:lightblue; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; padding: 3px;}
+          <string notr="true">QPushButton { font:22px;color:black; background-color:rgb(255,61,0); border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; padding: 3px;}
 QPushButton:checked{ background-color: red; border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
-QPushButton:hover{ background-color: lightGray;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
-QPushButton:pressed{ background-color: darkGray;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}                 </string>
+QPushButton:hover{ background-color: rgb(255,117,57);border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
+QPushButton:pressed{ background-color: rgb(195,0,0);border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}                 </string>
          </property>
          <property name="text">
           <string>        Run       &gt;</string>

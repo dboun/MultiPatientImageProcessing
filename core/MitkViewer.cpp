@@ -6,13 +6,37 @@
 #include <mitkIOUtil.h>
 #include <mitkLabelSetImage.h>
 
-void MitkViewer::SliderHandler(long sliderNumber, int value) 
+MitkViewer::MitkViewer(QWidget *parent) : ImageViewerBase(parent)
 {
-	// The opacity slider will have sliderNumber == 0
-	// and concerns the most focused image I guess.
-	// Other sliderNumbers can be used for other
-	// slider, like for changing slices 
+	// Create an instance of QmitkStdMultiWidget and show it
+	m_MitkWidget = new QmitkStdMultiWidget(this);
+	QGridLayout *layout = new QGridLayout(this);
+	layout->addWidget(m_MitkWidget, 0, 0);
+	this->setLayout(layout);
 
+	// MITK Initialization
+	m_MitkWidget->InitializeWidget();
+	m_DataStorage = m_DataStorage = mitk::StandaloneDataStorage::New();
+	m_MitkWidget->SetDataStorage(m_DataStorage);
+	m_MitkWidget->InitPositionTracking();
+	m_MitkWidget->EnablePositionTracking();
+	auto geo = m_DataStorage->ComputeBoundingGeometry3D(m_DataStorage->GetAll());
+	mitk::RenderingManager::GetInstance()->InitializeViews(geo);
+
+	// Initialize bottom-right view as 3D view
+	m_MitkWidget->GetRenderWindow4()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D);
+
+	// Enable standard handler for levelwindow-slider
+	m_MitkWidget->EnableStandardLevelWindow();
+
+	// Add the displayed views to the DataStorage to see their positions in 2D and 3D
+	m_MitkWidget->AddDisplayPlaneSubTree();
+	m_MitkWidget->AddPlanesToDataStorage();
+	m_MitkWidget->SetWidgetPlanesVisibility(true);
+}
+
+void MitkViewer::OpacitySliderHandler(int value) 
+{
 	// We should probably leave this for last
 }
 
@@ -87,33 +111,4 @@ void SaveImageToFile(long iid)
 	QString fullPath = m_DataManager->GetDataPath(iid);
 
 	// TODO: Actually write the image 
-}
-
-MitkViewer::MitkViewer(QWidget *parent) : ImageViewerBase(parent)
-{
-	// Create an instance of QmitkStdMultiWidget and show it
-	m_MitkWidget = new QmitkStdMultiWidget(this);
-	QGridLayout *layout = new QGridLayout(this);
-	layout->addWidget(m_MitkWidget, 0, 0);
-	this->setLayout(layout);
-
-	// MITK Initialization
-	m_MitkWidget->InitializeWidget();
-	m_DataStorage = m_DataStorage = mitk::StandaloneDataStorage::New();
-	m_MitkWidget->SetDataStorage(m_DataStorage);
-	m_MitkWidget->InitPositionTracking();
-	m_MitkWidget->EnablePositionTracking();
-	auto geo = m_DataStorage->ComputeBoundingGeometry3D(m_DataStorage->GetAll());
-	mitk::RenderingManager::GetInstance()->InitializeViews(geo);
-
-	// Initialize bottom-right view as 3D view
-	m_MitkWidget->GetRenderWindow4()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D);
-
-	// Enable standard handler for levelwindow-slider
-	m_MitkWidget->EnableStandardLevelWindow();
-
-	// Add the displayed views to the DataStorage to see their positions in 2D and 3D
-	m_MitkWidget->AddDisplayPlaneSubTree();
-	m_MitkWidget->AddPlanesToDataStorage();
-	m_MitkWidget->SetWidgetPlanesVisibility(true);
 }
