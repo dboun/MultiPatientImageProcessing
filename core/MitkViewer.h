@@ -17,15 +17,17 @@ public:
 
 public slots:
 	// Slot for slider
-	void SliderHandler(long sliderNumber, int value);
+	void SliderHandler(long sliderNumber, int value) override;
 
 	// Slots for DataViewBase
-	void SelectedSubjectChangedHandler(long uid);
-	void SelectedDataChangedHandler(long iid);
-	void DataCheckedStateChangedHandler(long iid, bool checkState);
+	void SelectedSubjectChangedHandler(long uid) override;
+	void DataAddedForSelectedSubjectHandler(long iid) override;
+	void DataRemovedFromSelectedSubjectHandler(long iid) override;
+	void SelectedDataChangedHandler(long iid) override;
+	void DataCheckedStateChangedHandler(long iid, bool checkState) override;
 
 	// Slot, but probably just called.
-	void SaveImageToFile(long iid);
+	void SaveImageToFile(long iid) override;
 
 private:
 	QmitkStdMultiWidget* m_MitkWidget;

@@ -26,6 +26,8 @@ public slots:
 
 	// Slots for DataViewBase
 	virtual void SelectedSubjectChangedHandler(long uid);
+	virtual void DataAddedForSelectedSubjectHandler(long iid);
+	virtual void DataRemovedFromSelectedSubjectHandler(long iid);
 	virtual void SelectedDataChangedHandler(long iid);
 	virtual void DataCheckedStateChangedHandler(long iid, bool checkState); //optional
 

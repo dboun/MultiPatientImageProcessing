@@ -17,6 +17,11 @@ DataTreeView::DataTreeView(QWidget *parent) : DataViewBase(parent)
 	QStringList columnNames = QStringList() << "  Select subjects";
 	m_TreeWidget->setHeaderLabels(columnNames);
 	m_TreeWidget->setColumnCount(1);
+
+	// Signals and slots
+	connect(m_TreeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+		this, SLOT(OnItemClick(QTreeWidgetItem*, int))
+	);
 }
 
 void DataTreeView::SubjectAddedHandler(long uid)
@@ -50,6 +55,7 @@ void DataTreeView::SubjectAddedHandler(long uid)
 
 		if (iids.size() > 0) {
 			m_CurrentDataID = iids[0];
+			qDebug() << "Emit DataTreeView::SelectedDataChanged" << iids[0];
 			emit SelectedDataChanged(iids[0]);
 		}
 	}
@@ -85,16 +91,28 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 				dataToAdd->setData(0, ID, iid);
 				dataToAdd->setData(0, IS_CHECKED, true);
 
-				m_Data[iid] = dataToAdd;				
+				m_Data[iid] = dataToAdd;	
+
+				if (m_CurrentSubjectID == uid)
+				{
+					qDebug() << "Emit DataTreeView::DataAddedForSelectedSubject" << iid;
+					emit DataAddedForSelectedSubject(iid);
+				}
 			}
 		}
 		
 		for (int i = 0; i < subject->childCount(); i++)
 		{
 			long iid = subject->child(i)->data(0, ID).toLongLong();
-			if (std::find(iids.begin(), iids.end(), iid) != iids.end())
+			if (std::find(iids.begin(), iids.end(), iid) == iids.end())
 			{
 				delete m_Data[iid];
+
+				if (m_CurrentSubjectID == uid)
+				{
+					qDebug() << "Emit DataTreeView::DataRemovedFromSelectedSubject" << iid;
+					emit DataRemovedFromSelectedSubject(iid);
+				}
 			}
 		}
 	}
@@ -115,6 +133,7 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 	{
 		item->setData(0, IS_CHECKED, (item->checkState(0) == Qt::Checked)? true : false);
 
+		qDebug() << "Emit DataTreeView::DataCheckedStateChanged";
 		emit DataCheckedStateChanged(item->data(0, ID).toLongLong(), item->data(0, IS_CHECKED).toBool()); 
 	}
 
@@ -132,6 +151,7 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 	if (m_CurrentSubjectID != currentSubjectID)
 	{
 		m_CurrentSubjectID = currentSubjectID;
+		qDebug() << "Emit DataTreeView::SelectedSubjectChanged" << currentSubjectID;
 		emit SelectedSubjectChanged(currentSubjectID);
 	}
 
@@ -143,6 +163,7 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 	// If it's a data item and it got checked
 	if (currentSelected->parent() && currentSelected->checkState(0) == Qt::Checked)
 	{
+		qDebug() << "Emit DataTreeView::SelectedDataChanged" << currentSelected->data(0, ID).toLongLong();
 		emit SelectedDataChanged(currentSelected->data(0, ID).toLongLong());
 	}
 }

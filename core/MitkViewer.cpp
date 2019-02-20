@@ -39,6 +39,16 @@ void MitkViewer::SelectedSubjectChangedHandler(long uid)
 	// TODO: Stuff :P
 }
 
+void DataAddedForSelectedSubjectHandler(long iid)
+{
+	// TODO
+}
+
+void DataRemovedFromSelectedSubjectHandler(long iid)
+{
+	// TODO
+}
+
 void MitkViewer::SelectedDataChangedHandler(long iid)
 {
 	// This means that a different image is now in focus

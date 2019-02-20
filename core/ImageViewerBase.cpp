@@ -16,7 +16,12 @@ void ImageViewerBase::SetDataView(DataViewBase* dataView)
 	connect(dataView, SIGNAL(SelectedSubjectChanged(long)),
 		this, SLOT(SelectedSubjectChangedHandler(long))
 	);
-
+	connect(dataView, SIGNAL(DataAddedForSelectedSubject(long)),
+		this, SLOT(DataAddedForSelectedSubjectHandler(long))
+	);
+	connect(dataView, SIGNAL(DataRemovedFromSelectedSubject(long)),
+		this, SLOT(DataRemovedFromSelectedSubjectHandler(long))
+	);
 	connect(dataView, SIGNAL(SelectedDataChanged(long)),
 		this, SLOT(SelectedDataChangedHandler(long))
 	);
@@ -49,6 +54,17 @@ void ImageViewerBase::SelectedSubjectChangedHandler(long uid)
 {
 	qDebug() << QString("ViewerBase::SliderHandler()") << uid;
 }
+
+void ImageViewerBase::DataAddedForSelectedSubjectHandler(long iid)
+{
+	qDebug() << QString("ViewerBase::DataAddedForSelectedSubjectHandler()") << iid;
+}
+
+void ImageViewerBase::DataRemovedFromSelectedSubjectHandler(long iid)
+{
+	qDebug() << QString("ViewerBase::DataRemovedFromSelectedSubjectHandler()") << iid;
+}
+
 void ImageViewerBase::SelectedDataChangedHandler(long iid)
 {
 	qDebug() << QString("ViewerBase::SelectedDataChangedHandler()") << iid;

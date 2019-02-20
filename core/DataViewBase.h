@@ -24,6 +24,8 @@ public slots:
 signals:
 	void SelectedSubjectChanged(long uid); // uid == -1 if nothing is selected
 	void SelectedDataChanged(long iid);
+	void DataAddedForSelectedSubject(long iid);
+	void DataRemovedFromSelectedSubject(long iid);
 	void DataCheckedStateChanged(long iid, bool checkState); // Optional
 	
 protected:
