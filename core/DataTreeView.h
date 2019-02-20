@@ -34,6 +34,7 @@ public slots:
 	void OnItemRightClickSetAsMask();
 
 private:
+	// For convenience
 	void SwitchExpandedView(QTreeWidgetItem* focusItem);
 
 	QTreeWidget* m_TreeWidget;

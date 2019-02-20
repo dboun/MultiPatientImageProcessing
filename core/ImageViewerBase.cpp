@@ -54,7 +54,12 @@ void ImageViewerBase::OpacitySliderHandler(int value)
 
 void ImageViewerBase::SelectedSubjectChangedHandler(long uid)
 {
-	qDebug() << QString("ViewerBase::SliderHandler()") << uid;
+	qDebug() << QString("ViewerBase::SelectedSubjectChangedHandler()") << uid;
+}
+
+void ImageViewerBase::SelectedDataChangedHandler(long iid)
+{
+	qDebug() << QString("ViewerBase::SelectedDataChangedHandler()") << iid;
 }
 
 void ImageViewerBase::DataAddedForSelectedSubjectHandler(long iid)
@@ -65,11 +70,6 @@ void ImageViewerBase::DataAddedForSelectedSubjectHandler(long iid)
 void ImageViewerBase::DataRemovedFromSelectedSubjectHandler(long iid)
 {
 	qDebug() << QString("ViewerBase::DataRemovedFromSelectedSubjectHandler()") << iid;
-}
-
-void ImageViewerBase::SelectedDataChangedHandler(long iid)
-{
-	qDebug() << QString("ViewerBase::SelectedDataChangedHandler()") << iid;
 }
 
 void ImageViewerBase::DataCheckedStateChangedHandler(long iid, bool checkState)

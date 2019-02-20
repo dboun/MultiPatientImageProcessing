@@ -4,6 +4,8 @@
 #include <QGridLayout>
 #include <QString>
 #include <QMenu>
+#include <QProgressBar>
+#include <QLabel>
 
 #include <algorithm>
 
@@ -14,15 +16,15 @@ DataTreeView::DataTreeView(QWidget *parent) : DataViewBase(parent)
 	QGridLayout *layout = new QGridLayout(this);
 	layout->addWidget(m_TreeWidget, 0, 0);
 	this->setLayout(layout);
-	m_TreeWidget->setStyleSheet("QTreeWidget {background-color:rgb(97,97,97)}"
+	m_TreeWidget->setStyleSheet("QTreeWidget {background-color:rgb(97,97,97);border:1px solid rgb(255,61,0);border-radius:2px}"
 		"QHeaderView::section {"                          
 		    "color: black;"                            
-		    "padding: 2px;"                              
+		    "background-color:#000000;"
+		    "padding: 4px;"                              
 		    "height:20px;"                              
-		    "border: 0px solid #c30000;"                  
-		    "border-left:0px;"                 
-		    "border-right:0px;"                           
-		    "background: #ff3d00;"
+		    "border: 0px solid #000000;"                  
+		    "border-bottom:1px;"                                            
+		    "background: #9f0000;"
 		"}"
 	);
 
@@ -46,36 +48,55 @@ void DataTreeView::SubjectAddedHandler(long uid)
 	QTreeWidgetItem* subjectToAdd = new QTreeWidgetItem(m_TreeWidget);
 	subjectToAdd->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 	subjectToAdd->setSelected(true);
-	subjectToAdd->setText(0, m_DataManager->GetSubjectName(uid));
+	//subjectToAdd->setText(0, m_DataManager->GetSubjectName(uid));
 	subjectToAdd->setData(0, ID, uid);
+
+	QProgressBar *progressBar = new QProgressBar();
+	progressBar->setObjectName(QString("ProgressBar") + QString(uid));
+	progressBar->setVisible(false);
+	progressBar->setMinimum(0);
+	progressBar->setMaximum(100);
+	progressBar->setValue(0);
+	progressBar->setAlignment(Qt::AlignCenter);
+	progressBar->setMinimumWidth(30);
+	progressBar->setMaximumWidth(40);
+	progressBar->setMaximumHeight(20);
+	progressBar->setStyleSheet("QProgressBar {"
+		"background-color: #4f4f4f;"
+		"color: #9a9a9a;"
+		"border-style: outset;"
+		"border-width: 2px;"
+		"border-color: #323232;"
+		"border-radius: 4px;"
+		"text-align: center; }"
+
+		"QProgressBar::chunk {"
+		"background-color: #F5F5F5; }"
+	);
+
+	QLabel *label = new QLabel(m_DataManager->GetSubjectName(uid));
+	label->setMaximumHeight(20);
+	label->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+
+	QWidget *labelAndProgress = new QWidget();
+	labelAndProgress->setStyleSheet("background-color: rgba(0,0,0,0)");
+	labelAndProgress->setAutoFillBackground(true);
+	labelAndProgress->setMaximumHeight(35);
+	QHBoxLayout *hLayout = new QHBoxLayout();
+	hLayout->addWidget(label, Qt::AlignLeft);
+	hLayout->addWidget(progressBar, Qt::AlignRight);
+	labelAndProgress->setLayout(hLayout);
+	labelAndProgress->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+
+	m_TreeWidget->setItemWidget(subjectToAdd, 0, labelAndProgress);
 
 	m_Subjects[uid] = subjectToAdd;
 
-	std::vector<long> iids = m_DataManager->GetAllDataIdsOfSubject(uid);
-
-	for (long& iid : iids)
-	{
-		QTreeWidgetItem* dataToAdd = new QTreeWidgetItem(subjectToAdd);
-		//dataToAdd->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-		dataToAdd->setFlags(Qt::NoItemFlags);
-		dataToAdd->setSelected(true);
-		dataToAdd->setText(0, m_DataManager->GetDataName(iid));
-		dataToAdd->setData(0, ID, iid);
-		dataToAdd->setData(0, IS_CHECKED, true);
-
-		m_Data[iid] = dataToAdd;
-	}
-
 	if (m_CurrentSubjectID == -1)
 	{
+		m_TreeWidget->setCurrentItem(subjectToAdd);
 		SwitchExpandedView(subjectToAdd);
 		m_CurrentSubjectID = uid;
-
-		if (iids.size() > 0) {
-			m_CurrentDataID = iids[0];
-			qDebug() << "Emit DataTreeView::SelectedDataChanged" << iids[0];
-			emit SelectedDataChanged(iids[0]);
-		}
 	}
 }
 
@@ -107,7 +128,7 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 				dataToAdd->setCheckState(0, Qt::Unchecked);
 				dataToAdd->setText(0, m_DataManager->GetDataName(iid));
 				dataToAdd->setData(0, ID, iid);
-				dataToAdd->setData(0, IS_CHECKED, true);
+				dataToAdd->setData(0, IS_CHECKED, false);
 
 				if (m_DataManager->GetDataSpecialRole(iid) != QString())
 				{
@@ -143,32 +164,47 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 
 void DataTreeView::UpdateProgressHandler(long uid, int progress)
 {
-	// TODO
+	QProgressBar *progressBar = m_Data[uid]->treeWidget()->findChild<QProgressBar*>(QString("ProgressBar") + QString(uid));
+	progressBar->setVisible(true);
+	progressBar->setValue(progress);
 }
 
 void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 {
 	qDebug() << QString("Clicked tree item.");
+
+	if (!m_TreeWidget->currentItem())
+	{
+		m_TreeWidget->setCurrentItem(item);
+	}
+
 	bool isTopLevelItem = (!item->parent());
 
 	// If it's a data item and it's check state changed
-	if (isTopLevelItem && item->checkState(0) != item->data(0, IS_CHECKED))
+	if (!isTopLevelItem && item->checkState(0) != item->data(0, IS_CHECKED).toBool())
 	{
-		item->setData(0, IS_CHECKED, (item->checkState(0) == Qt::Checked)? true : false);
+		item->setData(0, IS_CHECKED, (item->checkState(0)) ? true : false);
 
 		qDebug() << "Emit DataTreeView::DataCheckedStateChanged";
 		emit DataCheckedStateChanged(item->data(0, ID).toLongLong(), item->data(0, IS_CHECKED).toBool()); 
 	}
 
-	QTreeWidgetItem* currentSelected = m_TreeWidget->currentItem();
-
-	QTreeWidgetItem* currentTopLevelItem = (
-		(currentSelected->parent()) ?
-			currentSelected->parent() :
-			currentSelected
+	QTreeWidgetItem* topLevelItem = (
+		(item->parent()) ?
+			item->parent() :
+			item
 	);
 
-	long currentSubjectID = currentTopLevelItem->data(0, ID).toLongLong();
+	// If it's a data item and it got selected and it's checked
+	if (item->parent() && m_CurrentDataID != item->data(0, ID).toLongLong()
+		&& item->checkState(0) == Qt::Checked)
+	{
+		m_CurrentDataID = item->data(0, ID).toLongLong();
+		qDebug() << "Emit DataTreeView::SelectedDataChanged" << item->data(0, ID).toLongLong();
+		emit SelectedDataChanged(item->data(0, ID).toLongLong());
+	}
+
+	long currentSubjectID = topLevelItem->data(0, ID).toLongLong();
 
 	// If the subject generally changed
 	if (m_CurrentSubjectID != currentSubjectID)
@@ -179,15 +215,8 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 	}
 
 	// If it's a subject
-	if (!currentSelected->parent()) {
-		SwitchExpandedView(currentTopLevelItem);
-	}
-
-	// If it's a data item and it got checked
-	if (currentSelected->parent() && currentSelected->checkState(0) == Qt::Checked)
-	{
-		qDebug() << "Emit DataTreeView::SelectedDataChanged" << currentSelected->data(0, ID).toLongLong();
-		emit SelectedDataChanged(currentSelected->data(0, ID).toLongLong());
+	if (isTopLevelItem) {
+		SwitchExpandedView(topLevelItem);
 	}
 }
 
@@ -229,12 +258,6 @@ void DataTreeView::OnItemRightClickRemove()
   else {
   	m_DataManager->RemoveSubject(m_TreeWidget->currentItem()->data(0, ID).toLongLong());
   }
-
-  // if (ui->patientTree->topLevelItemCount() > 0)
-  // {
-	 //  SwitchExpandedView(ui->patientTree->topLevelItem(0));
-  // }
-  //this->ui->stackedWidget->setCurrentIndex(0);
 }
 
 void DataTreeView::OnItemRightClickSetAsMask()
@@ -257,28 +280,48 @@ void DataTreeView::OnItemRightClickSetAsMask()
 
 void DataTreeView::SwitchExpandedView(QTreeWidgetItem* focusItem)
 {
+	qDebug() << "DataTreeView::SwitchExpandedView()";
+
+	if (!focusItem) { return; }
+	
 	// We are concerned about top level items (subjects)
-	if (focusItem && focusItem->parent())
+	if (focusItem->parent())
 	{
 		focusItem = focusItem->parent();
 	}
 
-	if (focusItem)
+	// Uncheck everything from last focused subject
+	if (m_CurrentSubjectID != -1 && m_Subjects[m_CurrentSubjectID])
 	{
-		focusItem->setSelected(true);
-		focusItem->setExpanded(true);
-		int focusItemIndex = m_TreeWidget->indexOfTopLevelItem(focusItem);
-
-		for (int i = 0; i < m_TreeWidget->topLevelItemCount(); i++)
+		for (int i = 0; i < m_Subjects[m_CurrentSubjectID]->childCount(); i++)
 		{
-			QTreeWidgetItem* topLevelItem = m_TreeWidget->topLevelItem(i);
+			qDebug() << "Setting things to false";
+			m_Subjects[m_CurrentSubjectID]->child(i)->setCheckState(0, Qt::Unchecked);
+			m_Subjects[m_CurrentSubjectID]->child(i)->setData(0, IS_CHECKED, false);
+		}
+	}
+
+	// Uncheck everything from current focused subject
+	for (int i = 0; i < focusItem->childCount(); i++)
+	{
+		qDebug() << "Setting stuff to false";
+		focusItem->child(i)->setCheckState(0, Qt::Unchecked);
+		focusItem->child(i)->setData(0, IS_CHECKED, false);
+	}
+
+	focusItem->setSelected(true);
+	focusItem->setExpanded(true);
+	int focusItemIndex = m_TreeWidget->indexOfTopLevelItem(focusItem);
+
+	for (int i = 0; i < m_TreeWidget->topLevelItemCount(); i++)
+	{
+		QTreeWidgetItem* topLevelItem = m_TreeWidget->topLevelItem(i);
 			
-			if (i != focusItemIndex)
-			{
-				qDebug() << "Un-expanding item";
-				m_TreeWidget->topLevelItem(i)->setSelected(false);
-				m_TreeWidget->topLevelItem(i)->setExpanded(false);
-			}
+		if (i != focusItemIndex)
+		{
+			qDebug() << "Un-expanding item";
+			m_TreeWidget->topLevelItem(i)->setSelected(false);
+			m_TreeWidget->topLevelItem(i)->setExpanded(false);
 		}
 	}
 }

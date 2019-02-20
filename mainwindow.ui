@@ -31,6 +31,27 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
+        <widget class="QSlider" name="opacitySlider">
+         <property name="cursor">
+          <cursorShape>ArrowCursor</cursorShape>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QSlider::groove:horizontal{border: 1px solid #9f0000
+;height: 4px;border-radius: 4px;width:200px; background-color:rgb(97,97,97)}
+QSlider::handle:horizontal{border: 1px solid #000000; width: 10px; margin: -12px 0px; background-color:#0d47a1}</string>
+         </property>
+         <property name="value">
+          <number>99</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="invertedAppearance">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QWidget" name="dataViewContainer" native="true"/>
        </item>
        <item>
@@ -52,13 +73,13 @@ QPushButton:pressed{ background-color: darkGray;border-style: outset; border-sty
        <item alignment="Qt::AlignHCenter">
         <widget class="QPushButton" name="pushButtonRun">
          <property name="styleSheet">
-          <string notr="true">QPushButton { font:22px;color:black; background-color:rgb(255,61,0); border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; padding: 3px;}
-QPushButton:checked{ background-color: red; border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
-QPushButton:hover{ background-color: rgb(255,117,57);border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
-QPushButton:pressed{ background-color: rgb(195,0,0);border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}                 </string>
+          <string notr="true">QPushButton { font:21px; height:30px;width:150px;color:black; background-color:rgb(255,61,0); border-style: solid; border-color: #9f0000; border-width: 1px; border-radius: 5px; padding: 3px;}
+QPushButton:checked{ background-color: red; border-style: outset; border-style: solid; border-color: black; border-width: 1px; border-radius: 5px;}
+QPushButton:hover{ background-color: rgb(255,117,57);border-style: outset; border-style: solid; border-color: black; border-width: 1px; border-radius: 5px;}
+QPushButton:pressed{ background-color: rgb(195,0,0);border-style: outset; border-style: solid; border-color: black; border-width: 1px; border-radius: 5px;}                 </string>
          </property>
          <property name="text">
-          <string>        Run       &gt;</string>
+          <string>       Run      &gt;</string>
          </property>
          <property name="checkable">
           <bool>false</bool>
@@ -85,22 +106,6 @@ QPushButton:pressed{ background-color: rgb(195,0,0);border-style: outset; border
       <widget class="QWidget" name="view">
        <layout class="QGridLayout" name="gridLayout"/>
       </widget>
-     </widget>
-    </item>
-    <item>
-     <widget class="QSlider" name="opacitySlider">
-      <property name="cursor">
-       <cursorShape>ArrowCursor</cursorShape>
-      </property>
-      <property name="value">
-       <number>99</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="invertedAppearance">
-       <bool>false</bool>
-      </property>
      </widget>
     </item>
    </layout>

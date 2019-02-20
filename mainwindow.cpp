@@ -39,7 +39,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
   QGridLayout *layoutImageViewer = new QGridLayout(ui->viewerContainer);
   layoutImageViewer->addWidget(m_ImageViewer);
-
+  m_ImageViewer->SetDataManager(m_DataManager);
+  m_ImageViewer->SetDataView(m_DataView);
+  m_ImageViewer->SetOpacitySlider(ui->opacitySlider);
 
   // Disable unused buttons
   ui->actionAdd_image_for_selected_subject->setVisible(false);
@@ -52,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Shadow effect
   QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
-  effect->setBlurRadius(1);
+  effect->setBlurRadius(2);
   effect->setXOffset(1);
   effect->setYOffset(1);
   effect->setColor(Qt::black);
@@ -78,15 +80,6 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)),
     this, SLOT(SelectedSubjectChangedHandler(long))
   );
-  // connect(ui->patientTree, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
-  //   this, SLOT(OnTreeWidgetClicked(QTreeWidgetItem*, int))
-  // );
-
-  // ui->patientTree->setContextMenuPolicy(Qt::CustomContextMenu);
-  // connect(ui->patientTree, SIGNAL(customContextMenuRequested(const QPoint&)),
-  //   this, SLOT(ShowTreeContextMenu(const QPoint&))
-  // );
-
 }
 
 MainWindow::~MainWindow()

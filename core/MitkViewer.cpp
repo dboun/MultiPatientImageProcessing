@@ -44,6 +44,8 @@ void MitkViewer::SelectedSubjectChangedHandler(long uid)
 {
 	// This means that a *new* subject is selected
 
+	// TODO: Destroy everything that is loaded
+
 	// Get all the data ids of this subject
 	// for now assume that all the data are images
 	std::vector<long> allDataOfThisSubject = m_DataManager->GetAllDataIdsOfSubject(uid);
@@ -60,17 +62,18 @@ void MitkViewer::SelectedSubjectChangedHandler(long uid)
 	// allImagesPaths now contain all the paths of 
 	// all the images of *this* subject
 
-	// TODO: Stuff :P
+	// TODO: Maybe not do much here and wait for the 
 }
 
 void DataAddedForSelectedSubjectHandler(long iid)
 {
-	// TODO
+	// TODO: Leave it for now, the gui doesn't support
+	// putting new images to an existing subject yet
 }
 
 void DataRemovedFromSelectedSubjectHandler(long iid)
 {
-	// TODO
+	// TODO: Leave for last 
 }
 
 void MitkViewer::SelectedDataChangedHandler(long iid)
@@ -87,7 +90,10 @@ void MitkViewer::SelectedDataChangedHandler(long iid)
 void MitkViewer::DataCheckedStateChangedHandler(long iid, bool checkState) 
 {
 	// An image got checked/unchecked in the viewer
-	// Not really a priority I think
+	// All the images of a new selected subject start unchecked
+	// so here we add them or remove them from the visible things
+
+	// TODO
 }
 
 void SaveImageToFile(long iid)
@@ -95,6 +101,7 @@ void SaveImageToFile(long iid)
 	// Since the image has an iid, info about it
 	// including the full path to it can be obtained
 	// from the DataManager (already set up by ImageViewerBase).
+	QString fullPath = m_DataManager->GetDataPath(iid);
 
 	// If you need to create a new image (probably from the drawing tool?)
 	// then show a dialog to get the filepath from the user,
@@ -107,8 +114,6 @@ void SaveImageToFile(long iid)
 	// name should probably be "<Mask>" or something
 	// type doesn't do anything for now
 	// This will automatically update the tree and everything
-
-	QString fullPath = m_DataManager->GetDataPath(iid);
 
 	// TODO: Actually write the image 
 }
