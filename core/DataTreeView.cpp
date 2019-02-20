@@ -7,7 +7,6 @@
 #include <QProgressBar>
 #include <QLabel>
 #include <QVariant>
-#include <QtGlobal>
 
 #include <algorithm>
 
