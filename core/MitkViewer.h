@@ -6,7 +6,7 @@
 #include <mitkStandaloneDataStorage.h>
 #include <QmitkStdMultiWidget.h>
 
-#include "ViewerBase.h"
+#include "ImageViewerBase.h"
 
 class MitkViewer : public ImageViewerBase
 {
@@ -31,7 +31,7 @@ public slots:
 
 private:
 
-	void ConnectSlider(QSlider* slider) override;
+	//void ConnectSlider(QSlider* slider) override;
 
 	QmitkStdMultiWidget* m_MitkWidget;
 	mitk::StandaloneDataStorage::Pointer m_DataStorage;

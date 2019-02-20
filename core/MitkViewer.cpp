@@ -51,13 +51,13 @@ void MitkViewer::SelectedSubjectChangedHandler(long uid)
 	// nothing more to do here
 }
 
-void DataAddedForSelectedSubjectHandler(long iid)
+void MitkViewer::DataAddedForSelectedSubjectHandler(long iid)
 {
 	// TODO: Leave it for now, the gui doesn't support
 	// putting new images to an existing subject yet
 }
 
-void DataRemovedFromSelectedSubjectHandler(long iid)
+void MitkViewer::DataRemovedFromSelectedSubjectHandler(long iid)
 {
 	// TODO: Leave for last 
 }
@@ -86,7 +86,7 @@ void MitkViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 	// TODO
 }
 
-void SaveImageToFile(long iid)
+void MitkViewer::SaveImageToFile(long iid)
 {
 	// Since the image has an iid, info about it
 	// including the full path to it can be obtained
