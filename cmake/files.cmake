@@ -1,19 +1,19 @@
 set( CPP_FILES
-  Main.cpp
-  MainWindow.cpp
+  main.cpp
+  mainwindow.cpp
   ${APP_SOURCES}
 )
 
 set( MOC_H_FILES
-  MainWindow.h
+  mainwindow.h
   ${APP_HEADERS}
 )
 
 set( UI_FILES
-  MainWindow.ui
+  mainwindow.ui
 )
 
 set( H_FILES
-  MainWindow.h
+  mainwindow.h
   ${APP_HEADERS}
 )

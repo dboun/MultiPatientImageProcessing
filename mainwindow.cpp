@@ -1,4 +1,4 @@
-#include "MainWindow.h"
+#include "mainwindow.h"
 
 #include <QDir>
 #include <QFileDialog>
@@ -134,7 +134,7 @@ void MainWindow::RunPressed()
 
 	long uid = m_CurrentSubjectID; // For convenience
 
-	qDebug() << QString("(Run) Added uid:  ") << QString(uid);
+    qDebug() << QString("(Run) Added uid:  ") << QString::number(uid);
 	data->uids.push_back(uid);
 	data->patientDirectoryPath[uid] = m_DataManager->GetDataPath(uid).toStdString();
 
@@ -166,7 +166,7 @@ void MainWindow::RunPressed()
 
 void MainWindow::SchedulerResultReady(long uid)
 {
-  qDebug() << QString("SchedulerResultReady called for uid: ") << QString(uid);
+  qDebug() << QString("SchedulerResultReady called for uid: ") << QString::number(uid);
 
   QString segmPath = m_DataManager->GetSubjectPath(uid) + "/MPIP_output/labels_res.nii.gz";
 

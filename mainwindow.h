@@ -10,7 +10,7 @@
 #include "DataManager.h"
 #include "ImageViewerBase.h"
 #include "DataViewBase.h"
-#include "ui_MainWindow.h"
+#include "ui_mainwindow.h"
 
 #ifdef BUILD_VIEWER
 #include "MitkViewer.h"

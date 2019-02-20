@@ -6,6 +6,8 @@
 #include <QMenu>
 #include <QProgressBar>
 #include <QLabel>
+#include <QVariant>
+#include <QtGlobal>
 
 #include <algorithm>
 
@@ -49,15 +51,15 @@ void DataTreeView::SubjectAddedHandler(long uid)
 	subjectToAdd->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 	subjectToAdd->setSelected(true);
 	//subjectToAdd->setText(0, m_DataManager->GetSubjectName(uid));
-	subjectToAdd->setData(0, ID, uid);
+    subjectToAdd->setData(0, ID, QVariant(static_cast<long long int>(uid) ));
 
 	QProgressBar *progressBar = new QProgressBar();
-	progressBar->setObjectName(QString("ProgressBar") + QString(uid));
+    progressBar->setObjectName(QString("ProgressBar") + QString::number(uid));
 	progressBar->setVisible(false);
 	progressBar->setMinimum(0);
 	progressBar->setMaximum(100);
 	progressBar->setValue(0);
-	progressBar->setAlignment(Qt::AlignCenter);
+    progressBar->setAlignment(Qt::AlignCenter);
 	progressBar->setMinimumWidth(30);
 	progressBar->setMaximumWidth(40);
 	progressBar->setMaximumHeight(20);
@@ -127,7 +129,7 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 				//dataToAdd->setSelected(true);
 				dataToAdd->setCheckState(0, Qt::Unchecked);
 				dataToAdd->setText(0, m_DataManager->GetDataName(iid));
-				dataToAdd->setData(0, ID, iid);
+                dataToAdd->setData(0, ID, QVariant(static_cast<long long int>(iid)));
 				dataToAdd->setData(0, IS_CHECKED, false);
 
 				if (m_DataManager->GetDataSpecialRole(iid) != QString())
@@ -164,7 +166,7 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 
 void DataTreeView::UpdateProgressHandler(long uid, int progress)
 {
-	QProgressBar *progressBar = m_Data[uid]->treeWidget()->findChild<QProgressBar*>(QString("ProgressBar") + QString(uid));
+    QProgressBar *progressBar = m_Data[uid]->treeWidget()->findChild<QProgressBar*>(QString("ProgressBar") + QString::number(uid));
 	progressBar->setVisible(true);
 	progressBar->setValue(progress);
 }

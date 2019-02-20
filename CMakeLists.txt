@@ -10,7 +10,7 @@ add_subdirectory( core )
 add_definitions( ${CORE_DEFINITIONS_TO_ADD} )
 remove_definitions( ${CORE_DEFINITIONS_TO_REMOVE} )
 
-add_subdirectory( applications )
+add_subdirectory( Applications )
 
 # Find all files
 include_directories( 
