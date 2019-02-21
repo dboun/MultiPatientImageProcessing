@@ -38,6 +38,24 @@ MitkViewer::MitkViewer(QWidget *parent) : ImageViewerBase(parent)
 void MitkViewer::OpacitySliderHandler(int value) 
 {
 	// We should probably leave this for last
+  //QString name = m_DataManager->GetDataName(value);
+  QString path = m_DataManager->GetDataPath(m_CurrentDataIID);
+  QFileInfo f(path);
+  f.baseName();
+  qDebug() << "basename = " << f.baseName();
+  QString name = f.baseName();
+
+  qDebug() << name;
+  qDebug() << "opacity value = " << value;
+
+  mitk::DataNode* node = m_DataStorage->GetNamedNode(name.toStdString().c_str());
+  std::string nodename = node->GetName();
+  node->SetProperty("layer", mitk::IntProperty::New(1));
+  node->SetProperty("opacity", mitk::FloatProperty::New(value/100.0));
+  node->GetData()->Modified();
+
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+
 }
 
 void MitkViewer::SelectedSubjectChangedHandler(long uid) 
@@ -94,7 +112,7 @@ void MitkViewer::DataRemovedFromSelectedSubjectHandler(long iid)
 
 void MitkViewer::SelectedDataChangedHandler(long iid)
 {
-
+  this->m_CurrentDataIID = iid;
  //   qDebug() << QString("MitkViewer::SelectedDataChangedHandler()") << iid;
 
  //   QString imagePath = m_DataManager->GetDataPath(iid);
@@ -174,7 +192,8 @@ void MitkViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 
         mitk::DataNode::Pointer newNode = mitk::DataNode::New();
         QString name = m_DataManager->GetDataName(iid);
-        QFileInfo f(name);
+        QString path = m_DataManager->GetDataPath(iid);
+        QFileInfo f(path);
         f.baseName();
         qDebug() << "basename = " << f.baseName();
         name = f.baseName();
@@ -196,7 +215,8 @@ void MitkViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
   else {
     qDebug() << QString("inside else ");
     QString name = m_DataManager->GetDataName(iid);
-    QFileInfo f(name);
+    QString path = m_DataManager->GetDataPath(iid);
+    QFileInfo f(path);
     f.baseName();
     qDebug() << "basename = " << f.baseName();
     name = f.baseName();

@@ -47,6 +47,7 @@ private:
     QString lastImagePath;
 
     QList<long> m_LoadedImages;
+    long m_CurrentDataIID;
 };
 
 #endif // ! MITK_VIEWER_H
