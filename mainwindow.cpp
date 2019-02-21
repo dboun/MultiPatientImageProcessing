@@ -37,8 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
   //m_ImageViewer->show();
 #endif
 
-  QGridLayout *layoutImageViewer = new QGridLayout(ui->viewerContainer);
-  layoutImageViewer->addWidget(m_ImageViewer);
+  ui->viewerContainer->layout()->addWidget(m_ImageViewer);
   m_ImageViewer->SetDataManager(m_DataManager);
   m_ImageViewer->SetDataView(m_DataView);
   m_ImageViewer->SetOpacitySlider(ui->opacitySlider);
