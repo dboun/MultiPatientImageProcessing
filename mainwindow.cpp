@@ -33,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifdef BUILD_VIEWER
   m_ImageViewer = new MitkViewer(ui->viewerContainer);
   this->m_SegmentationPanel = new MPIPQmitkSegmentationPanel(qobject_cast<MitkViewer*>(m_ImageViewer)->GetDataStorage(), this);
+  this->m_SegmentationPanel->SetDataManager(m_DataManager);
   this->ui->rightPanel->layout()->addWidget(this->m_SegmentationPanel);
   this->m_SegmentationPanel->hide();
 #else
@@ -86,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent) :
   );
   connect(ui->SegmentationBtn, SIGNAL(clicked()), this, SLOT(OnSegmentationButtonClicked()));
   connect(this, SIGNAL(EnableSegmentation()), this->m_SegmentationPanel, SLOT(OnEnableSegmentation()));
-  connect(this->m_ImageViewer, SIGNAL(DisplayedDataName(QString)), this->m_SegmentationPanel, SLOT(SetDisplayDataName(QString)));
+  connect(this->m_ImageViewer, SIGNAL(DisplayedDataName(long)), this->m_SegmentationPanel, SLOT(SetDisplayDataName(long)));
 }
 
 MainWindow::~MainWindow()

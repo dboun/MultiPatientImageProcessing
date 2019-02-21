@@ -53,7 +53,7 @@ QPushButton:hover{ background-color: rgb(0,200,57);border-style: outset; border-
 QPushButton:pressed{ background-color: rgb(0,100,0);border-style: outset; border-style: solid; border-color: black; border-width: 1px; border-radius: 5px;}                 </string>
      </property>
      <property name="text">
-      <string>Confirm Segmentation</string>
+      <string>Confirm Mask</string>
      </property>
     </widget>
    </item>

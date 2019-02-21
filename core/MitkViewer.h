@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QWidget>
+#include <QList>
 #include <mitkStandaloneDataStorage.h>
 #include <QmitkStdMultiWidget.h>
 
@@ -34,7 +35,7 @@ public slots:
 	void SaveImageToFile(long iid) override;
 
 signals:
-    void DisplayedDataName(QString);
+    void DisplayedDataName(long);
 
 private:
 
@@ -44,6 +45,8 @@ private:
 	mitk::StandaloneDataStorage::Pointer m_DataStorage;
 	long currentSubjectId = -1, currentImageId = -1;
     QString lastImagePath;
+
+    QList<long> m_LoadedImages;
 };
 
 #endif // ! MITK_VIEWER_H

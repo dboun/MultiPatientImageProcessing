@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QFileDialog>
+#include "DataManager.h"
 
 MPIPQmitkSegmentationPanel::MPIPQmitkSegmentationPanel(mitk::DataStorage *datastorage, QWidget *parent) :
     QWidget(parent),
@@ -43,6 +44,11 @@ MPIPQmitkSegmentationPanel::MPIPQmitkSegmentationPanel(mitk::DataStorage *datast
 MPIPQmitkSegmentationPanel::~MPIPQmitkSegmentationPanel()
 {
     delete ui;
+}
+
+void MPIPQmitkSegmentationPanel::SetDataManager(DataManager * manager)
+{
+  this->m_datamanager = manager;
 }
 
 void MPIPQmitkSegmentationPanel::OnEnableSegmentation()
@@ -137,7 +143,7 @@ void MPIPQmitkSegmentationPanel::OnNewSegmentationSession()
 {
   segName.clear();
 
-  mitk::DataNode *referenceNode = this->m_DataStorage->GetNamedNode(this->m_DisplayDataName.toStdString());
+  mitk::DataNode *referenceNode = this->m_DataStorage->GetNamedNode(this->m_datamanager->GetDataPath(m_CurrentData).toStdString());
 
   if (!referenceNode)
   {
@@ -151,7 +157,9 @@ void MPIPQmitkSegmentationPanel::OnNewSegmentationSession()
   mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceNode->GetData());
   assert(referenceImage);
 
-  segName = QString::fromStdString(referenceNode->GetName());
+  segName = QString::fromStdString(m_datamanager->GetSubjectName(
+    m_datamanager->GetSubjectIdFromDataId(m_CurrentData)
+  ).toStdString());
   segName.append("-mask");
 
   bool ok = false;
@@ -191,8 +199,14 @@ void MPIPQmitkSegmentationPanel::OnNewSegmentationSession()
 
 void MPIPQmitkSegmentationPanel::OnConfirmSegmentation()
 {
+  QString pathToSave = QDir::currentPath();
+  if (m_datamanager->GetSubjectIdFromDataId(m_CurrentData) != -1)
+  {
+    pathToSave = m_datamanager->GetSubjectPath(m_datamanager->GetSubjectIdFromDataId(m_CurrentData));
+  }
+
   QString filename = QFileDialog::getSaveFileName(this, tr("Save Segmentation Mask"),
-    QDir::currentPath(), tr("Images (*.mha *.nii.gz *.nrrd)"));
+    pathToSave, tr("Images (*.mha *.nii.gz *.nrrd)"));
   
   if (!filename.isEmpty())
   {
@@ -201,6 +215,15 @@ void MPIPQmitkSegmentationPanel::OnConfirmSegmentation()
 
     //remove after saving
     m_DataStorage->Remove(m_DataStorage->GetNamedNode(segName.toStdString()));
+    
+    if (m_datamanager->GetSubjectIdFromDataId(m_CurrentData) != -1)
+    {
+      m_datamanager->AddDataToSubject(
+        m_datamanager->GetSubjectIdFromDataId(m_CurrentData),
+        filename,
+        "Segmentation"
+      );
+    }
   }
 
   //re-render here
@@ -210,9 +233,9 @@ void MPIPQmitkSegmentationPanel::OnConfirmSegmentation()
   this->hide();
 }
 
-void MPIPQmitkSegmentationPanel::SetDisplayDataName(QString name)
+void MPIPQmitkSegmentationPanel::SetDisplayDataName(long iid)
 {
-  this->m_DisplayDataName = name;
+  this->m_CurrentData = iid;
 }
 
 void MPIPQmitkSegmentationPanel::OnManualTool2DSelected(int id)

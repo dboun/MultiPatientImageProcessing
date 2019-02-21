@@ -46,8 +46,32 @@ void MitkViewer::SelectedSubjectChangedHandler(long uid)
     QString fullDataPath = m_DataManager->GetDataPath(uid);
     QString fullSubjectPath = m_DataManager->GetSubjectPath(uid);
 
+
+
     qDebug() << " data path = " << fullDataPath << "\n";
     qDebug() << " sub path = " << fullSubjectPath << "\n";
+
+    // Remove the previous ones
+    
+    //for (long& iid : m_LoadedImages)
+    //{
+    //  m_DataStorage->Remove(
+    //    m_DataStorage->GetNamedNode(m_DataManager->GetDataName(iid).toStdString())
+    //  );
+    //}
+
+    //m_DataStorage->Remove(m_DataStorage->GetAll());
+    mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+      m_DataStorage->Remove(it.Value());
+
+    m_LoadedImages.clear();
+
+    //m_MitkWidget->ResetCrosshair();
+    //mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
+    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+    
+  
 	// This means that a *new* subject is selected
 
 	// TODO: Destroy everything that is loaded
@@ -71,62 +95,139 @@ void MitkViewer::DataRemovedFromSelectedSubjectHandler(long iid)
 void MitkViewer::SelectedDataChangedHandler(long iid)
 {
 
-    qDebug() << QString("MitkViewer::SelectedDataChangedHandler()") << iid;
+ //   qDebug() << QString("MitkViewer::SelectedDataChangedHandler()") << iid;
 
-    QString imagePath = m_DataManager->GetDataPath(iid);
+ //   QString imagePath = m_DataManager->GetDataPath(iid);
 
-    // Remove the previous ones
-    if (!lastImagePath.isEmpty()) {
-        m_DataStorage->Remove(
-            m_DataStorage->GetNamedNode( lastImagePath.toStdString().c_str() )
-        );
-    }
+ //   // Remove the previous ones
+ //   if (!lastImagePath.isEmpty()) {
+ //       m_DataStorage->Remove(
+ //           m_DataStorage->GetNamedNode( lastImagePath.toStdString().c_str() )
+ //       );
+ //   }
 
-    lastImagePath.clear();
+ //   lastImagePath.clear();
 
-    // Load datanode (eg. many image formats, surface formats, etc.)
-    if (imagePath.toStdString() != "")
-    {
-        qDebug() << QString("MPIP: Trying to display image...");
-        mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(imagePath.toStdString(), *m_DataStorage);
+ //   // Load datanode (eg. many image formats, surface formats, etc.)
+ //   if (imagePath.toStdString() != "")
+ //   {
+ //       qDebug() << QString("MPIP: Trying to display image...");
+ //       mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(imagePath.toStdString(), *m_DataStorage);
 
-        if (dataNodes->empty()) {
-            qDebug() << QString("Could not open file: ") << imagePath;
-        }
-        else {
-            //dataNodes->Modified();
-            //m_DataStorage->Modified();
-            //mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-            mitk::Image::Pointer image = dynamic_cast<mitk::Image *>(dataNodes->at(0)->GetData());
+ //       if (dataNodes->empty()) {
+ //           qDebug() << QString("Could not open file: ") << imagePath;
+ //       }
+ //       else {
+ //           //dataNodes->Modified();
+ //           //m_DataStorage->Modified();
+ //           //mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+ //           mitk::Image::Pointer image = dynamic_cast<mitk::Image *>(dataNodes->at(0)->GetData());
 
-            mitk::DataNode::Pointer newNode = mitk::DataNode::New();
-            newNode->SetName(imagePath.toStdString().c_str());
-            newNode->SetData(image);
-            newNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
-            m_DataStorage->Add(newNode);
-            emit DisplayedDataName(imagePath);
-        }
+ //           mitk::DataNode::Pointer newNode = mitk::DataNode::New();
+ //           newNode->SetName(imagePath.toStdString().c_str());
+ //           newNode->SetData(image);
+ //           newNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
+ //           m_DataStorage->Add(newNode);
+ //           emit DisplayedDataName(iid);
+ //       }
 
-        lastImagePath = imagePath;
-    }
+ //       lastImagePath = imagePath;
+ //   }
 
-    m_MitkWidget->ResetCrosshair();
-    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-    // This means that a different image is now in focus
-	// but the subject didn't change! Thus, there is no need
-	// for loading/unloading.
-	
-	// Not sure what exactly what the correct thing to do is
-	// Maybe for each iid
-	// keep a reference to the node that holds it
-	// and bring it forward or something.
+ //   m_MitkWidget->ResetCrosshair();
+ //   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+ //   // This means that a different image is now in focus
+	//// but the subject didn't change! Thus, there is no need
+	//// for loading/unloading.
+	//
+	//// Not sure what exactly what the correct thing to do is
+	//// Maybe for each iid
+	//// keep a reference to the node that holds it
+	//// and bring it forward or something.
 
-	// TODO
+	//// TODO
 }
 
 void MitkViewer::DataCheckedStateChangedHandler(long iid, bool checkState) 
 {
 	// An image got checked/unchecked in the viewer
+
+  qDebug() << QString("MitkViewer::DataCheckedStateChangedHandler()") << iid;
+
+  if (checkState)
+  {
+    QString imagePath = m_DataManager->GetDataPath(iid);
+    // Load datanode (eg. many image formats, surface formats, etc.)
+    if (imagePath.toStdString() != "")
+    {
+      qDebug() << QString("MPIP: Trying to display image...");
+      mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(imagePath.toStdString(), *m_DataStorage);
+
+      if (dataNodes->empty()) {
+        qDebug() << QString("Could not open file: ") << imagePath;
+      }
+      else {
+        //dataNodes->Modified();
+        //m_DataStorage->Modified();
+        //mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+        mitk::Image::Pointer image = dynamic_cast<mitk::Image *>(dataNodes->at(0)->GetData());
+
+        mitk::DataNode::Pointer newNode = mitk::DataNode::New();
+        QString name = m_DataManager->GetDataName(iid);
+        QFileInfo f(name);
+        f.baseName();
+        qDebug() << "basename = " << f.baseName();
+        name = f.baseName();
+        qDebug() << "adding node with name = " << name;
+        newNode->SetData(image);
+        newNode->SetName(name.toStdString().c_str());
+        newNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
+        m_DataStorage->Add(newNode);
+        m_LoadedImages.push_back(iid);
+        emit DisplayedDataName(iid);
+      }
+
+      lastImagePath = imagePath;
+    }
+
+    m_MitkWidget->ResetCrosshair();
+    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  }
+  else {
+    qDebug() << QString("inside else ");
+    QString name = m_DataManager->GetDataName(iid);
+    QFileInfo f(name);
+    f.baseName();
+    qDebug() << "basename = " << f.baseName();
+    name = f.baseName();
+    
+    qDebug() << name ;
+
+    mitk::DataNode* node = m_DataStorage->GetNamedNode(name.toStdString().c_str());
+    std::string nodename = node->GetName();
+    qDebug() << "nodename = " << QString(nodename.c_str());
+
+    mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+    {
+      if (it.Value()->GetName() == name.toStdString())
+      {
+        m_DataStorage->Remove(it.Value());
+      }
+      else {
+        qDebug() << "Not removing node with name: " << it.Value()->GetName().c_str();
+      }
+    }
+      
+
+    /*
+    m_DataStorage->Remove(node);*/
+     
+    m_LoadedImages.removeAll(iid);
+    m_MitkWidget->ResetCrosshair();
+    mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
+    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  }
 
 	// All the images of a new selected subject start unchecked
 	// so here we add them or remove them to the data storage
