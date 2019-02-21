@@ -11,6 +11,8 @@
 
 #include <vector>
 
+#include "MPIPQmitkSegmentationPanel.h"
+
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
@@ -30,6 +32,9 @@ MainWindow::MainWindow(QWidget *parent) :
   // Initialize image viewer
 #ifdef BUILD_VIEWER
   m_ImageViewer = new MitkViewer(ui->viewerContainer);
+  this->m_SegmentationPanel = new MPIPQmitkSegmentationPanel(qobject_cast<MitkViewer*>(m_ImageViewer)->GetDataStorage(), this);
+  this->ui->rightPanel->layout()->addWidget(this->m_SegmentationPanel);
+  this->m_SegmentationPanel->hide();
 #else
   m_ImageViewer = new ImageViewerBase(ui->viewerContainer);
   //m_ImageViewer->setGeometry(0, 0, 300, 300);
@@ -79,6 +84,9 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)),
     this, SLOT(SelectedSubjectChangedHandler(long))
   );
+  connect(ui->SegmentationBtn, SIGNAL(clicked()), this, SLOT(OnSegmentationButtonClicked()));
+  connect(this, SIGNAL(EnableSegmentation()), this->m_SegmentationPanel, SLOT(OnEnableSegmentation()));
+  connect(this->m_ImageViewer, SIGNAL(DisplayedDataName(QString)), this->m_SegmentationPanel, SLOT(SetDisplayDataName(QString)));
 }
 
 MainWindow::~MainWindow()
@@ -177,6 +185,12 @@ void MainWindow::SchedulerResultReady(long uid)
 void MainWindow::SelectedSubjectChangedHandler(long uid)
 {
   m_CurrentSubjectID = uid;
+}
+
+void MainWindow::OnSegmentationButtonClicked()
+{
+  emit EnableSegmentation();
+  this->m_SegmentationPanel->show();
 }
 
 // void MainWindow::EnableRunButton()

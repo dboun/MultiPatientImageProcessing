@@ -14,6 +14,10 @@ class MitkViewer : public ImageViewerBase
 
 public:
 	MitkViewer(QWidget *parent = nullptr);
+    inline mitk::DataStorage* GetDataStorage()
+    {
+        return m_DataStorage;
+    }
 
 public slots:
 	// Slot for slider
@@ -29,6 +33,9 @@ public slots:
 	// Slot, but probably just called.
 	void SaveImageToFile(long iid) override;
 
+signals:
+    void DisplayedDataName(QString);
+
 private:
 
 	//void ConnectSlider(QSlider* slider) override;
@@ -36,6 +43,7 @@ private:
 	QmitkStdMultiWidget* m_MitkWidget;
 	mitk::StandaloneDataStorage::Pointer m_DataStorage;
 	long currentSubjectId = -1, currentImageId = -1;
+    QString lastImagePath;
 };
 
 #endif // ! MITK_VIEWER_H

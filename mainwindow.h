@@ -17,6 +17,7 @@
 #endif
 #include "DataTreeView.h"
 
+class MPIPQmitkSegmentationPanel;
 namespace Ui {
   class MainWindow;
 }
@@ -39,6 +40,10 @@ public slots:
   void RunPressed();
   void SchedulerResultReady(long uid);
   void SelectedSubjectChangedHandler(long uid);
+  void OnSegmentationButtonClicked();
+
+signals:
+  void EnableSegmentation();
 
 private:
 
@@ -55,6 +60,7 @@ private:
   DataManager*     m_DataManager;
   ImageViewerBase* m_ImageViewer;
   DataViewBase*    m_DataView;
+  MPIPQmitkSegmentationPanel *m_SegmentationPanel;
 
   long m_CurrentSubjectID = -1;
 

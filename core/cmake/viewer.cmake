@@ -11,29 +11,31 @@ if( BUILD_VIEWER )
   #find_package{ VTK REQUIRED }
   
   set( VIEWER_LIBRARIES_TO_LINK 
-      MitkCore MitkMultilabel MitkQtWidgets MitkQtWidgetsExt
+      MitkCore 
+      MitkMultilabel 
+      MitkQtWidgets 
+      MitkQtWidgetsExt
+      MitkSegmentation
+      MitkSegmentationUI
   )
 
   set( CPP_FILES ${CPP_FILES}
-    #VtkViewer.cpp
-    #MpipMitkViewer.cpp
     MitkViewer.cpp
+    MPIPQmitkSegmentationPanel.cpp
   )
 
   set( MOC_H_FILES ${MOC_H_FILES}
-    #VtkViewer.h
-    #MpipMitkViewer.h
     MitkViewer.h
+    MPIPQmitkSegmentationPanel.h
   )
 
   set( UI_FILES ${UI_FILES}
-    #VtkViewer.ui
+    MPIPQmitkSegmentationPanel.ui
   )
 
   set( H_FILES ${H_FILES}
-    #VtkViewer.h
-    #MpipMitkViewer.h
     MitkViewer.h
+    MPIPQmitkSegmentationPanel.h
   )
 
 else()

@@ -42,6 +42,12 @@ void MitkViewer::OpacitySliderHandler(int value)
 
 void MitkViewer::SelectedSubjectChangedHandler(long uid) 
 {
+    qDebug() << QString("MitkViewer::SelectedSubjectChangedHandler()") << uid;
+    QString fullDataPath = m_DataManager->GetDataPath(uid);
+    QString fullSubjectPath = m_DataManager->GetSubjectPath(uid);
+
+    qDebug() << " data path = " << fullDataPath << "\n";
+    qDebug() << " sub path = " << fullSubjectPath << "\n";
 	// This means that a *new* subject is selected
 
 	// TODO: Destroy everything that is loaded
@@ -64,7 +70,49 @@ void MitkViewer::DataRemovedFromSelectedSubjectHandler(long iid)
 
 void MitkViewer::SelectedDataChangedHandler(long iid)
 {
-	// This means that a different image is now in focus
+
+    qDebug() << QString("MitkViewer::SelectedDataChangedHandler()") << iid;
+
+    QString imagePath = m_DataManager->GetDataPath(iid);
+
+    // Remove the previous ones
+    if (!lastImagePath.isEmpty()) {
+        m_DataStorage->Remove(
+            m_DataStorage->GetNamedNode( lastImagePath.toStdString().c_str() )
+        );
+    }
+
+    lastImagePath.clear();
+
+    // Load datanode (eg. many image formats, surface formats, etc.)
+    if (imagePath.toStdString() != "")
+    {
+        qDebug() << QString("MPIP: Trying to display image...");
+        mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(imagePath.toStdString(), *m_DataStorage);
+
+        if (dataNodes->empty()) {
+            qDebug() << QString("Could not open file: ") << imagePath;
+        }
+        else {
+            //dataNodes->Modified();
+            //m_DataStorage->Modified();
+            //mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+            mitk::Image::Pointer image = dynamic_cast<mitk::Image *>(dataNodes->at(0)->GetData());
+
+            mitk::DataNode::Pointer newNode = mitk::DataNode::New();
+            newNode->SetName(imagePath.toStdString().c_str());
+            newNode->SetData(image);
+            newNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
+            m_DataStorage->Add(newNode);
+            emit DisplayedDataName(imagePath);
+        }
+
+        lastImagePath = imagePath;
+    }
+
+    m_MitkWidget->ResetCrosshair();
+    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+    // This means that a different image is now in focus
 	// but the subject didn't change! Thus, there is no need
 	// for loading/unloading.
 	
