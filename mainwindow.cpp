@@ -22,9 +22,10 @@ MainWindow::MainWindow(QWidget *parent) :
   m_DataManager->SetAcceptedFileTypes(m_AcceptedFileTypes);
   
   ui->setupUi(this);
-
   // Set the DataView
   m_DataView = new DataTreeView(ui->dataViewContainer);
+  m_DataView->setMinimumWidth(300);
+
   /*QGridLayout*/QHBoxLayout *layoutDataViewer = new QHBoxLayout(ui->dataViewContainer);
   layoutDataViewer->addWidget(m_DataView);
   m_DataView->SetDataManager(m_DataManager);
@@ -32,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
   // Initialize image viewer
 #ifdef BUILD_VIEWER
   m_ImageViewer = new MitkViewer(ui->viewerContainer);
+  m_ImageViewer->setMinimumWidth(600);
+  m_ImageViewer->setMinimumHeight(500);
   this->m_SegmentationPanel = new MPIPQmitkSegmentationPanel(qobject_cast<MitkViewer*>(m_ImageViewer)->GetDataStorage(), this);
   this->m_SegmentationPanel->SetDataManager(m_DataManager);
   this->ui->rightPanel->layout()->addWidget(this->m_SegmentationPanel);
@@ -86,8 +89,9 @@ MainWindow::MainWindow(QWidget *parent) :
     this, SLOT(SelectedSubjectChangedHandler(long))
   );
   connect(ui->SegmentationBtn, SIGNAL(clicked()), this, SLOT(OnSegmentationButtonClicked()));
-  connect(this, SIGNAL(EnableSegmentation()), this->m_SegmentationPanel, SLOT(OnEnableSegmentation()));
-  connect(this->m_ImageViewer, SIGNAL(DisplayedDataName(long)), this->m_SegmentationPanel, SLOT(SetDisplayDataName(long)));
+  connect(this, SIGNAL(EnableSegmentation()), m_SegmentationPanel, SLOT(OnEnableSegmentation()));
+  connect(this, SIGNAL(DisableSegmentation()), m_SegmentationPanel, SLOT(OnDisableSegmentation()));
+  connect(m_ImageViewer, SIGNAL(DisplayedDataName(long)), m_SegmentationPanel, SLOT(SetDisplayDataName(long)));
 }
 
 MainWindow::~MainWindow()
@@ -161,12 +165,7 @@ void MainWindow::RunPressed()
 		}
 	}
 
-	if (data->imagesPaths.find(uid) == data->imagesPaths.end() || data->maskPath.find(uid) == data->maskPath.end()) {
-		qDebug() << QString("(Run) Images or mask missing so the uid was dismissed");
-		data->uids.pop_back();
-	}
-
-	if (data->uids.size() > 0) {
+	if (data->uids.size() > 0 && data->maskPath.find(uid) != data->maskPath.end() && data->imagesPaths[uid].size() > 0) {
 		qDebug() << QString("Trying to run");
 		m_Scheduler.AddData(data);
 	}
@@ -185,13 +184,29 @@ void MainWindow::SchedulerResultReady(long uid)
 
 void MainWindow::SelectedSubjectChangedHandler(long uid)
 {
-  m_CurrentSubjectID = uid;
+	qDebug() << "Selected Subject Changed for MainWindow";
+	if (m_IsSegmentationPanelOpen)
+	{
+		m_IsSegmentationPanelOpen = false;
+		emit DisableSegmentation();
+		this->m_SegmentationPanel->hide();
+	}
+	m_CurrentSubjectID = uid;
 }
 
 void MainWindow::OnSegmentationButtonClicked()
 {
-  emit EnableSegmentation();
-  this->m_SegmentationPanel->show();
+	if (!m_IsSegmentationPanelOpen)
+	{
+		m_IsSegmentationPanelOpen = true;
+		emit EnableSegmentation();
+		this->m_SegmentationPanel->show();
+	}
+	else {
+		m_IsSegmentationPanelOpen = false;
+		emit DisableSegmentation();
+		this->m_SegmentationPanel->hide();
+	}
 }
 
 // void MainWindow::EnableRunButton()

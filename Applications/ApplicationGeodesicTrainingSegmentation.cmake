@@ -2,7 +2,7 @@ option(BUILD_GEODESIC_TRAINING "Enable building of Geodesic Training" ON)
 
 if (BUILD_GEODESIC_TRAINING)
   message(STATUS "Building with Geodesic Training")
-  add_definitions(-DBUILD_GEODESIC_TRAINING)
+  set( APPLICATION_DEFINITIONS_TO_ADD ${APPLICATION_DEFINITIONS_TO_ADD} -DBUILD_GEODESIC_TRAINING CACHE INTERNAL "")
   add_subdirectory(GeodesicTraining)
   set(APP_INCLUDE_DIRS ${APP_INCLUDE_DIRS} 
       "${PROJECT_SOURCE_DIR}/applications/GeodesicTraining/GeodesicTrainingSegmentation/include/GeodesicTrainingSegmentation" 
@@ -25,5 +25,5 @@ if (BUILD_GEODESIC_TRAINING)
       CACHE INTERNAL ""
   )
 else()
-  remove_definitions(-DBUILD_GEODESIC_TRAINING)
+  set( APPLICATION_DEFINITIONS_TO_REMOVE ${APPLICATION_DEFINITIONS_TO_REMOVE} -DBUILD_GEODESIC_TRAINING CACHE INTERNAL "")
 endif()

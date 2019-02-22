@@ -11,6 +11,8 @@ add_definitions( ${CORE_DEFINITIONS_TO_ADD} )
 remove_definitions( ${CORE_DEFINITIONS_TO_REMOVE} )
 
 add_subdirectory( Applications )
+add_definitions( ${APPLICATION_DEFINITIONS_TO_ADD} )
+remove_definitions( ${APPLICATION_DEFINITIONS_TO_REMOVE} )
 
 # Find all files
 include_directories( 

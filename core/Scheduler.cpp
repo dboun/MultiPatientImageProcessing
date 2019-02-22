@@ -146,6 +146,7 @@ void Scheduler::ThreadJob(long uid, std::vector<std::string> &imagesPaths, std::
 	geodesic.Execute();
 #else
 	// For debugging
+	qDebug() << "Running without GeodesicTraining";
 	ApplicationBase app;
 	connect(&app, SIGNAL(ProgressUpdateUI(long, QString, int)), this, SLOT(progressUpdateFromApplication(long, QString, int)));
 	app.SetUid(uid);

@@ -131,8 +131,39 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
                 dataToAdd->setData(0, ID, QVariant(static_cast<long long int>(iid)));
 				dataToAdd->setData(0, IS_CHECKED, false);
 
-				if (m_DataManager->GetDataSpecialRole(iid) != QString())
+				QString specialRole = m_DataManager->GetDataSpecialRole(iid);
+				if (specialRole != QString())
 				{
+					if (specialRole == "Mask")
+					{
+						for (int i = 0; i < subject->childCount(); i++)
+						{
+							QTreeWidgetItem* item = subject->child(i);
+							long itemId = item->data(0, ID).toLongLong();
+							QString itemSpecialRole = m_DataManager->GetDataSpecialRole(itemId);
+							
+							if (itemSpecialRole == "Mask")
+							{
+								item->setText(0, m_DataManager->GetDataName(itemId));
+							}
+						}
+					}
+
+					if (specialRole == "Segmentation")
+					{
+						for (int i = 0; i < subject->childCount(); i++)
+						{
+							QTreeWidgetItem* item = subject->child(i);
+							long itemId = item->data(0, ID).toLongLong();
+							QString itemSpecialRole = m_DataManager->GetDataSpecialRole(itemId);
+
+							if (itemSpecialRole == "Segmentation")
+							{
+								m_DataManager->RemoveData(itemId);
+							}
+						}
+					}
+
 					dataToAdd->setText(0, "<" + m_DataManager->GetDataSpecialRole(iid) + ">");
 				}
 

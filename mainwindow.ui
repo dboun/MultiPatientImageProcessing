@@ -70,7 +70,7 @@ QPushButton:pressed{ background-color: darkGray;border-style: outset; border-sty
          </property>
         </widget>
        </item>
-       <item>
+       <item alignment="Qt::AlignHCenter">
         <widget class="QPushButton" name="SegmentationBtn">
          <property name="styleSheet">
           <string notr="true">QPushButton { font:21px; height:30px;width:150px;color:black; background-color:rgb(50,220,0); border-style: solid; border-color: #9f0000; border-width: 1px; border-radius: 5px; padding: 3px;}
@@ -149,7 +149,7 @@ QPushButton:pressed{ background-color: rgb(195,0,0);border-style: outset; border
      <x>0</x>
      <y>0</y>
      <width>986</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="styleSheet">

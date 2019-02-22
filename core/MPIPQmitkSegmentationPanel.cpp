@@ -46,9 +46,9 @@ MPIPQmitkSegmentationPanel::~MPIPQmitkSegmentationPanel()
     delete ui;
 }
 
-void MPIPQmitkSegmentationPanel::SetDataManager(DataManager * manager)
+void MPIPQmitkSegmentationPanel::SetDataManager(DataManager * dataManager)
 {
-  this->m_datamanager = manager;
+  this->m_DataManager = dataManager;
 }
 
 void MPIPQmitkSegmentationPanel::OnEnableSegmentation()
@@ -78,7 +78,7 @@ void MPIPQmitkSegmentationPanel::CreateNewSegmentation()
   mitk::RenderingManager::GetInstance()->InitializeViews(workingImageNode->GetData()->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true);
 }
 
-void MPIPQmitkSegmentationPanel::RemoveExistingToolGui()
+void MPIPQmitkSegmentationPanel::OnDisableSegmentation()
 {
   if (m_LastToolGUI)
   {
@@ -143,7 +143,9 @@ void MPIPQmitkSegmentationPanel::OnNewSegmentationSession()
 {
   segName.clear();
 
-  mitk::DataNode *referenceNode = this->m_DataStorage->GetNamedNode(this->m_datamanager->GetDataPath(m_CurrentData).toStdString());
+  QString path = m_DataManager->GetDataPath(m_CurrentData);
+  QFileInfo f(path);
+  mitk::DataNode::Pointer referenceNode = this->m_DataStorage->GetNamedNode(f.baseName().toStdString().c_str());
 
   if (!referenceNode)
   {
@@ -157,8 +159,8 @@ void MPIPQmitkSegmentationPanel::OnNewSegmentationSession()
   mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceNode->GetData());
   assert(referenceImage);
 
-  segName = QString::fromStdString(m_datamanager->GetSubjectName(
-    m_datamanager->GetSubjectIdFromDataId(m_CurrentData)
+  segName = QString::fromStdString(m_DataManager->GetSubjectName(
+	  m_DataManager->GetSubjectIdFromDataId(m_CurrentData)
   ).toStdString());
   segName.append("-mask");
 
@@ -200,14 +202,19 @@ void MPIPQmitkSegmentationPanel::OnNewSegmentationSession()
 void MPIPQmitkSegmentationPanel::OnConfirmSegmentation()
 {
   QString pathToSave = QDir::currentPath();
-  if (m_datamanager->GetSubjectIdFromDataId(m_CurrentData) != -1)
+  if (m_DataManager->GetSubjectIdFromDataId(m_CurrentData) != -1)
   {
-    pathToSave = m_datamanager->GetSubjectPath(m_datamanager->GetSubjectIdFromDataId(m_CurrentData));
+    pathToSave = m_DataManager->GetSubjectPath(m_DataManager->GetSubjectIdFromDataId(m_CurrentData));
   }
 
   QString filename = QFileDialog::getSaveFileName(this, tr("Save Segmentation Mask"),
-    pathToSave, tr("Images (*.mha *.nii.gz *.nrrd)"));
+    pathToSave, tr("Images (*.nii.gz)"));
   
+  if (!filename.endsWith(".nii.gz"))
+  {
+	  filename = filename + ".nii.gz";
+  }
+
   if (!filename.isEmpty())
   {
     mitk::DataNode::Pointer segData = this->m_DataStorage->GetNamedNode(segName.toStdString());
@@ -216,13 +223,13 @@ void MPIPQmitkSegmentationPanel::OnConfirmSegmentation()
     //remove after saving
     m_DataStorage->Remove(m_DataStorage->GetNamedNode(segName.toStdString()));
     
-    if (m_datamanager->GetSubjectIdFromDataId(m_CurrentData) != -1)
+    if (m_DataManager->GetSubjectIdFromDataId(m_CurrentData) != -1)
     {
-      m_datamanager->AddDataToSubject(
-        m_datamanager->GetSubjectIdFromDataId(m_CurrentData),
-        filename,
-        "Segmentation"
-      );
+		m_DataManager->AddDataToSubject(
+			m_DataManager->GetSubjectIdFromDataId(m_CurrentData),
+			filename,
+			"Mask"
+		);
     }
   }
 
@@ -246,7 +253,7 @@ void MPIPQmitkSegmentationPanel::OnManualTool2DSelected(int id)
     
     if (text == "Paint")
     {
-      this->RemoveExistingToolGui();
+      this->OnDisableSegmentation();
 
       mitk::Tool *tool = toolManager->GetActiveTool();
 
@@ -275,7 +282,7 @@ void MPIPQmitkSegmentationPanel::OnManualTool2DSelected(int id)
     }
     else
     {
-      this->RemoveExistingToolGui();
+      this->OnDisableSegmentation();
     }
  
   }

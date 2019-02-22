@@ -42,12 +42,10 @@ private:
 	//void ConnectSlider(QSlider* slider) override;
 
 	QmitkStdMultiWidget* m_MitkWidget;
-	mitk::StandaloneDataStorage::Pointer m_DataStorage;
-	long currentSubjectId = -1, currentImageId = -1;
-    QString lastImagePath;
+	mitk::DataStorage::Pointer m_DataStorage;
+	long m_CurrentData = -1;
 
     QList<long> m_LoadedImages;
-    long m_CurrentDataIID;
 };
 
 #endif // ! MITK_VIEWER_H

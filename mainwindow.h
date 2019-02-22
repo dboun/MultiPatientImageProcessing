@@ -44,6 +44,7 @@ public slots:
 
 signals:
   void EnableSegmentation();
+  void DisableSegmentation();
 
 private:
 
@@ -63,6 +64,7 @@ private:
   MPIPQmitkSegmentationPanel *m_SegmentationPanel;
 
   long m_CurrentSubjectID = -1;
+  bool m_IsSegmentationPanelOpen = false;
 
 };
 

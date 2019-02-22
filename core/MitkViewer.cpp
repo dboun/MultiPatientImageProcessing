@@ -5,6 +5,7 @@
 #include <mitkImage.h>
 #include <mitkIOUtil.h>
 #include <mitkLabelSetImage.h>
+#include <QMessageBox>
 
 MitkViewer::MitkViewer(QWidget *parent) : ImageViewerBase(parent)
 {
@@ -39,7 +40,10 @@ void MitkViewer::OpacitySliderHandler(int value)
 {
 	// We should probably leave this for last
   //QString name = m_DataManager->GetDataName(value);
-  QString path = m_DataManager->GetDataPath(m_CurrentDataIID);
+  
+  if (m_CurrentData == -1) { return; }
+	
+  QString path = m_DataManager->GetDataPath(m_CurrentData);
   QFileInfo f(path);
   f.baseName();
   qDebug() << "basename = " << f.baseName();
@@ -112,7 +116,7 @@ void MitkViewer::DataRemovedFromSelectedSubjectHandler(long iid)
 
 void MitkViewer::SelectedDataChangedHandler(long iid)
 {
-  this->m_CurrentDataIID = iid;
+  this->m_CurrentData = iid;
  //   qDebug() << QString("MitkViewer::SelectedDataChangedHandler()") << iid;
 
  //   QString imagePath = m_DataManager->GetDataPath(iid);
@@ -174,43 +178,91 @@ void MitkViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 
   if (checkState)
   {
+	QString imageName;// don't actually use this -> = m_DataManager->GetDataName(iid);
     QString imagePath = m_DataManager->GetDataPath(iid);
+
+	if (imagePath.isEmpty()) { return; }
+
+	QString specialRole = m_DataManager->GetDataSpecialRole(iid);
+
     // Load datanode (eg. many image formats, surface formats, etc.)
-    if (imagePath.toStdString() != "")
-    {
-      qDebug() << QString("MPIP: Trying to display image...");
-      mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(imagePath.toStdString(), *m_DataStorage);
+	if (specialRole == QString())
+	{
+		qDebug() << QString("MPIP: Trying to display image...");
+		mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(imagePath.toStdString(), *m_DataStorage);
 
-      if (dataNodes->empty()) {
-        qDebug() << QString("Could not open file: ") << imagePath;
-      }
-      else {
-        //dataNodes->Modified();
-        //m_DataStorage->Modified();
-        //mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-        mitk::Image::Pointer image = dynamic_cast<mitk::Image *>(dataNodes->at(0)->GetData());
+		if (dataNodes->empty()) {
+			qDebug() << QString("Could not open file: ") << imagePath;
+			delete dataNodes;
+			return;
+		}
+		
+		//dataNodes->Modified();
+		//m_DataStorage->Modified();
+		//mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+		mitk::Image::Pointer image = dynamic_cast<mitk::Image *>(dataNodes->at(0)->GetData());
 
-        mitk::DataNode::Pointer newNode = mitk::DataNode::New();
-        QString name = m_DataManager->GetDataName(iid);
-        QString path = m_DataManager->GetDataPath(iid);
-        QFileInfo f(path);
-        f.baseName();
-        qDebug() << "basename = " << f.baseName();
-        name = f.baseName();
-        qDebug() << "adding node with name = " << name;
-        newNode->SetData(image);
-        newNode->SetName(name.toStdString().c_str());
-        newNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
-        m_DataStorage->Add(newNode);
-        m_LoadedImages.push_back(iid);
-        emit DisplayedDataName(iid);
-      }
+		mitk::DataNode::Pointer newNode = mitk::DataNode::New();
+		QFileInfo f(imagePath);
+		qDebug() << "basename = " << f.baseName();
+		imageName = f.baseName();
+		qDebug() << "adding node with name = " << imageName;
+		newNode->SetData(image);
+		newNode->SetName(imageName.toStdString().c_str());
+		newNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
+		m_DataStorage->Add(newNode);
+		m_LoadedImages.push_back(iid);
+		emit DisplayedDataName(iid);
+	}
+	else {
+		qDebug() << QString("MPIP: Trying to display labels image...");
+		//mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(imagePath.toStdString(), *m_DataStorage);
 
-      lastImagePath = imagePath;
-    }
+		//if (dataNodes->empty()) {
+		//	qDebug() << QString("Could not open file: ") << imagePath;
+		//	delete dataNodes;
+		//	return;
+		//}
+
+		QString kindaRandomImage = QFileInfo(m_DataManager->GetDataPath(m_CurrentData)).baseName();
+		mitk::DataNode::Pointer referenceNode = this->m_DataStorage->GetNamedNode(kindaRandomImage.toStdString().c_str());
+
+		if (!referenceNode)
+		{
+			QMessageBox::information(
+				this, "Show mask", "For now select at least one normal image before selecting a mask file.");
+			return;
+		}
+
+		mitk::LabelSetImage::Pointer labelsImage = mitk::IOUtil::Load<mitk::LabelSetImage>(
+			imagePath.toStdString()
+		);
+
+		mitk::DataNode::Pointer workingNode = mitk::DataNode::New();
+		workingNode->SetData(labelsImage);
+		workingNode->SetName(imageName.toStdString().c_str());
+
+		if (!this->m_DataStorage->Exists(workingNode))
+		{
+			this->m_DataStorage->Add(workingNode, referenceNode);
+		}
+
+		mitk::DataNode::Pointer newNode = mitk::DataNode::New();
+		QFileInfo f(imagePath);
+		qDebug() << "basename = " << f.baseName();
+		imageName = f.baseName();
+		qDebug() << "adding node with name = " << imageName;
+		newNode->SetData(labelsImage);
+		newNode->SetName(imageName.toStdString().c_str());
+		//newNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
+		m_DataStorage->Add(newNode);
+		m_LoadedImages.push_back(iid);
+		emit DisplayedDataName(iid);
+	}
 
     m_MitkWidget->ResetCrosshair();
     mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+	this->m_CurrentData = iid;
   }
   else {
     qDebug() << QString("inside else ");
@@ -221,7 +273,7 @@ void MitkViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
     qDebug() << "basename = " << f.baseName();
     name = f.baseName();
     
-    qDebug() << name ;
+    qDebug() << name;
 
     mitk::DataNode* node = m_DataStorage->GetNamedNode(name.toStdString().c_str());
     std::string nodename = node->GetName();
