@@ -215,49 +215,43 @@ void MitkViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 		emit DisplayedDataName(iid);
 	}
 	else {
-		qDebug() << QString("MPIP: Trying to display labels image...");
 		//mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(imagePath.toStdString(), *m_DataStorage);
+		qDebug() << QString("MPIP: Trying to display labels image...");
 
-		//if (dataNodes->empty()) {
-		//	qDebug() << QString("Could not open file: ") << imagePath;
-		//	delete dataNodes;
+		//QString kindaRandomImage = QFileInfo(m_DataManager->GetDataPath(m_CurrentData)).baseName();
+		//mitk::DataNode::Pointer referenceNode = this->m_DataStorage->GetNamedNode(kindaRandomImage.toStdString().c_str());
+
+		//if (!referenceNode)
+		//{
+		//	QMessageBox::information(
+		//		this, "Show mask", "For now select at least one normal image before selecting a mask file.");
 		//	return;
 		//}
 
-		QString kindaRandomImage = QFileInfo(m_DataManager->GetDataPath(m_CurrentData)).baseName();
-		mitk::DataNode::Pointer referenceNode = this->m_DataStorage->GetNamedNode(kindaRandomImage.toStdString().c_str());
+		//mitk::LabelSetImage::Pointer labelsImage = mitk::IOUtil::Load<mitk::LabelSetImage>(
+		//	imagePath.toStdString()
+		//);
 
-		if (!referenceNode)
-		{
-			QMessageBox::information(
-				this, "Show mask", "For now select at least one normal image before selecting a mask file.");
-			return;
-		}
+		//mitk::DataNode::Pointer workingNode = mitk::DataNode::New();
+		//workingNode->SetData(labelsImage);
+		//workingNode->SetName(imageName.toStdString().c_str());
 
-		mitk::LabelSetImage::Pointer labelsImage = mitk::IOUtil::Load<mitk::LabelSetImage>(
-			imagePath.toStdString()
-		);
+		//if (!this->m_DataStorage->Exists(workingNode))
+		//{
+		//	this->m_DataStorage->Add(workingNode, referenceNode);
+		//}
 
-		mitk::DataNode::Pointer workingNode = mitk::DataNode::New();
-		workingNode->SetData(labelsImage);
-		workingNode->SetName(imageName.toStdString().c_str());
-
-		if (!this->m_DataStorage->Exists(workingNode))
-		{
-			this->m_DataStorage->Add(workingNode, referenceNode);
-		}
-
-		mitk::DataNode::Pointer newNode = mitk::DataNode::New();
-		QFileInfo f(imagePath);
-		qDebug() << "basename = " << f.baseName();
-		imageName = f.baseName();
-		qDebug() << "adding node with name = " << imageName;
-		newNode->SetData(labelsImage);
-		newNode->SetName(imageName.toStdString().c_str());
-		//newNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
-		m_DataStorage->Add(newNode);
-		m_LoadedImages.push_back(iid);
-		emit DisplayedDataName(iid);
+		//mitk::DataNode::Pointer newNode = mitk::DataNode::New();
+		//QFileInfo f(imagePath);
+		//qDebug() << "basename = " << f.baseName();
+		//imageName = f.baseName();
+		//qDebug() << "adding node with name = " << imageName;
+		//newNode->SetData(labelsImage);
+		//newNode->SetName(imageName.toStdString().c_str());
+		////newNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
+		//m_DataStorage->Add(newNode);
+		//m_LoadedImages.push_back(iid);
+		//emit DisplayedDataName(iid);
 	}
 
     m_MitkWidget->ResetCrosshair();

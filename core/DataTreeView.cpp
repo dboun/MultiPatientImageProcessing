@@ -218,7 +218,9 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 		item->setData(0, IS_CHECKED, (item->checkState(0)) ? true : false);
 
 		qDebug() << "Emit DataTreeView::DataCheckedStateChanged";
-		emit DataCheckedStateChanged(item->data(0, ID).toLongLong(), item->data(0, IS_CHECKED).toBool()); 
+		long iid = item->data(0, ID).toLongLong();
+		emit SelectedSubjectChanged(m_DataManager->GetSubjectIdFromDataId(iid));
+		emit DataCheckedStateChanged(iid, item->data(0, IS_CHECKED).toBool()); 
 	}
 
 	QTreeWidgetItem* topLevelItem = (
