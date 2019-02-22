@@ -148,7 +148,7 @@ void MainWindow::RunPressed()
 
     qDebug() << QString("(Run) Added uid:  ") << QString::number(uid);
 	data->uids.push_back(uid);
-	data->patientDirectoryPath[uid] = m_DataManager->GetDataPath(uid).toStdString();
+	data->patientDirectoryPath[uid] = m_DataManager->GetSubjectPath(uid).toStdString();
 
 	std::vector<long> dataIdsOfSubject = m_DataManager->GetAllDataIdsOfSubject(uid);
 

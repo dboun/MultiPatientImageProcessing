@@ -6,13 +6,15 @@ project( ${PROJECT_NAME} VERSION 0.1.0 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
+FIND_PACKAGE( OpenCV REQUIRED )
+
+add_subdirectory( Applications )
+#add_definitions( ${APPLICATION_DEFINITIONS_TO_ADD} )
+#remove_definitions( ${APPLICATION_DEFINITIONS_TO_REMOVE} )
+
 add_subdirectory( core )
 add_definitions( ${CORE_DEFINITIONS_TO_ADD} )
 remove_definitions( ${CORE_DEFINITIONS_TO_REMOVE} )
-
-add_subdirectory( Applications )
-add_definitions( ${APPLICATION_DEFINITIONS_TO_ADD} )
-remove_definitions( ${APPLICATION_DEFINITIONS_TO_REMOVE} )
 
 # Find all files
 include_directories( 

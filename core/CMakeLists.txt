@@ -15,6 +15,11 @@ SET( CMAKE_INCLUDE_CURRENT_DIR ON )
 
 target_link_libraries( MpipCore 
   ${VIEWER_LIBRARIES_TO_LINK}
+  ${APP_LIBRARIES}
+)
+
+target_include_directories( MpipCore PUBLIC
+  ${APP_INCLUDE_DIRS}
 )
 
 set( CORE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "" )
