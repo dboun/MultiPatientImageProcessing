@@ -11,27 +11,40 @@
 
 #include <vector>
 
+#ifdef BUILD_MITK
 #include "MPIPQmitkSegmentationPanel.h"
+#endif
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
 {
-  m_Scheduler.Start(); 
+  // Initialize DataManager
   m_DataManager = new DataManager(this);
   m_DataManager->SetAcceptedFileTypes(m_AcceptedFileTypes);
   
+  // Initialize Scheduler
+#ifdef BUILD_GEODESIC_TRAINING
+  m_Scheduler = new Scheduler(this);
+#else
+  m_Scheduler = new SchedulerBase(this);
+#endif
+
+  m_Scheduler->SetDataManager(m_DataManager);
+  m_Scheduler->Start(); 
+  
+  // Initialize UI
   ui->setupUi(this);
-  // Set the DataView
+  
+  // Initialize DataView
   m_DataView = new DataTreeView(ui->dataViewContainer);
   m_DataView->setMinimumWidth(300);
-
   /*QGridLayout*/QHBoxLayout *layoutDataViewer = new QHBoxLayout(ui->dataViewContainer);
   layoutDataViewer->addWidget(m_DataView);
   m_DataView->SetDataManager(m_DataManager);
 
-  // Initialize image viewer
-#ifdef BUILD_VIEWER
+  // Initialize ImageViewer
+#ifdef BUILD_MITK
   m_ImageViewer = new MitkViewer(ui->viewerContainer);
   m_ImageViewer->setMinimumWidth(600);
   m_ImageViewer->setMinimumHeight(500);
@@ -70,14 +83,14 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->dataViewContainer->setGraphicsEffect(effect);
 
   // Signals and Slots
-  m_Scheduler.connect(&m_Scheduler, SIGNAL(jobFinished(long)), 
-    this, SLOT(SchedulerResultReady(long))
-  );
-  m_Scheduler.connect(&m_Scheduler, SIGNAL(updateProgress(long, int)), 
+  connect(m_Scheduler, SIGNAL(updateProgress(long, int)), 
     m_DataView, SLOT(UpdateProgressHandler(long, int))
   );
+  // connect(m_Scheduler, SIGNAL(jobFinished(long)), 
+  //   this, SLOT(OnSchedulerResultReady(long))
+  // );
   connect(ui->pushButtonRun, SIGNAL(released()), 
-    this, SLOT(RunPressed())
+    this, SLOT(OnRunPressed())
   );
   connect(ui->actionOpen_single_subject, SIGNAL(triggered()), 
     this, SLOT(OnOpenSingleSubject())
@@ -88,10 +101,13 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)),
     this, SLOT(SelectedSubjectChangedHandler(long))
   );
+
+#ifdef BUILD_MITK
   connect(ui->SegmentationBtn, SIGNAL(clicked()), this, SLOT(OnSegmentationButtonClicked()));
   connect(this, SIGNAL(EnableSegmentation()), m_SegmentationPanel, SLOT(OnEnableSegmentation()));
   connect(this, SIGNAL(DisableSegmentation()), m_SegmentationPanel, SLOT(OnDisableSegmentation()));
   connect(m_ImageViewer, SIGNAL(DisplayedDataName(long)), m_SegmentationPanel, SLOT(SetDisplayDataName(long)));
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -140,73 +156,111 @@ void MainWindow::OnOpenSingleSubject()
   }
 }
 
-void MainWindow::RunPressed()
+void MainWindow::OnRunPressed()
 {
-	std::shared_ptr<Scheduler::Data> data(new Scheduler::Data());
+	std::shared_ptr<SchedulerBase::SchedulerJobData> data(new SchedulerBase::SchedulerJobData());
 
 	long uid = m_CurrentSubjectID; // For convenience
 
+	if (uid == -1)
+	{
+		QMessageBox::information(
+			this,
+			tr("No subject selected"),
+			tr("Please select a subject.")
+		);
+		return;
+	}
+
     qDebug() << QString("(Run) Added uid:  ") << QString::number(uid);
 	data->uids.push_back(uid);
-	data->patientDirectoryPath[uid] = m_DataManager->GetSubjectPath(uid).toStdString();
 
-	std::vector<long> dataIdsOfSubject = m_DataManager->GetAllDataIdsOfSubject(uid);
+	std::vector<long> iidsOfSubject = m_DataManager->GetAllDataIdsOfSubject(uid);
 
-	for (const long& iid : dataIdsOfSubject)
+	int numberOfImages = 0, numberOfMasks = 0;
+
+	for (const long& iid : iidsOfSubject)
 	{
-		QString dataPath        = m_DataManager->GetDataPath(iid);
 		QString dataSpecialRole = m_DataManager->GetDataSpecialRole(iid); 
 
-		if (dataSpecialRole.toStdString() == "Mask") {
-			data->maskPath[uid] = dataPath.toStdString();
+		if (dataSpecialRole == "Mask") {
+			numberOfMasks++;
 		}
-		else {
-			data->imagesPaths[uid].push_back(dataPath.toStdString());
+		else if (dataSpecialRole != "Segmentation")
+		{
+			numberOfImages++;
 		}
 	}
 
-	if (data->uids.size() > 0 && data->maskPath.find(uid) != data->maskPath.end() && data->imagesPaths[uid].size() > 0) {
+	if (numberOfMasks == 0)
+	{
+		QMessageBox::information(
+		  this,
+		  tr("No mask drawn"),
+		  tr("Please create a mask and run again.")
+		);
+		return;
+	}
+	if (numberOfMasks > 1)
+	{
+		QMessageBox::information(
+			this,
+			tr("Multiple masks"),
+			tr("Please remove all but one masks (Right click & Remove won't delete an image from the disk).")
+		);
+		return;
+	}
+	if (numberOfImages == 0)
+	{
+		QMessageBox::information(
+			this,
+			tr("No images"),
+			tr("Please load some images.")
+		);
+		return;
+	}
+
+	if (numberOfImages > 0 ) {
 		qDebug() << QString("Trying to run");
-		m_Scheduler.AddData(data);
+		m_Scheduler->AddData(data);
 	}
 }
 
-void MainWindow::SchedulerResultReady(long uid)
+// void MainWindow::OnSchedulerResultReady(long uid)
+// {
+//   qDebug() << QString("OnSchedulerResultReady called for uid: ") << QString::number(uid);
+// }
+
+#ifdef BUILD_MITK
+void MainWindow::OnSegmentationButtonClicked()
 {
-  qDebug() << QString("SchedulerResultReady called for uid: ") << QString::number(uid);
-
-  QString segmPath = m_DataManager->GetSubjectPath(uid) + "/MPIP_output/labels_res.nii.gz";
-
-  m_DataManager->AddDataToSubject(uid, segmPath, QString("Segmentation"), 
-    QString(), QString("labels_res.nii.gz")
-  );
+  if (!m_IsSegmentationPanelOpen)
+  {
+    m_IsSegmentationPanelOpen = true;
+    emit EnableSegmentation();
+    this->m_SegmentationPanel->show();
+  }
+  else {
+    m_IsSegmentationPanelOpen = false;
+    emit DisableSegmentation();
+    this->m_SegmentationPanel->hide();
+  }
 }
+#endif
 
 void MainWindow::SelectedSubjectChangedHandler(long uid)
 {
 	qDebug() << "Selected Subject Changed for MainWindow";
-	if (m_IsSegmentationPanelOpen)
-	{
-		m_IsSegmentationPanelOpen = false;
-		emit DisableSegmentation();
-		this->m_SegmentationPanel->hide();
-	}
-	m_CurrentSubjectID = uid;
-}
+  m_CurrentSubjectID = uid;
 
-void MainWindow::OnSegmentationButtonClicked()
-{
-	if (!m_IsSegmentationPanelOpen)
-	{
-		m_IsSegmentationPanelOpen = true;
-		emit EnableSegmentation();
-		this->m_SegmentationPanel->show();
-	}
-	else {
-		m_IsSegmentationPanelOpen = false;
-		emit DisableSegmentation();
-		this->m_SegmentationPanel->hide();
-	}
+#ifdef BUILD_MITK
+  if (m_IsSegmentationPanelOpen)
+  {
+    m_IsSegmentationPanelOpen = false;
+    emit DisableSegmentation();
+    this->m_SegmentationPanel->hide();
+  }
+#endif
 }
 
 // void MainWindow::EnableRunButton()

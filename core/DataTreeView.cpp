@@ -93,11 +93,23 @@ void DataTreeView::SubjectAddedHandler(long uid)
 
 	m_Subjects[uid] = subjectToAdd;
 
-	if (m_CurrentSubjectID == -1)
+	auto allUids = m_DataManager->GetAllSubjectIds();
+	bool currentSubjectIdExists = false;
+	for (const auto& oneUid : allUids)
+	{
+		if (oneUid == m_CurrentSubjectID) {
+			currentSubjectIdExists = true;
+			break;
+		}
+	}
+
+	if (!currentSubjectIdExists)
 	{
 		m_TreeWidget->setCurrentItem(subjectToAdd);
 		SwitchExpandedView(subjectToAdd);
 		m_CurrentSubjectID = uid;
+		qDebug() << "Emit DataTreeView::SelectedSubjectChanged";
+		emit SelectedSubjectChanged(uid);
 	}
 }
 
@@ -219,6 +231,7 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 
 		qDebug() << "Emit DataTreeView::DataCheckedStateChanged";
 		long iid = item->data(0, ID).toLongLong();
+		qDebug() << "Emit DataTreeView::SelectedSubjectChanged";
 		emit SelectedSubjectChanged(m_DataManager->GetSubjectIdFromDataId(iid));
 		emit DataCheckedStateChanged(iid, item->data(0, IS_CHECKED).toBool()); 
 	}

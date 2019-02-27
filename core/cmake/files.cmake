@@ -1,33 +1,33 @@
-set( CPP_FILES
-  Scheduler.cpp
+set( CPP_FILES ${CPP_FILES}
   DataManager.cpp
-  DataTreeView.cpp
+  SchedulerBase.cpp
   DataViewBase.cpp
-  #ViewerBase.cpp
   ImageViewerBase.cpp
   ApplicationBase.cpp
+  
+  DataTreeView.cpp
 )
 
-set( MOC_H_FILES
-  Scheduler.h
+set( MOC_H_FILES ${MOC_H_FILES}
   DataManager.h
-  DataTreeView.h
+  SchedulerBase.h
   DataViewBase.h
-  #ViewerBase.h
   ImageViewerBase.h
   ApplicationBase.h
+  
+  DataTreeView.h
 )
 
-set( UI_FILES
+set( UI_FILES ${UI_FILES}
   
 )
 
-set( H_FILES
-  Scheduler.h
+set( H_FILES ${H_FILES}
   DataManager.h
-  DataTreeView.h
+  SchedulerBase.h
   DataViewBase.h
-  #ViewerBase.h
   ImageViewerBase.h
   ApplicationBase.h
+  
+  DataTreeView.h
 )

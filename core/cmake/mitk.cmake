@@ -1,16 +1,15 @@
-option(BUILD_VIEWER "Build image viewer" ON)
+option(BUILD_MITK "Build MITK image viewer and drawing tool" ON)
 
-if( BUILD_VIEWER )
+if( BUILD_MITK )
   
   set( CORE_DEFINITIONS_TO_ADD ${CORE_DEFINITIONS}
-  	-DBUILD_VIEWER
+  	-DBUILD_MITK
   	CACHE INTERNAL ""
   )
 
   find_package( MITK REQUIRED )
-  #find_package{ VTK REQUIRED }
   
-  set( VIEWER_LIBRARIES_TO_LINK 
+  set( CORE_LIBRARIES_TO_LINK ${CORE_LIBRARIES_TO_LINK} 
       MitkCore 
       MitkMultilabel 
       MitkQtWidgets 
@@ -40,7 +39,7 @@ if( BUILD_VIEWER )
 
 else()
   set( CORE_DEFINITIONS_TO_REMOVE ${CORE_DEFINITIONS_TO_REMOVE}
-    -DBUILD_VIEWER
+    -DBUILD_MITK
     CACHE INTERNAL ""
   )
 endif()

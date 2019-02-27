@@ -1,8 +1,8 @@
-#include "Scheduler.h"
+#include "SchedulerBase.h"
 
 #include "ApplicationBase.h"
 
-Scheduler::Scheduler(QObject *parent) : QObject(parent)
+SchedulerBase::SchedulerBase(QObject *parent) : QObject(parent)
 {
 	int threadCount = QThread::idealThreadCount();
 
@@ -15,12 +15,12 @@ Scheduler::Scheduler(QObject *parent) : QObject(parent)
 	//m_MaxParallelJobs = 4;
 }
 
-Scheduler::~Scheduler()
+SchedulerBase::~SchedulerBase()
 {
 	Stop();
 }
 
-void Scheduler::Start()
+void SchedulerBase::Start()
 {
 	std::lock_guard<std::mutex> lg(m_Mutex);
 	
@@ -35,11 +35,11 @@ void Scheduler::Start()
 	{
 		m_CoordinatorRunning = true;
 		if (m_BackgroundCoordinator.joinable()) { m_BackgroundCoordinator.join(); }
-		m_BackgroundCoordinator = std::thread(&Scheduler::BackgroundCoordinator, this);
+		m_BackgroundCoordinator = std::thread(&SchedulerBase::BackgroundCoordinator, this);
 	}
 }
 
-void Scheduler::Stop()
+void SchedulerBase::Stop()
 {
 	std::lock_guard<std::mutex> lg(m_Mutex);
 
@@ -51,7 +51,7 @@ void Scheduler::Stop()
 	m_Data.clear();
 }
 
-void Scheduler::AddData(std::shared_ptr<Data> data)
+void SchedulerBase::AddData(std::shared_ptr<SchedulerJobData> data)
 {
 	std::unique_lock<std::mutex> ul(m_Mutex);
 	
@@ -64,17 +64,22 @@ void Scheduler::AddData(std::shared_ptr<Data> data)
 	}
 }
 
-void Scheduler::SetMaxParallelJobs(int maxParallelJobs)
+void SchedulerBase::SetDataManager(DataManager* dataManager)
+{
+	m_DataManager = dataManager;
+}
+
+void SchedulerBase::SetMaxParallelJobs(int maxParallelJobs)
 {
 	m_MaxParallelJobs = maxParallelJobs;
 }
 
-void Scheduler::progressUpdateFromApplication(long uid, QString message, int progress)
+void SchedulerBase::progressUpdateFromApplication(long uid, QString message, int progress)
 {
 	emit updateProgress(uid, progress);
 }
 
-void Scheduler::BackgroundCoordinator()
+void SchedulerBase::BackgroundCoordinator()
 {
 	qDebug() << QString("(Background coordinator) started");
 	m_NumberOfUnfishedJobsThisRound = m_Data[0]->uids.size();
@@ -96,10 +101,8 @@ void Scheduler::BackgroundCoordinator()
 		}
 
 		numberOfOpenThreads++;
-		m_Data[0]->resultPath[uid] = m_Data[0]->patientDirectoryPath[uid] + std::string("/MPIP_output/labels_res.nii.gz");
-		threads[counterForThreadsVec++] = std::thread(&Scheduler::ThreadJob, this,
-			uid, std::ref(m_Data[0]->imagesPaths[uid]), 
-			std::ref(m_Data[0]->maskPath[uid]), std::ref(m_Data[0]->patientDirectoryPath[uid])
+		threads[counterForThreadsVec++] = std::thread(&SchedulerBase::ThreadJob, this,
+			uid, std::ref(m_Data[0]->iids[uid]), 0
 		);
 	}
 
@@ -118,7 +121,7 @@ void Scheduler::BackgroundCoordinator()
 	}
 }
 
-void Scheduler::ResultFinished(long uid)
+void SchedulerBase::ResultFinished(long uid)
 {
 	std::unique_lock<std::mutex> ul(m_Mutex);
 	
@@ -128,30 +131,14 @@ void Scheduler::ResultFinished(long uid)
 	emit jobFinished(uid);
 }
 
-void Scheduler::ThreadJob(long uid, std::vector<std::string> &imagesPaths, std::string &maskPath, std::string &patientDirectoryPath)
+void SchedulerBase::ThreadJob(long uid, std::vector<long> &iids, const int customFlag)
 {
-	qDebug() << QString("Thread started for: ") << QString::number(uid);
-
-//#ifdef BUILD_GEODESIC_TRAINING
-	ApplicationGeodesicTrainingSegmentation<float, 3> geodesic; // TODO: Support 2D
-	geodesic.SetUid(uid);
-	connect(&geodesic, SIGNAL(ProgressUpdateUI(long, QString, int)), this, SLOT(progressUpdateFromApplication(long, QString, int)));
-	geodesic.SetInputImages(imagesPaths);
-	geodesic.SetLabels(maskPath);
-	geodesic.SetOutputPath(patientDirectoryPath + std::string("/MPIP_output"));
-	geodesic.SetSaveAll(true);
-	geodesic.SetTimerEnabled(true);
-	geodesic.SetVerbose(true);
-	//geodesic.SetNumberOfThreads(16);
-	geodesic.Execute();
-//#else
-//	// For debugging
-//	qDebug() << "Running without GeodesicTraining";
-//	ApplicationBase app;
-//	connect(&app, SIGNAL(ProgressUpdateUI(long, QString, int)), this, SLOT(progressUpdateFromApplication(long, QString, int)));
-//	app.SetUid(uid);
-//	emit app.EmitProgressUpdateForDebugging();
-//#endif // ! BUILD_GEODESIC_TRAINING
-
-	ResultFinished(uid);
+	// This method is supposed to be overriden
+	// Note that by inheriting SchedulerBase and using SetDataManager you can have access to everything
+	
+	qDebug() << "SchedulerBase::ThreadJob()" << "Running dummy application";
+	ApplicationBase app;
+	connect(&app, SIGNAL(ProgressUpdateUI(long, QString, int)), this, SLOT(progressUpdateFromApplication(long, QString, int)));
+	app.SetUid(uid);
+	emit app.EmitProgressUpdateForDebugging();
 }

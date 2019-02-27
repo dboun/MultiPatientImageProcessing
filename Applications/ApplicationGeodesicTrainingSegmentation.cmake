@@ -1,7 +1,7 @@
-#option(BUILD_GEODESIC_TRAINING "Enable building of Geodesic Training" ON)
+option(BUILD_GEODESIC_TRAINING "Enable building of Geodesic Training" ON)
 
-#if (BUILD_GEODESIC_TRAINING)
-#  message(STATUS "Building with Geodesic Training")
+if (BUILD_GEODESIC_TRAINING)
+  message(STATUS "Building with Geodesic Training")
   set( APPLICATION_DEFINITIONS_TO_ADD ${APPLICATION_DEFINITIONS_TO_ADD} -DBUILD_GEODESIC_TRAINING CACHE INTERNAL "")
   add_subdirectory(GeodesicTraining)
   set(APP_INCLUDE_DIRS ${APP_INCLUDE_DIRS} 
@@ -24,6 +24,6 @@
       "${PROJECT_SOURCE_DIR}/applications/ApplicationGeodesicTrainingSegmentation.cpp"
       CACHE INTERNAL ""
   )
-#else()
-#  set( APPLICATION_DEFINITIONS_TO_REMOVE ${APPLICATION_DEFINITIONS_TO_REMOVE} -DBUILD_GEODESIC_TRAINING CACHE INTERNAL "")
-#endif()
+else()
+  set( APPLICATION_DEFINITIONS_TO_REMOVE ${APPLICATION_DEFINITIONS_TO_REMOVE} -DBUILD_GEODESIC_TRAINING CACHE INTERNAL "")
+endif()
