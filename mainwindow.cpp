@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
   
   // Initialize DataView
   m_DataView = new DataTreeView(ui->dataViewContainer);
-  m_DataView->setMinimumWidth(300);
+  m_DataView->setMinimumWidth(350);
   /*QGridLayout*/QHBoxLayout *layoutDataViewer = new QHBoxLayout(ui->dataViewContainer);
   layoutDataViewer->addWidget(m_DataView);
   m_DataView->SetDataManager(m_DataManager);
@@ -85,6 +85,9 @@ MainWindow::MainWindow(QWidget *parent) :
   // Signals and Slots
   connect(m_Scheduler, SIGNAL(updateProgress(long, int)), 
     m_DataView, SLOT(UpdateProgressHandler(long, int))
+  );
+  connect(m_Scheduler, SIGNAL(jobQueued(long)), 
+    this, SLOT(OnSchedulerJobQueued(long))
   );
   // connect(m_Scheduler, SIGNAL(jobFinished(long)), 
   //   this, SLOT(OnSchedulerResultReady(long))
@@ -173,7 +176,6 @@ void MainWindow::OnRunPressed()
 	}
 
     qDebug() << QString("(Run) Added uid:  ") << QString::number(uid);
-	data->uids.push_back(uid);
 
 	std::vector<long> iidsOfSubject = m_DataManager->GetAllDataIdsOfSubject(uid);
 
@@ -220,16 +222,22 @@ void MainWindow::OnRunPressed()
 		return;
 	}
 
-	if (numberOfImages > 0 ) {
-		qDebug() << QString("Trying to run");
-		m_Scheduler->AddData(data);
-	}
+	data->uids.push_back(uid);
+	data->iids[uid] = iidsOfSubject;
+
+	qDebug() << QString("Trying to run");
+	m_Scheduler->AddData(data);
 }
 
 // void MainWindow::OnSchedulerResultReady(long uid)
 // {
 //   qDebug() << QString("OnSchedulerResultReady called for uid: ") << QString::number(uid);
 // }
+
+void MainWindow::OnSchedulerJobQueued(long uid)
+{
+	m_DataView->UpdateProgressHandler(uid, 0);
+}
 
 #ifdef BUILD_MITK
 void MainWindow::OnSegmentationButtonClicked()

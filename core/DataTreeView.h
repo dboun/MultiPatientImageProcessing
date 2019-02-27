@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QProgressBar>
 
 #include <map>
 
@@ -40,6 +41,7 @@ private:
 	QTreeWidget* m_TreeWidget;
 	std::map<long, QTreeWidgetItem*> m_Subjects;
 	std::map<long, QTreeWidgetItem*> m_Data;
+	std::map<long, QProgressBar*>    m_SubjectProgressBars;
 
 	long m_CurrentSubjectID = -1;
 	long m_CurrentDataID    = -1;

@@ -14,6 +14,7 @@ if (BUILD_GEODESIC_TRAINING)
   )
   set(APP_LIBRARIES ${APP_LIBRARIES}
       GeodesicTrainingSegmentation
+      ${ITK_LIBRARIES}
       CACHE INTERNAL ""
   )
   set(APP_HEADERS ${APP_HEADERS}

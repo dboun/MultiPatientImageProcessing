@@ -43,6 +43,7 @@ public slots:
   //void HandleConfigButton(); 
   void OnRunPressed();
   //void OnSchedulerResultReady(long uid);
+  void OnSchedulerJobQueued(long uid);
   
 #ifdef BUILD_MITK
   void OnSegmentationButtonClicked();

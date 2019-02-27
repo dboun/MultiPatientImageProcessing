@@ -4,7 +4,6 @@
 #include <QGridLayout>
 #include <QString>
 #include <QMenu>
-#include <QProgressBar>
 #include <QLabel>
 #include <QVariant>
 
@@ -52,7 +51,7 @@ void DataTreeView::SubjectAddedHandler(long uid)
 	//subjectToAdd->setText(0, m_DataManager->GetSubjectName(uid));
     subjectToAdd->setData(0, ID, QVariant(static_cast<long long int>(uid) ));
 
-	QProgressBar *progressBar = new QProgressBar();
+	QProgressBar *progressBar = new QProgressBar(this);
     progressBar->setObjectName(QString("ProgressBar") + QString::number(uid));
 	progressBar->setVisible(false);
 	progressBar->setMinimum(0);
@@ -121,6 +120,24 @@ void DataTreeView::SubjectRemovedHandler(long uid)
 	{
 		m_Subjects.erase(uid);
 		delete subjectToRemove;
+	}
+
+	if (m_CurrentSubjectID == uid)
+	{
+		if (m_Subjects.size() > 0)
+		{
+			QTreeWidgetItem* newSelected = m_Subjects[m_DataManager->GetAllSubjectIds()[0]];
+		
+			m_TreeWidget->setCurrentItem(newSelected);
+			SwitchExpandedView(newSelected);
+			m_CurrentSubjectID = m_DataManager->GetAllSubjectIds()[0];
+		}
+		else {
+			m_CurrentSubjectID = -1;
+		}
+
+		qDebug() << "Emit DataTreeView::SelectedSubjectChanged";
+		emit SelectedSubjectChanged(m_CurrentSubjectID);
 	}
 }
 
@@ -208,7 +225,7 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 
 void DataTreeView::UpdateProgressHandler(long uid, int progress)
 {
-    QProgressBar *progressBar = m_Data[uid]->treeWidget()->findChild<QProgressBar*>(QString("ProgressBar") + QString::number(uid));
+    QProgressBar *progressBar = m_TreeWidget->findChild<QProgressBar*>(QString("ProgressBar") + QString::number(uid));
 	progressBar->setVisible(true);
 	progressBar->setValue(progress);
 }

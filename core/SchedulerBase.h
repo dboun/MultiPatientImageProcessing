@@ -42,6 +42,7 @@ public slots:
 
 signals:
 	void jobFinished(long uid);
+	void jobQueued(long uid);
 	void updateProgress(long uid, int progress);
 	void roundFinished();
 
@@ -49,12 +50,12 @@ protected:
 	virtual void ThreadJob(long uid, std::vector<long> &iids, const int customFlag = 0);
 	void ResultFinished(long uid);
 
+	DataManager* m_DataManager;
+	std::vector< std::shared_ptr<SchedulerJobData> > m_Data;
+
 private:
 	void BackgroundCoordinator();
 
-
-	std::vector< std::shared_ptr<SchedulerJobData> > m_Data;
-	DataManager* m_DataManager;
 	int m_MaxParallelJobs = 2;
 	std::mutex m_Mutex;
 	bool m_StopFlag = false; // Signals to not run additional samples
