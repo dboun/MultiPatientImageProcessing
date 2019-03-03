@@ -65,7 +65,8 @@ private:
 
   Ui::MainWindow *ui;
 
-  QStringList   m_AcceptedFileTypes = QStringList() << "*.nii.gz";
+  QString       m_AppName           = QString("MLL Semi-Automatic Segmentation");
+  QStringList   m_AcceptedFileTypes = QStringList() << "*.nii.gz" << "*.nrrd";
   QString       m_MostRecentDir     = QString("/home");
 
   DataManager*     m_DataManager;

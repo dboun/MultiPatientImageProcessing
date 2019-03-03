@@ -208,12 +208,12 @@ void MPIPQmitkSegmentationPanel::OnConfirmSegmentation()
   }
 
   QString filename = QFileDialog::getSaveFileName(this, tr("Save Segmentation Mask"),
-    pathToSave, tr("Images (*.nii.gz)"));
+    pathToSave, tr("Images (*.nrrd)"));
   
-  if (!filename.endsWith(".nii.gz"))
-  {
-	  filename = filename + ".nii.gz";
-  }
+  // if (!filename.endsWith(".nii.gz"))
+  // {
+	 //  filename = filename + ".nii.gz";
+  // }
 
   if (!filename.isEmpty())
   {

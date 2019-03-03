@@ -35,7 +35,8 @@ MainWindow::MainWindow(QWidget *parent) :
   
   // Initialize UI
   ui->setupUi(this);
-  
+  this->setWindowTitle( m_AppName );
+
   // Initialize DataView
   m_DataView = new DataTreeView(ui->dataViewContainer);
   m_DataView->setMinimumWidth(350);

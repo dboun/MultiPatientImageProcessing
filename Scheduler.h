@@ -9,7 +9,7 @@ public:
 	Scheduler(QObject *parent = nullptr);
 
 private:
-	void Scheduler::ThreadJob(long uid, std::vector<long> &iids, const int customFlag = 0) override;
+	void ThreadJob(long uid, std::vector<long> &iids, const int customFlag = 0) override;
 };
 
 #endif // ! SCHEDULER_H

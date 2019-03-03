@@ -4,14 +4,14 @@
 #include <QApplication>
 #include <QColor>
 
-#ifdef BUILD_VIEWER
+#ifdef BUILD_MITK
 #include "QmitkRegisterClasses.h"
 //#include "QVTKOpenGLWidget.h"
 #endif
 
 int main(int argc, char *argv[])
 {
-#ifdef BUILD_VIEWER
+#ifdef BUILD_MITK
 	QmitkRegisterClasses();
 	//QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
 #endif
