@@ -51,31 +51,19 @@ void MPIPQmitkSegmentationPanel::SetDataManager(DataManager * dataManager)
   this->m_DataManager = dataManager;
 }
 
+void MPIPQmitkSegmentationPanel::SetDataView(DataViewBase* dataView)
+{
+  this->m_DataView = dataView;
+}
+
+void MPIPQmitkSegmentationPanel::SetAppName(QString appName)
+{
+  m_AppName = appName;
+}
+
 void MPIPQmitkSegmentationPanel::OnEnableSegmentation()
 {
   this->OnNewSegmentationSession();
-}
-
-//No Op
-void MPIPQmitkSegmentationPanel::CreateNewSegmentation()
-{
-  // Create empty segmentation working image
-  mitk::DataNode::Pointer workingImageNode = mitk::DataNode::New();
-  mitk::LabelSetImage* workingImage = dynamic_cast<mitk::LabelSetImage*>(workingImageNode->GetData());
-  const std::string organName = "test";
-  mitk::Color color; // actually it dosn't matter which color we are using
-  color.SetRed(1);   // but CreateEmptySegmentationNode expects a color parameter
-  color.SetGreen(0);
-  color.SetBlue(0);
-  mitk::Tool* firstTool = toolManager->GetToolById(0);
-  workingImageNode = firstTool->CreateEmptySegmentationNode(workingImage, organName, color);
-  this->m_DataStorage->Add(workingImageNode);
-  if (workingImageNode.IsNotNull())
-    this->toolManager->SetWorkingData(workingImageNode);
-  mitk::DataNode::Pointer origNode = this->m_DataStorage->GetNamedNode("LoadedData");
-  if (origNode.IsNotNull())
-    this->toolManager->SetReferenceData(origNode);
-  mitk::RenderingManager::GetInstance()->InitializeViews(workingImageNode->GetData()->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true);
 }
 
 void MPIPQmitkSegmentationPanel::OnDisableSegmentation()
@@ -94,6 +82,27 @@ void MPIPQmitkSegmentationPanel::OnDisableSegmentation()
     }
   }
 }
+
+// void MPIPQmitkSegmentationPanel::CreateNewSegmentation()
+// {
+//   // Create empty segmentation working image
+//   mitk::DataNode::Pointer workingImageNode = mitk::DataNode::New();
+//   mitk::LabelSetImage* workingImage = dynamic_cast<mitk::LabelSetImage*>(workingImageNode->GetData());
+//   const std::string organName = "test";
+//   mitk::Color color; // actually it dosn't matter which color we are using
+//   color.SetRed(1);   // but CreateEmptySegmentationNode expects a color parameter
+//   color.SetGreen(0);
+//   color.SetBlue(0);
+//   mitk::Tool* firstTool = toolManager->GetToolById(0);
+//   workingImageNode = firstTool->CreateEmptySegmentationNode(workingImage, organName, color);
+//   this->m_DataStorage->Add(workingImageNode);
+//   if (workingImageNode.IsNotNull())
+//     this->toolManager->SetWorkingData(workingImageNode);
+//   mitk::DataNode::Pointer origNode = this->m_DataStorage->GetNamedNode("LoadedData");
+//   if (origNode.IsNotNull())
+//     this->toolManager->SetReferenceData(origNode);
+//   mitk::RenderingManager::GetInstance()->InitializeViews(workingImageNode->GetData()->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true);
+// }
 
 void MPIPQmitkSegmentationPanel::OnCreateNewLabel()
 {
@@ -157,6 +166,9 @@ void MPIPQmitkSegmentationPanel::OnNewSegmentationSession()
   toolManager->ActivateTool(-1);
 
   mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceNode->GetData());
+  // mitk::Image::Pointer referenceImage = mitk::IOUtil::Load(
+  //   m_DataManager->GetData//TODO
+  // );
   assert(referenceImage);
 
   segName = QString::fromStdString(m_DataManager->GetSubjectName(

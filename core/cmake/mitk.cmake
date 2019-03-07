@@ -9,7 +9,7 @@ if( BUILD_MITK )
 
   find_package( MITK REQUIRED )
   
-  set( CORE_LIBRARIES_TO_LINK ${CORE_LIBRARIES_TO_LINK} 
+  set( CORE_LIBRARIES_TO_LINK ${CORE_LIBRARIES_TO_LINK}  
       MitkCore 
       MitkMultilabel 
       MitkQtWidgets 

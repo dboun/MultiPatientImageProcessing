@@ -162,6 +162,11 @@ void MainWindow::OnOpenSingleSubject()
 
 void MainWindow::OnRunPressed()
 {
+  if (m_CurrentSubjectID)
+  {
+    
+  }
+
 	std::shared_ptr<SchedulerBase::SchedulerJobData> data(new SchedulerBase::SchedulerJobData());
 
 	long uid = m_CurrentSubjectID; // For convenience

@@ -34,19 +34,11 @@ public slots:
 	// Slot, but probably just called.
 	void SaveImageToFile(long iid) override;
 
-signals:
-    void DisplayedDataName(long);
-
 private:
-
-	//void ConnectSlider(QSlider* slider) override;
-
 	QmitkStdMultiWidget* m_MitkWidget;
-	//mitk::DataStorage::Pointer m_DataStorage;
 	mitk::StandaloneDataStorage::Pointer m_DataStorage;
-	long m_CurrentData = -1;
-
     QList<long> m_LoadedImages;
+    long m_CurrentData = -1; // TODO: Delete this
 };
 
 #endif // ! MITK_VIEWER_H

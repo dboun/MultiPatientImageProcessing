@@ -14,6 +14,9 @@ public:
 
 	void SetDataManager(DataManager* dataManager);
 
+	long GetCurrentSubjectID();
+	long GetCurrentDataID();
+
 public slots:
 	// Override these methods to provide functionality to the viewer
 	virtual void SubjectAddedHandler(long uid);
@@ -31,6 +34,9 @@ signals:
 protected:
 	DataManager* m_DataManager;
 	QStringList m_AcceptedFileTypes = QStringList() << "*";
+
+	long m_CurrentSubjectID = -1;
+	long m_CurrentDataID    = -1;
 };
 
 #endif // ! DATA_VIEW_BASE_H

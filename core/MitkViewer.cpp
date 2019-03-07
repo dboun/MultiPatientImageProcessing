@@ -212,7 +212,7 @@ void MitkViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 		newNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
 		m_DataStorage->Add(newNode);
 		m_LoadedImages.push_back(iid);
-		emit DisplayedDataName(iid);
+		//emit DisplayedDataName(iid);
 	}
 	else {
 		//mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(imagePath.toStdString(), *m_DataStorage);

@@ -5,6 +5,9 @@
 #include <mitkToolManagerProvider.h>
 #include <mitkStandaloneDataStorage.h>
 
+#include "DataViewBase.h"
+#include "DataManager.h"
+
 class QmitkToolGUI;
 class DataManager;
 namespace Ui {
@@ -20,28 +23,34 @@ public:
     ~MPIPQmitkSegmentationPanel();
 
     void SetDataManager(DataManager *dataManager);
+    void SetDataView(DataViewBase* dataView);
+    void SetAppName(QString appName);
 
 public slots:
 	void OnCreateNewLabel();
 	void OnEnableSegmentation();
+	void OnDisableSegmentation();
 	void OnNewSegmentationSession();
 	void OnConfirmSegmentation();
 	void SetDisplayDataName(long);
 	void OnManualTool2DSelected(int);
-	void OnDisableSegmentation();
 
 private:
-	void CreateNewSegmentation();
+	//void CreateNewSegmentation();
 
 	Ui::MPIPQmitkSegmentationPanel *ui;
-	mitk::ToolManager::Pointer toolManager;
-	mitk::DataStorage *m_DataStorage;
 	long m_CurrentSubject = -1;
 	long m_CurrentData = -1;
 	QString segName;
 	QString m_DisplayDataName;
-	QmitkToolGUI *m_LastToolGUI;
-	DataManager *m_DataManager;
+	DataManager*  m_DataManager;
+	DataViewBase* m_DataView;
+	QString m_AppName = QString("MPIP");
+
+	// MITK Things
+	mitk::ToolManager::Pointer     toolManager;
+	mitk::DataStorage*             m_DataStorage;
+	QmitkToolGUI*                  m_LastToolGUI;
 };
 
-#endif // MPIPQMITKSEGMENTATIONPANEL_H
+#endif // ! MPIPQMITKSEGMENTATIONPANEL_H

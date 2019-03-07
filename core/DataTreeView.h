@@ -42,9 +42,6 @@ private:
 	std::map<long, QTreeWidgetItem*> m_Subjects;
 	std::map<long, QTreeWidgetItem*> m_Data;
 	std::map<long, QProgressBar*>    m_SubjectProgressBars;
-
-	long m_CurrentSubjectID = -1;
-	long m_CurrentDataID    = -1;
 };
 
 #endif // ! DATA_TREE_VIEW_H

@@ -28,6 +28,16 @@ void DataViewBase::SetDataManager(DataManager* dataManager)
 	m_AcceptedFileTypes = dataManager->GetAcceptedFileTypes();
 }
 
+long DataViewBase::GetCurrentSubjectID()
+{
+	return m_CurrentSubjectID;
+}
+
+long DataViewBase::GetCurrentDataID()
+{
+	return m_CurrentDataID;
+}
+
 void DataViewBase::SubjectAddedHandler(long uid)
 {
 	qDebug() << QString("DataViewBase::SubjectAddedHandler(long)");

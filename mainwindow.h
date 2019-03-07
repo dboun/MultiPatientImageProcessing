@@ -80,6 +80,7 @@ private:
 
   long m_CurrentSubjectID = -1;
   bool m_IsSegmentationPanelOpen = false;
+  std::set<long> m_SubjectsThatAreRunning;
 
 };
 

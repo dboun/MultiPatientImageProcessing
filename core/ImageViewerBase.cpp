@@ -13,6 +13,8 @@ void ImageViewerBase::SetDataView(DataViewBase* dataView)
 	// No need to save a reference to the DataView
 	// Data are fetched from the DataManager
 
+	m_DataView = dataView;
+
 	connect(dataView, SIGNAL(SelectedSubjectChanged(long)),
 		this, SLOT(SelectedSubjectChangedHandler(long))
 	);

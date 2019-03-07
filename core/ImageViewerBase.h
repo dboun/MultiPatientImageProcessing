@@ -36,6 +36,7 @@ public slots:
 
 protected:
 	DataManager* m_DataManager;
+	DataViewBase* m_DataView;
 };
 
 #endif // ! IMAGE_VIEWER_BASE_H
