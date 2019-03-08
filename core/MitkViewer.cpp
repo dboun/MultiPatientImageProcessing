@@ -64,36 +64,6 @@ void MitkViewer::OpacitySliderHandler(int value)
 
 void MitkViewer::SelectedSubjectChangedHandler(long uid) 
 {
-    qDebug() << QString("MitkViewer::SelectedSubjectChangedHandler()") << uid;
-    QString fullDataPath = m_DataManager->GetDataPath(uid);
-    QString fullSubjectPath = m_DataManager->GetSubjectPath(uid);
-
-
-
-    qDebug() << " data path = " << fullDataPath << "\n";
-    qDebug() << " sub path = " << fullSubjectPath << "\n";
-
-    // Remove the previous ones
-    
-    //for (long& iid : m_LoadedImages)
-    //{
-    //  m_DataStorage->Remove(
-    //    m_DataStorage->GetNamedNode(m_DataManager->GetDataName(iid).toStdString())
-    //  );
-    //}
-
-    //m_DataStorage->Remove(m_DataStorage->GetAll());
-    mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
-      m_DataStorage->Remove(it.Value());
-
-    m_LoadedImages.clear();
-
-    //m_MitkWidget->ResetCrosshair();
-    //mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
-    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-    
-  
 	// This means that a *new* subject is selected
 
 	// TODO: Destroy everything that is loaded
@@ -101,6 +71,22 @@ void MitkViewer::SelectedSubjectChangedHandler(long uid)
 	// Whenever a new subject is selected
 	// All its images are unchecked so there is pretty much
 	// nothing more to do here
+
+    qDebug() << QString("MitkViewer::SelectedSubjectChangedHandler()") << uid;
+    QString fullDataPath = m_DataManager->GetDataPath(uid);
+    QString fullSubjectPath = m_DataManager->GetSubjectPath(uid);
+
+    qDebug() << " data path = " << fullDataPath << "\n";
+    qDebug() << " sub path = " << fullSubjectPath << "\n";
+
+    // Remove the previous ones
+    mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
+      m_DataStorage->Remove(it.Value());
+    }
+
+    m_LoadedImages.clear();
+    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 void MitkViewer::DataAddedForSelectedSubjectHandler(long iid)
@@ -172,8 +158,7 @@ void MitkViewer::SelectedDataChangedHandler(long iid)
 
 void MitkViewer::DataCheckedStateChangedHandler(long iid, bool checkState) 
 {
-	// An image got checked/unchecked in the viewer
-
+  // An image got checked/unchecked in the viewer
   qDebug() << QString("MitkViewer::DataCheckedStateChangedHandler()") << iid;
 
   if (checkState)
@@ -186,7 +171,8 @@ void MitkViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 	QString specialRole = m_DataManager->GetDataSpecialRole(iid);
 
     // Load datanode (eg. many image formats, surface formats, etc.)
-	if (specialRole == QString())
+	// TODO: Maybe delete if?
+	if (true || specialRole == QString())
 	{
 		qDebug() << QString("MPIP: Trying to display image...");
 		mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(imagePath.toStdString(), *m_DataStorage);

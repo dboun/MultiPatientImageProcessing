@@ -27,16 +27,17 @@ public:
     void SetAppName(QString appName);
 
 public slots:
-	void OnCreateNewLabel();
-	void OnEnableSegmentation();
-	void OnDisableSegmentation();
 	void OnNewSegmentationSession();
+	void OnResumeSegmentationSession();
 	void OnConfirmSegmentation();
+	void OnCreateNewLabel();
 	void SetDisplayDataName(long);
-	void OnManualTool2DSelected(int);
+	//void OnManualTool2DSelected(int);
 
 private:
 	//void CreateNewSegmentation();
+
+	void InitializeReferenceNodeAndImageForSubject(long uid);
 
 	Ui::MPIPQmitkSegmentationPanel *ui;
 	long m_CurrentSubject = -1;
@@ -51,6 +52,11 @@ private:
 	mitk::ToolManager::Pointer     toolManager;
 	mitk::DataStorage*             m_DataStorage;
 	QmitkToolGUI*                  m_LastToolGUI;
+
+	mitk::Image::Pointer           m_ReferenceImage;
+	mitk::DataNode::Pointer        m_ReferenceNode; 
+	mitk::Image::Pointer           m_WorkingImage;
+	mitk::DataNode::Pointer        m_WorkingNode; 
 };
 
 #endif // ! MPIPQMITKSEGMENTATIONPANEL_H

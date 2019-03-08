@@ -162,14 +162,9 @@ void MainWindow::OnOpenSingleSubject()
 
 void MainWindow::OnRunPressed()
 {
-  if (m_CurrentSubjectID)
-  {
-    
-  }
-
 	std::shared_ptr<SchedulerBase::SchedulerJobData> data(new SchedulerBase::SchedulerJobData());
 
-	long uid = m_CurrentSubjectID; // For convenience
+	long uid = m_DataView->GetCurrentSubjectID(); // For convenience
 
 	if (uid == -1)
 	{
@@ -181,7 +176,7 @@ void MainWindow::OnRunPressed()
 		return;
 	}
 
-    qDebug() << QString("(Run) Added uid:  ") << QString::number(uid);
+  qDebug() << QString("(Run) uid:  ") << QString::number(uid);
 
 	std::vector<long> iidsOfSubject = m_DataManager->GetAllDataIdsOfSubject(uid);
 
@@ -248,33 +243,36 @@ void MainWindow::OnSchedulerJobQueued(long uid)
 #ifdef BUILD_MITK
 void MainWindow::OnSegmentationButtonClicked()
 {
-  if (!m_IsSegmentationPanelOpen)
-  {
-    m_IsSegmentationPanelOpen = true;
-    emit EnableSegmentation();
-    this->m_SegmentationPanel->show();
-  }
-  else {
-    m_IsSegmentationPanelOpen = false;
-    emit DisableSegmentation();
-    this->m_SegmentationPanel->hide();
-  }
+  this->m_SegmentationPanel->setVisible(true);
 }
 #endif
 
 void MainWindow::SelectedSubjectChangedHandler(long uid)
 {
 	qDebug() << "Selected Subject Changed for MainWindow";
-  m_CurrentSubjectID = uid;
+
+  // Checking if there is a mask already
+  auto iids = m_DataManager->GetAllDataIdsOfSubject(uid);
+
+  bool foundMask = false;
+  for (const auto& iid : iids)
+  {
+    if (m_DataManager->GetDataSpecialRole(iid) == "Mask")
+    {
+      foundMask = true;
+      break;
+    }
+  }
 
 #ifdef BUILD_MITK
-  if (m_IsSegmentationPanelOpen)
-  {
-    m_IsSegmentationPanelOpen = false;
-    emit DisableSegmentation();
-    this->m_SegmentationPanel->hide();
+  if (foundMask) {
+    this->m_SegmentationPanel->setVisible(true);
   }
-#endif
+  else {
+    this->m_SegmentationPanel->setVisible(false);
+  }
+#endif 
+
 }
 
 // void MainWindow::EnableRunButton()

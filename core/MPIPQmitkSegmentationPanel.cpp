@@ -8,6 +8,8 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QFileDialog>
+#include <QDebug>
+
 #include "DataManager.h"
 
 MPIPQmitkSegmentationPanel::MPIPQmitkSegmentationPanel(mitk::DataStorage *datastorage, QWidget *parent) :
@@ -37,7 +39,7 @@ MPIPQmitkSegmentationPanel::MPIPQmitkSegmentationPanel(mitk::DataStorage *datast
 
     connect(ui->newLabelPushBtn, SIGNAL(clicked()), this, SLOT(OnCreateNewLabel()));
     connect(ui->ConfirmSegBtn, SIGNAL(clicked()), this, SLOT(OnConfirmSegmentation()));
-    connect(ui->toolSelectionBox, SIGNAL(ToolSelected(int)), this, SLOT(OnManualTool2DSelected(int)));
+    //connect(ui->toolSelectionBox, SIGNAL(ToolSelected(int)), this, SLOT(OnManualTool2DSelected(int)));
     
 }
 
@@ -61,28 +63,6 @@ void MPIPQmitkSegmentationPanel::SetAppName(QString appName)
   m_AppName = appName;
 }
 
-void MPIPQmitkSegmentationPanel::OnEnableSegmentation()
-{
-  this->OnNewSegmentationSession();
-}
-
-void MPIPQmitkSegmentationPanel::OnDisableSegmentation()
-{
-  if (m_LastToolGUI)
-  {
-    ui->toolGUIArea->layout()->removeWidget(m_LastToolGUI);
-    m_LastToolGUI->setParent(nullptr);
-    delete m_LastToolGUI; // will hopefully notify parent and layouts
-    m_LastToolGUI = nullptr;
-
-    QLayout *layout = ui->toolGUIArea->layout();
-    if (layout)
-    {
-      layout->activate();
-    }
-  }
-}
-
 // void MPIPQmitkSegmentationPanel::CreateNewSegmentation()
 // {
 //   // Create empty segmentation working image
@@ -103,6 +83,159 @@ void MPIPQmitkSegmentationPanel::OnDisableSegmentation()
 //     this->toolManager->SetReferenceData(origNode);
 //   mitk::RenderingManager::GetInstance()->InitializeViews(workingImageNode->GetData()->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true);
 // }
+
+void MPIPQmitkSegmentationPanel::OnNewSegmentationSession()
+{
+  segName.clear();
+
+  // Find if there is a mask already
+  bool foundMask = false;
+  for (const auto& iid : m_DataManager->GetAllDataIdsOfSubject(m_DataView->GetCurrentSubjectID()))
+  {
+    if (m_DataManager->GetDataSpecialRole(iid) == "Mask")
+    {
+      foundMask = true;
+      break;
+    }
+  }
+
+  if (foundMask) { 
+    this->OnResumeSegmentationSession(); 
+    return; 
+  }
+
+  // Get desired filename
+  segName = QString::fromStdString(m_DataManager->GetSubjectName(
+    m_DataManager->GetSubjectIdFromDataId(m_CurrentData)
+  ).toStdString());
+  segName.append("-mask");
+
+  bool ok = false;
+  segName = QInputDialog::getText(this, "New Segmentation Session", "New name:", 
+    QLineEdit::Normal, segName, &ok
+  );
+
+  if (!ok)
+  {
+    return;
+  }
+
+  if (segName == "")
+  {
+    segName = "mask";
+  }
+
+  InitializeReferenceNodeAndImageForSubject(m_DataView->GetCurrentSubjectID());
+
+  // Create the image
+  m_WorkingImage = mitk::LabelSetImage::New();
+  try
+  {
+    m_WorkingImage->Initialize(m_ReferenceImage);
+  }
+  catch (mitk::Exception& e)
+  {
+    MITK_ERROR << "Exception caught: " << e.GetDescription();
+    QMessageBox::information(this, "New Segmentation Session", 
+      "Could not create a new segmentation session.\n"
+    );
+    return;
+  }
+
+  // Save the image to file
+  QString maskFilename = m_DataManager->GetSubjectPath(m_DataView->GetCurrentSubjectID()) 
+    + QString("/Segmentation/mask/")
+    + segName
+    + QString(".nrrd");
+
+  mitk::IOUtil::Save(m_WorkingImage, maskFilename.toStdString());
+  m_DataManager->AddDataToSubject(m_DataView->GetCurrentSubjectID(), maskFilename, "Mask");
+}
+
+void MPIPQmitkSegmentationPanel::OnResumeSegmentationSession()
+{
+  InitializeReferenceNodeAndImageForSubject(m_DataView->GetCurrentSubjectID());
+
+  long iidMask = -1;
+  for (const auto& iid : m_DataManager->GetAllDataIdsOfSubject(m_DataView->GetCurrentSubjectID()))
+  {
+    if (m_DataManager->GetDataSpecialRole(iid) == "Mask")
+    {
+      iidMask = iid;
+      break;
+    }
+  }
+
+  if (iidMask == -1) { return; }
+
+  // Load the mask
+  QString maskPath = m_DataManager->GetDataPath(iidMask);
+
+  mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = 
+    mitk::IOUtil::Load(maskPath.toStdString(), *m_DataStorage);
+  if (dataNodes->empty()) {
+    qDebug() << QString("Could not open file: ") << maskPath;
+    delete dataNodes;
+    return;
+  }
+  m_WorkingImage = dynamic_cast<mitk::Image *>(dataNodes->at(0)->GetData());
+
+  toolManager->ActivateTool(-1);
+  m_WorkingNode = mitk::DataNode::New();
+  m_WorkingNode->SetData(m_WorkingImage);
+  QFileInfo f(maskPath);
+  QString maskName = f.baseName();
+  m_WorkingNode->SetName(segName.toStdString());
+
+  if (!this->m_DataStorage->Exists(m_WorkingNode))
+  {
+    this->m_DataStorage->Add(m_WorkingNode, m_ReferenceNode);
+  }
+
+  this->toolManager->SetWorkingData(m_WorkingNode);
+  this->toolManager->SetReferenceData(m_ReferenceNode);
+}
+
+void MPIPQmitkSegmentationPanel::OnConfirmSegmentation()
+{
+  QString pathToSave = QDir::currentPath();
+  if (m_DataManager->GetSubjectIdFromDataId(m_CurrentData) != -1)
+  {
+    pathToSave = m_DataManager->GetSubjectPath(m_DataManager->GetSubjectIdFromDataId(m_CurrentData));
+  }
+
+  QString filename = QFileDialog::getSaveFileName(this, tr("Save Segmentation Mask"),
+    pathToSave, tr("Images (*.nrrd)"));
+  
+  // if (!filename.endsWith(".nii.gz"))
+  // {
+	 //  filename = filename + ".nii.gz";
+  // }
+
+  if (!filename.isEmpty())
+  {
+    mitk::DataNode::Pointer segData = this->m_DataStorage->GetNamedNode(segName.toStdString());
+    mitk::IOUtil::Save(segData->GetData(), filename.toStdString());
+
+    //remove after saving
+    m_DataStorage->Remove(m_DataStorage->GetNamedNode(segName.toStdString()));
+    
+    if (m_DataManager->GetSubjectIdFromDataId(m_CurrentData) != -1)
+    {
+		m_DataManager->AddDataToSubject(
+			m_DataManager->GetSubjectIdFromDataId(m_CurrentData),
+			filename,
+			"Mask"
+		);
+    }
+  }
+
+  //re-render here
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+
+  //hide ourself
+  this->hide();
+}
 
 void MPIPQmitkSegmentationPanel::OnCreateNewLabel()
 {
@@ -148,155 +281,73 @@ void MPIPQmitkSegmentationPanel::OnCreateNewLabel()
   mitk::RenderingManager::GetInstance()->InitializeViews(workingNode->GetData()->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true);
 }
 
-void MPIPQmitkSegmentationPanel::OnNewSegmentationSession()
-{
-  segName.clear();
-
-  QString path = m_DataManager->GetDataPath(m_CurrentData);
-  QFileInfo f(path);
-  mitk::DataNode::Pointer referenceNode = this->m_DataStorage->GetNamedNode(f.baseName().toStdString().c_str());
-
-  if (!referenceNode)
-  {
-    QMessageBox::information(
-      this, "New Segmentation Session", "Please load and select a patient image before starting some action.");
-    return;
-  }
-
-  toolManager->ActivateTool(-1);
-
-  mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceNode->GetData());
-  // mitk::Image::Pointer referenceImage = mitk::IOUtil::Load(
-  //   m_DataManager->GetData//TODO
-  // );
-  assert(referenceImage);
-
-  segName = QString::fromStdString(m_DataManager->GetSubjectName(
-	  m_DataManager->GetSubjectIdFromDataId(m_CurrentData)
-  ).toStdString());
-  segName.append("-mask");
-
-  bool ok = false;
-  segName = QInputDialog::getText(this, "New Segmentation Session", "New name:", QLineEdit::Normal, segName, &ok);
-
-  if (!ok)
-  {
-    return;
-  }
-
-  mitk::LabelSetImage::Pointer workingImage = mitk::LabelSetImage::New();
-  try
-  {
-    workingImage->Initialize(referenceImage);
-  }
-  catch (mitk::Exception& e)
-  {
-    MITK_ERROR << "Exception caught: " << e.GetDescription();
-    QMessageBox::information(this, "New Segmentation Session", "Could not create a new segmentation session.\n");
-    return;
-  }
-
-  mitk::DataNode::Pointer workingNode = mitk::DataNode::New();
-  workingNode->SetData(workingImage);
-  workingNode->SetName(segName.toStdString());
-
-  if (!this->m_DataStorage->Exists(workingNode))
-  {
-    this->m_DataStorage->Add(workingNode, referenceNode);
-  }
-
-  this->toolManager->SetWorkingData(workingNode);
-  this->toolManager->SetReferenceData(referenceNode);
-
-  OnCreateNewLabel();
-}
-
-void MPIPQmitkSegmentationPanel::OnConfirmSegmentation()
-{
-  QString pathToSave = QDir::currentPath();
-  if (m_DataManager->GetSubjectIdFromDataId(m_CurrentData) != -1)
-  {
-    pathToSave = m_DataManager->GetSubjectPath(m_DataManager->GetSubjectIdFromDataId(m_CurrentData));
-  }
-
-  QString filename = QFileDialog::getSaveFileName(this, tr("Save Segmentation Mask"),
-    pathToSave, tr("Images (*.nrrd)"));
-  
-  // if (!filename.endsWith(".nii.gz"))
-  // {
-	 //  filename = filename + ".nii.gz";
-  // }
-
-  if (!filename.isEmpty())
-  {
-    mitk::DataNode::Pointer segData = this->m_DataStorage->GetNamedNode(segName.toStdString());
-    mitk::IOUtil::Save(segData->GetData(), filename.toStdString());
-
-    //remove after saving
-    m_DataStorage->Remove(m_DataStorage->GetNamedNode(segName.toStdString()));
-    
-    if (m_DataManager->GetSubjectIdFromDataId(m_CurrentData) != -1)
-    {
-		m_DataManager->AddDataToSubject(
-			m_DataManager->GetSubjectIdFromDataId(m_CurrentData),
-			filename,
-			"Mask"
-		);
-    }
-  }
-
-  //re-render here
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-
-  //hide ourself
-  this->hide();
-}
-
 void MPIPQmitkSegmentationPanel::SetDisplayDataName(long iid)
 {
   this->m_CurrentData = iid;
 }
 
-void MPIPQmitkSegmentationPanel::OnManualTool2DSelected(int id)
-{
-  if (id >= 0)
-  {
-    std::string text = toolManager->GetToolById(id)->GetName();
+// void MPIPQmitkSegmentationPanel::OnManualTool2DSelected(int id)
+// {
+//   if (id >= 0)
+//   {
+//     std::string text = toolManager->GetToolById(id)->GetName();
     
-    if (text == "Paint")
-    {
-      this->OnDisableSegmentation();
+//     if (text == "Paint")
+//     {
+//       this->OnDisableSegmentation();
 
-      mitk::Tool *tool = toolManager->GetActiveTool();
+//       mitk::Tool *tool = toolManager->GetActiveTool();
 
-      itk::Object::Pointer possibleGUI = tool->GetGUI("Qmitk", "GUI").GetPointer(); 
-      QmitkToolGUI *gui = dynamic_cast<QmitkToolGUI *>(possibleGUI.GetPointer());
-      m_LastToolGUI = gui;
-      if (gui)
-      {
-        gui->SetTool(tool);
+//       itk::Object::Pointer possibleGUI = tool->GetGUI("Qmitk", "GUI").GetPointer(); 
+//       QmitkToolGUI *gui = dynamic_cast<QmitkToolGUI *>(possibleGUI.GetPointer());
+//       m_LastToolGUI = gui;
+//       if (gui)
+//       {
+//         gui->SetTool(tool);
 
-        gui->setParent(ui->toolGUIArea);
-        gui->move(gui->geometry().topLeft());
-        gui->show();
+//         gui->setParent(ui->toolGUIArea);
+//         gui->move(gui->geometry().topLeft());
+//         gui->show();
 
-        QLayout *layout = ui->toolGUIArea->layout();
-        if (!layout)
-        {
-          layout = new QVBoxLayout(ui->toolGUIArea);
-        }
-        if (layout)
-        {
-          layout->addWidget(gui);
-          layout->activate();
-        }
-      }
-    }
-    else
-    {
-      this->OnDisableSegmentation();
-    }
+//         QLayout *layout = ui->toolGUIArea->layout();
+//         if (!layout)
+//         {
+//           layout = new QVBoxLayout(ui->toolGUIArea);
+//         }
+//         if (layout)
+//         {
+//           layout->addWidget(gui);
+//           layout->activate();
+//         }
+//       }
+//     }
+//     else
+//     {
+//       this->OnDisableSegmentation();
+//     }
  
+//   }
+
+// }
+
+void MPIPQmitkSegmentationPanel::InitializeReferenceNodeAndImageForSubject(long uid)
+{
+  auto randomIid = m_DataManager->GetAllDataIdsOfSubject(uid)[0];
+  QString path = m_DataManager->GetDataPath(randomIid);
+
+  mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = 
+    mitk::IOUtil::Load(path.toStdString(), *m_DataStorage);
+
+  if (dataNodes->empty()) {
+    qDebug() << QString("Could not open file: ") << path;
+    delete dataNodes;
+    return;
   }
 
+  m_ReferenceImage = dynamic_cast<mitk::Image *>(dataNodes->at(0)->GetData());
+  m_ReferenceNode = mitk::DataNode::New();
+  m_ReferenceNode->SetData(m_ReferenceImage);
+  m_ReferenceNode->SetName(QString("reference").toStdString().c_str());
+  m_ReferenceNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
+  m_DataStorage->Add(m_ReferenceNode);
 }
