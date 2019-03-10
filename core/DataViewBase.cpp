@@ -28,6 +28,11 @@ void DataViewBase::SetDataManager(DataManager* dataManager)
 	m_AcceptedFileTypes = dataManager->GetAcceptedFileTypes();
 }
 
+void DataViewBase::SetAppNameShort(QString appNameShort)
+{
+	m_AppNameShort = appNameShort;
+}
+
 long DataViewBase::GetCurrentSubjectID()
 {
 	return m_CurrentSubjectID;

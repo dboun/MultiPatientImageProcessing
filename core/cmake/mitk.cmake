@@ -2,9 +2,8 @@ option(BUILD_MITK "Build MITK image viewer and drawing tool" ON)
 
 if( BUILD_MITK )
   
-  set( CORE_DEFINITIONS_TO_ADD ${CORE_DEFINITIONS}
+  set( CORE_DEFINITIONS_TO_ADD ${CORE_DEFINITIONS_TO_ADD}
   	-DBUILD_MITK
-  	CACHE INTERNAL ""
   )
 
   find_package( MITK REQUIRED )
@@ -40,6 +39,5 @@ if( BUILD_MITK )
 else()
   set( CORE_DEFINITIONS_TO_REMOVE ${CORE_DEFINITIONS_TO_REMOVE}
     -DBUILD_MITK
-    CACHE INTERNAL ""
   )
 endif()

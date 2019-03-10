@@ -16,26 +16,22 @@ add_subdirectory( applications )
 add_definitions( ${APPLICATION_DEFINITIONS_TO_ADD} )
 remove_definitions( ${APPLICATION_DEFINITIONS_TO_REMOVE} )
 
-# To find all files 
-# TODO: replace with target_include_directories in subprojects
-include_directories( 
-  ${APP_INCLUDE_DIRS} 
-  ${CORE_INCLUDE_DIRS}
-)
-
 include( cmake/files.cmake )
 
 set( CMAKE_AUTOMOC ON )
 
 qt5_wrap_ui( UI_Srcs ${UI_FILES} )
 
-add_executable( MPIP ${CPP_FILES} ${H_FILES} ${UI_FILES} ${MOC_H_FILES} )
-qt5_use_modules( MPIP Core Gui Widgets )
-SET(CMAKE_INCLUDE_CURRENT_DIR ON)
+add_executable( ${PROJECT_NAME} 
+  ${CPP_FILES} ${H_FILES} ${UI_FILES} ${MOC_H_FILES} 
+)
 
-target_link_libraries( MPIP 
+qt5_use_modules( MPIP Core Gui Widgets )
+SET( CMAKE_INCLUDE_CURRENT_DIR ON )
+
+target_link_libraries( ${PROJECT_NAME} 
   MpipCore
-  ${APP_LIBRARIES}
+  MpipApplications
 )
 
 # Installer

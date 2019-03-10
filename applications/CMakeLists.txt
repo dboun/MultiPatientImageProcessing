@@ -1,13 +1,35 @@
 # Modular applications
+project( MpipApplications )
 
-set( APP_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/applications" )
-unset( APP_LIBRARIES )
-unset( APP_HEADERS )
 unset( APP_SOURCES )
+unset( APP_HEADERS )
+unset( APP_UI_FILES )
+unset( APP_INCLUDE_DIRS )
 
-# APP_INCLUDE_DIRS: contains all the include directories from within the modular application
-# APP_LIBRARIES: contains all the libraries created by the application's own CMakeLists.txt
-# APP_HEADERS: all files that extend ApplicationBase
-# APP_SOURCES: all implemententions of classes that extend ApplicationBase
+set( CMAKE_AUTOMOC ON )
+
+find_package( Qt5 COMPONENTS Widgets REQUIRED )
 
 include( ApplicationGeodesicTrainingSegmentation.cmake )
+
+set( CPP_FILES ${APP_SOURCES} )
+set( MOC_H_FILES ${APP_HEADERS} )
+set( UI_FILES ${APP_UI_FILES} )
+set( H_FILES ${APP_HEADERS} )
+
+add_library( MpipApplications ${CPP_FILES} ${H_FILES} ${UI_FILES} ${MOC_H_FILES} )
+qt5_use_modules( MpipApplications Core Gui Widgets )
+SET( CMAKE_INCLUDE_CURRENT_DIR ON )
+
+target_link_libraries( MpipApplications
+  ${APP_LIBRARIES}
+)
+
+target_include_directories( MpipApplications PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${APP_INCLUDE_DIRS}
+)
+
+# Definitions 
+set( APPLICATION_DEFINITIONS_TO_ADD ${APPLICATION_DEFINITIONS_TO_ADD} CACHE INTERNAL "")
+set( APPLICATION_DEFINITIONS_TO_REMOVE ${APPLICATION_DEFINITIONS_TO_REMOVE} CACHE INTERNAL "")

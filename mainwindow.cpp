@@ -22,7 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
   // Initialize DataManager
   m_DataManager = new DataManager(this);
   m_DataManager->SetAcceptedFileTypes(m_AcceptedFileTypes);
-  
+  m_DataManager->SetAppNameShort(m_AppNameShort);
+
   // Initialize Scheduler
 #ifdef BUILD_GEODESIC_TRAINING
   m_Scheduler = new Scheduler(this);
@@ -176,7 +177,7 @@ void MainWindow::OnRunPressed()
 		return;
 	}
 
-  qDebug() << QString("(Run) uid:  ") << QString::number(uid);
+	qDebug() << QString("(Run) uid:  ") << QString::number(uid);
 
 	std::vector<long> iidsOfSubject = m_DataManager->GetAllDataIdsOfSubject(uid);
 

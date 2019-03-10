@@ -6,6 +6,8 @@
 #include <QDragEnterEvent>
 #include <QString>
 
+#include <set>
+
 #include "DataManager.h"
 #include "SchedulerBase.h"
 #include "ImageViewerBase.h"
@@ -66,7 +68,9 @@ private:
   Ui::MainWindow *ui;
 
   QString       m_AppName           = QString("MLL Semi-Automatic Segmentation");
+  QString       m_AppNameShort      = QString("MLL");
   QStringList   m_AcceptedFileTypes = QStringList() << "*.nii.gz" << "*.nrrd";
+  
   QString       m_MostRecentDir     = QString("/home");
 
   DataManager*     m_DataManager;

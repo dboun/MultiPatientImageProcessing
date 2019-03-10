@@ -12,6 +12,11 @@ void DataManager::SetAcceptedFileTypes(QStringList& acceptedFileTypes)
 	m_AcceptedFileTypes = acceptedFileTypes;
 }
 
+void DataManager::SetAppNameShort(QString appNameShort)
+{
+	m_AppNameShort = appNameShort;
+}
+
 QStringList DataManager::GetAcceptedFileTypes()
 {
 	return m_AcceptedFileTypes;
@@ -45,6 +50,23 @@ std::vector<long> DataManager::GetAllDataIdsOfSubject(long uid)
 	if (m_Subjects.find(uid) != m_Subjects.end())
 	{
 		return m_Subjects[uid].dataIds;			
+	}
+	return std::vector<long>();
+}
+
+std::vector<long> DataManager::GetAllDataIdsOfSubjectWithSpecialRole(long uid, QString specialRole)
+{
+	if (m_Subjects.find(uid) != m_Subjects.end())
+	{
+		std::vector<long> ret;
+		for (const auto& iid : m_Subjects[uid].dataIds)
+		{
+			if (m_Data[iid].specialRole == specialRole)
+			{
+				ret.push_back(iid);
+			}
+		}
+		return ret;
 	}
 	return std::vector<long>();
 }
@@ -109,7 +131,28 @@ long DataManager::AddSubjectAndDataByDirectoryPath(QString dirPath, QString subj
 
 	for (const auto& filePath : allFiles)
 	{
-		AddDataToSubject(uid, filePath);
+		// Find if the data has a special role (at least a one that we define)
+		// If there is a subdirectory called APPNAMESHORT_X
+		// Then X is the special role of the images contained in this subdirectory
+		QString filePathTemp = filePath;
+		filePathTemp.replace("\\", "/", Qt::CaseSensitive);
+		QStringList filePathSplit = filePathTemp.split("/");
+		QString parentDirOfFile = filePathSplit.value(filePathSplit.length() - 2);
+		
+		qDebug() << "Parent dir of file" << parentDirOfFile;
+		
+		QString specialRole;
+
+		if (parentDirOfFile.startsWith(m_AppNameShort, Qt::CaseSensitive))
+		{
+			specialRole = parentDirOfFile.right(
+				parentDirOfFile.length() - m_AppNameShort.length() - 1
+			);
+			qDebug() << "Special Role detected" << specialRole;
+		}
+
+		// Actually add the data
+		AddDataToSubject(uid, filePath, specialRole);
 	}
 
 	return uid;

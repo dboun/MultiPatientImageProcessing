@@ -13,6 +13,7 @@ public:
 	DataViewBase(QWidget* parent = nullptr);
 
 	void SetDataManager(DataManager* dataManager);
+	void SetAppNameShort(QString appNameShort);
 
 	long GetCurrentSubjectID();
 	long GetCurrentDataID();
@@ -33,7 +34,8 @@ signals:
 	
 protected:
 	DataManager* m_DataManager;
-	QStringList m_AcceptedFileTypes = QStringList() << "*";
+	QStringList  m_AcceptedFileTypes = QStringList() << "*";
+	QString      m_AppNameShort      = "MPIP";
 
 	long m_CurrentSubjectID = -1;
 	long m_CurrentDataID    = -1;

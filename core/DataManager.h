@@ -26,6 +26,8 @@ public:
 	/** struct Data
 	*   contains information about data for a subject
 	*   iid is the unique id of the data 
+	*   Special role will be what is displayed instead of the 
+	*   image name. i.e. Mask
 	*/
 	typedef struct {
 		long iid;
@@ -47,15 +49,8 @@ public:
 		std::vector<long> dataIds;
 	} Subject;
 
-	// /** Special role will be what is displayed instead of the 
-	// *   image name. i.e. Mask
-	// */
-	// virtual void AddSpecialRole(QString specialRole)
-	// {
-	// 	m_SpecialRoles << specialRole;
-	// }
-
 	void SetAcceptedFileTypes(QStringList& acceptedFileTypes);
+	void SetAppNameShort(QString appNameShort);
 	QStringList GetAcceptedFileTypes();
 
 	// Subject Getters
@@ -64,6 +59,7 @@ public:
 	QString GetSubjectName(long uid);
 	QString GetSubjectPath(long uid);
 	std::vector<long> GetAllDataIdsOfSubject(long uid);
+	std::vector<long> GetAllDataIdsOfSubjectWithSpecialRole(long uid, QString specialRole);
 
 	// Data Getters
 
@@ -139,6 +135,7 @@ private:
 	long iidNextToGive = 0;
 	std::mutex m_Mutex;
 	QStringList m_AcceptedFileTypes = QStringList() << "*";
+	QString     m_AppNameShort      = "MPIP";
 };
 
 #endif // ! DATA_MANAGER_H
