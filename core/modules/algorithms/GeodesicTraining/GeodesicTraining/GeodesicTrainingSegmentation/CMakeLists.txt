@@ -41,7 +41,7 @@ SET(ITK_NO_IO_FACTORY_REGISTER_MANAGER "OFF")
 INCLUDE( ${ITK_USE_FILE} )
 
 # Creating the library
-add_library(${PROJECT_NAME} STATIC
+add_library(${PROJECT_NAME} STATIC 
 	${GEODESIC_TRAINING_SEGMENTATION_Sources}
 	${CBICA_TOOLKIT_Sources}
 )
@@ -52,7 +52,6 @@ target_include_directories( ${PROJECT_NAME}
     PUBLIC SvmSuite/include/SvmSuite
     PUBLIC RandomForestSuite/include/RandomForestSuite
 	PUBLIC ${Project_Include_Dir}/cbica_toolkit
-	PUBLIC ${ITK_USE_FILE}
 )
 
 # Linking the dependencies of the library

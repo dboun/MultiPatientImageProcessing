@@ -83,7 +83,7 @@ namespace GeodesicTrainingSegmentation
 	};
 
 	/** Balanced Subsampling */
-	inline void /*cv::Mat*/ CreateBalancedSubsample(std::shared_ptr<ParserGTS::Result>& data, std::unordered_map<int, int> labelsCountMap, int maxSamples)
+	void /*cv::Mat*/ CreateBalancedSubsample(std::shared_ptr<ParserGTS::Result>& data, std::unordered_map<int, int> labelsCountMap, int maxSamples)
 	{
 		typedef int LabelsPixelType;
 
