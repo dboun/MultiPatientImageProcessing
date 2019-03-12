@@ -1,4 +1,6 @@
-include( cmake/dependencies.cmake )
+# Find Qt
+find_package( Qt5 COMPONENTS Core Gui Widgets REQUIRED )
+
 include( cmake/files.cmake )
 
 set( CMAKE_AUTOMOC ON )
@@ -10,10 +12,12 @@ add_executable( ${PROJECT_NAME}
   ${CPP_FILES} ${H_FILES} ${UI_FILES} ${MOC_H_FILES} 
 )
 
+qt5_use_modules( ${PROJECT_NAME} Core Gui Widgets )
+
 target_link_libraries( ${PROJECT_NAME} 
   MpipCore
 )
 
-target_include_directories( ${PROJECT_NAME}
+target_include_directories( ${PROJECT_NAME} PUBLIC
   ${CURRENT_LIST_DIR}
 )

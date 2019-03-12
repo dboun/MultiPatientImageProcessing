@@ -13,9 +13,8 @@ DataTreeView::DataTreeView(QWidget *parent) : DataViewBase(parent)
 {
 	// Set the QTreeWidget
 	m_TreeWidget = new QTreeWidget(this);
-	QGridLayout *layout = new QGridLayout(this);
-	layout->addWidget(m_TreeWidget, 0, 0);
-	this->setLayout(layout);
+	GuiModuleBase::PlaceWidgetInWidget(m_TreeWidget, this);
+	
 	m_TreeWidget->setStyleSheet("QTreeWidget {background-color:rgb(97,97,97);border:1px solid rgb(255,61,0);border-radius:2px}"
 		"QHeaderView::section {"                          
 		    "color: black;"                            
@@ -223,7 +222,7 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 	}
 }
 
-void DataTreeView::UpdateProgressHandler(long uid, int progress)
+void DataTreeView::UpdateProgressHandler(long uid, QString message, int progress)
 {
     QProgressBar *progressBar = m_TreeWidget->findChild<QProgressBar*>(QString("ProgressBar") + QString::number(uid));
 	progressBar->setVisible(true);

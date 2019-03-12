@@ -2,28 +2,29 @@
 #define DATA_VIEW_BASE_H
 
 #include <QWidget>
+#include <QString>
 
 #include "DataManager.h"
+#include "GuiModuleBase.h"
 
-class DataViewBase : public QWidget
+class DataViewBase : public GuiModuleBase
 {
 	Q_OBJECT
 
 public:
 	DataViewBase(QWidget* parent = nullptr);
 
-	void SetDataManager(DataManager* dataManager);
-	void SetAppNameShort(QString appNameShort);
-
 	long GetCurrentSubjectID();
 	long GetCurrentDataID();
 
+	void SetDataManager(DataManager* dataManager) override;
+	
 public slots:
 	// Override these methods to provide functionality to the viewer
 	virtual void SubjectAddedHandler(long uid);
 	virtual void SubjectRemovedHandler(long uid);
 	virtual void SubjectDataChangedHandler(long uid);
-	virtual void UpdateProgressHandler(long uid, int progress);
+	virtual void UpdateProgressHandler(long uid, QString message, int progress);
 
 signals:
 	void SelectedSubjectChanged(long uid); // uid == -1 if nothing is selected
@@ -33,10 +34,12 @@ signals:
 	void DataCheckedStateChanged(long iid, bool checkState); // Optional
 	
 protected:
-	DataManager* m_DataManager;
-	QStringList  m_AcceptedFileTypes = QStringList() << "*";
-	QString      m_AppNameShort      = "MPIP";
 
+	void SetCurrentSubjectID(long uid);
+	void SetCurrentDataID(long iid);
+
+	QStringList  m_AcceptedFileTypes = QStringList() << "*"; // Controlled by DataManager
+	
 	long m_CurrentSubjectID = -1;
 	long m_CurrentDataID    = -1;
 };

@@ -7,9 +7,10 @@
 #include <vector>
 
 #include "DataManager.h"
+#include "GuiModuleBase.h"
 #include "DataViewBase.h"
 
-class ImageViewerBase : public QWidget
+class ImageViewerBase : public GuiModuleBase
 {
 	Q_OBJECT
 
@@ -17,7 +18,6 @@ public:
 	ImageViewerBase(QWidget *parent = nullptr);
 
 	void SetDataView(DataViewBase* dataView);
-	void SetDataManager(DataManager* dataManager);
 	void SetOpacitySlider(QSlider* slider);
 
 public slots:

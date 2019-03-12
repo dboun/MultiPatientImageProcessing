@@ -2,7 +2,7 @@
 
 #include "DataViewBase.h"
 
-DataViewBase::DataViewBase(QWidget *parent) : QWidget(parent)
+DataViewBase::DataViewBase(QWidget *parent) : GuiModuleBase(parent)
 {
 	qDebug() << QString("DataViewBase::DataViewBase()");
 }
@@ -10,7 +10,9 @@ DataViewBase::DataViewBase(QWidget *parent) : QWidget(parent)
 void DataViewBase::SetDataManager(DataManager* dataManager)
 {
 	qDebug() << QString("DataViewBase::SetDataManager()");
+	
 	m_DataManager = dataManager;
+	m_AcceptedFileTypes = dataManager->GetAcceptedFileTypes();
 
 	connect(dataManager, SIGNAL(SubjectAdded(long)),
             this, SLOT(SubjectAddedHandler(long))
@@ -24,13 +26,6 @@ void DataViewBase::SetDataManager(DataManager* dataManager)
 	connect(dataManager, SIGNAL(SubjectDataChanged(long)),
             this, SLOT(SubjectDataChangedHandler(long))
 	);
-
-	m_AcceptedFileTypes = dataManager->GetAcceptedFileTypes();
-}
-
-void DataViewBase::SetAppNameShort(QString appNameShort)
-{
-	m_AppNameShort = appNameShort;
 }
 
 long DataViewBase::GetCurrentSubjectID()
@@ -58,7 +53,17 @@ void DataViewBase::SubjectDataChangedHandler(long uid)
 	qDebug() << QString("DataViewBase::SubjectDataChangedHandler(long)");
 }
 
-void DataViewBase::UpdateProgressHandler(long uid, int progress)
+void DataViewBase::UpdateProgressHandler(long uid, QString message, int progress)
 {
 	qDebug() << QString("DataViewBase::UpdateProgressHandler(int, long)");	
+}
+
+void DataViewBase::SetCurrentSubjectID(long uid)
+{
+	m_CurrentSubjectID = uid;
+}
+
+void DataViewBase::SetCurrentDataID(long iid)
+{
+	m_CurrentDataID = iid;
 }

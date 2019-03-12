@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-ImageViewerBase::ImageViewerBase(QWidget *parent) : QWidget(parent)
+ImageViewerBase::ImageViewerBase(QWidget *parent) : GuiModuleBase(parent)
 {
 	qDebug() << QString("ViewerBase::ViewerBase()");
 }
@@ -30,14 +30,6 @@ void ImageViewerBase::SetDataView(DataViewBase* dataView)
 	connect(dataView, SIGNAL(DataCheckedStateChanged(long, bool)),
 		this, SLOT(DataCheckedStateChangedHandler(long, bool))
 	);
-}
-
-void ImageViewerBase::SetDataManager(DataManager* dataManager)
-{
-	qDebug() << QString("ViewerBase::SetDataManager()");
-	// I don't think there is a need to connect signals/slots
-	// DataManager is used for data fetching
-	m_DataManager = dataManager;
 }
 
 void ImageViewerBase::SetOpacitySlider(QSlider* slider)

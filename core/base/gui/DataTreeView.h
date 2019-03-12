@@ -25,7 +25,7 @@ public slots:
 	void SubjectAddedHandler(long uid) override;
 	void SubjectRemovedHandler(long uid) override;
 	void SubjectDataChangedHandler(long uid) override;
-	void UpdateProgressHandler(long uid, int progress) override;
+	void UpdateProgressHandler(long uid, QString message, int progress) override;
 
 	// Custom slots
 	void OnItemClick(QTreeWidgetItem *item, int column);

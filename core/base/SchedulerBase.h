@@ -2,66 +2,46 @@
 #define SCHEDULER_BASE_H
 
 #include <QObject>
-#include <QDebug>
 #include <QThread>
+#include <QQueue>
 
-#include <vector>
-#include <string>
 #include <thread>
 #include <mutex>
-#include <map>
+#include <atomic>
 
-#include "DataManager.h"
+#include "AlgorithmModuleBase.h"
 
 class SchedulerBase : public QObject
 {
 	Q_OBJECT
 
 public:
-	// You can add more Data structs to the queue
-	// use customFlag if you need to do many things 
-	// + a switch statement at overriden threadJob
-	typedef struct SchedulerJobData
-	{
-		std::vector<long> uids;
-		std::map< long, std::vector< long > > iids;
-		int customFlag = 0;
-	} SchedulerJobData;
-
 	SchedulerBase(QObject *parent = nullptr);
 	~SchedulerBase();
 
-	void AddData(std::shared_ptr<SchedulerJobData> data);
-	void SetDataManager(DataManager* dataManager);
-	void SetMaxParallelJobs(int maxParallelJobs);
-
-public slots:
-	void progressUpdateFromApplication(long uid, QString message, int progress);
-	void Start();
-	void Stop();
+    /** Override these methods to provide functionality */
+	virtual void QueueAlgorithm(AlgorithmModuleBase* algorithmModule);
+    virtual bool IsSafeToExit();
+    virtual void ClearQueuedAlgorithms(); // Override to make thread safe
 
 signals:
-	void jobFinished(long uid);
-	void jobQueued(long uid);
-	void updateProgress(long uid, int progress);
-	void roundFinished();
+	void AlgorithmFinished(AlgorithmModuleBase* algorithmModule);
 
 protected:
-	virtual void ThreadJob(long uid, std::vector<long> &iids, const int customFlag = 0);
-	void ResultFinished(long uid);
+    /** Increment/Decrement are thread safe */
+    void IncrementRunningAlgorithms();
+    void DecrementRunningAlgorithms();
 
-	DataManager* m_DataManager;
-	std::vector< std::shared_ptr<SchedulerJobData> > m_Data;
+    /** Queue operations (not thread safe) */
+    bool IsQueueEmpty();
+    void ClearQueue();
+    void AddToQueue(AlgorithmModuleBase* algorithmModule);
+    AlgorithmModuleBase* PeekQueueHeadWithoutPop();
+    AlgorithmModuleBase* GetQueueHeadAndPop();
 
-private:
-	void BackgroundCoordinator();
+	QQueue< AlgorithmModuleBase* > m_Queue;
 
-	int m_MaxParallelJobs = 2;
-	std::mutex m_Mutex;
-	bool m_StopFlag = false; // Signals to not run additional samples
-	bool m_CoordinatorRunning = false;
-	size_t m_NumberOfUnfishedJobsThisRound;
-	std::thread m_BackgroundCoordinator;
+    std::atomic<int> m_RunningAlgorithms {0};
 };
 
 #endif // ! SCHEDULER_BASE_H

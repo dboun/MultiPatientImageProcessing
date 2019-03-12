@@ -3,6 +3,8 @@
 # project/library name
 set( MODULE_NAME ModuleGeodesicTraining )
 
+# ------------------------------------------------------
+# ------------------------------------------------------
 # Don't change anything below unless your module
 # depends on another module.
 # In that case, change the other module's option value.
@@ -21,6 +23,7 @@ option( ${OPTION_NAME}
 # and also accumulates definitions so they are added by
 # master.cmake. That way they are global to the application.
 if( ${OPTION_NAME} )
+  message( STATUS "Adding module ${MODULE_NAME}." )
   add_subdirectory( ${CMAKE_CURRENT_LIST_DIR} )
   
   set( CORE_DEFINITIONS_TO_ADD ${CORE_DEFINITIONS_TO_ADD}
