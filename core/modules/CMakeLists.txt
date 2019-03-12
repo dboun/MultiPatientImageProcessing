@@ -1,4 +1,5 @@
-project( MpipModules )
+set( MODULES_LIBRARY MpipModules )
+project( ${MODULES_LIBRARY} )
 
 # Macro to find all subdirectories
 # (curdir is the parent folder of the subdirectories)
@@ -42,12 +43,9 @@ foreach( OTHER_MODULE_PATH ${OTHER_MODULES_PATHS} )
 endforeach()
 
 # Create a library without sources
-add_library( MpipModules INTERFACE )
+add_library( ${MODULES_LIBRARY} INTERFACE )
 
 # add all enabled subproject module libraries to the library
 foreach( MODULE_PATH ${MODULES_PATHS} )
   include( ${MODULE_PATH}/options.cmake )
-  target_link_libraries( MpipModules INTERFACE 
-    ${MODULE_NAME}
-  )
 endforeach()

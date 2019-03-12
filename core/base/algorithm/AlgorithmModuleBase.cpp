@@ -1,6 +1,7 @@
 #include "AlgorithmModuleBase.h"
 
 #include <QDebug>
+#include <QThread>
 
 void AlgorithmModuleBase::SetDataManager(DataManager* dataManager)
 {
@@ -80,7 +81,19 @@ void AlgorithmModuleBase::Run()
 
 void AlgorithmModuleBase::Algorithm()
 {
-    emit ProgressUpdateUI(m_Uid, QString("Test Progress"), 100);
+    // For debugging
+    emit ProgressUpdateUI(m_Uid, QString("Test Progress Start"), 0);
+    QThread::sleep(2);
+    emit ProgressUpdateUI(m_Uid, QString("Test Progress Start"), 20);
+    if (m_CancelFlag) { return; }
+
+    QThread::sleep(5);    
+    emit ProgressUpdateUI(m_Uid, QString("Test Progress Start"), 70);
+    if (m_CancelFlag) { return; }
+    QThread::sleep(3);
+    emit ProgressUpdateUI(m_Uid, QString("Test Progress Start"), 100);
+    emit AlgorithmFinished(this);
+    
 
     // There should be regular checks in 
     // algorithm modules that inherit this

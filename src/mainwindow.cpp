@@ -25,14 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
   m_DataManager->SetAppNameShort(m_AppNameShort);
 
   // Initialize Scheduler
-#ifdef BUILD_GEODESIC_TRAINING
-  m_Scheduler = new Scheduler(this);
-#else
-  m_Scheduler = new SchedulerBase(this);
-#endif
-
-  m_Scheduler->SetDataManager(m_DataManager);
-  m_Scheduler->Start(); 
+  m_Scheduler = new DefaultScheduler(this);
   
   // Initialize UI
   ui->setupUi(this);
@@ -85,17 +78,11 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->dataViewContainer->setGraphicsEffect(effect);
 
   // Signals and Slots
-  connect(m_Scheduler, SIGNAL(updateProgress(long, int)), 
-    m_DataView, SLOT(UpdateProgressHandler(long, int))
-  );
-  connect(m_Scheduler, SIGNAL(jobQueued(long)), 
-    this, SLOT(OnSchedulerJobQueued(long))
-  );
-  // connect(m_Scheduler, SIGNAL(jobFinished(long)), 
-  //   this, SLOT(OnSchedulerResultReady(long))
-  // );
   connect(ui->pushButtonRun, SIGNAL(released()), 
     this, SLOT(OnRunPressed())
+  );
+  connect(m_Scheduler, SIGNAL(JobFinished(AlgorithmModuleBase*)), 
+    this, SLOT(OnSchedulerJobFinished(AlgorithmModuleBase*))
   );
   connect(ui->actionOpen_single_subject, SIGNAL(triggered()), 
     this, SLOT(OnOpenSingleSubject())
@@ -163,8 +150,6 @@ void MainWindow::OnOpenSingleSubject()
 
 void MainWindow::OnRunPressed()
 {
-	std::shared_ptr<SchedulerBase::SchedulerJobData> data(new SchedulerBase::SchedulerJobData());
-
 	long uid = m_DataView->GetCurrentSubjectID(); // For convenience
 
 	if (uid == -1)
@@ -224,21 +209,41 @@ void MainWindow::OnRunPressed()
 		return;
 	}
 
-	data->uids.push_back(uid);
-	data->iids[uid] = iidsOfSubject;
+	AlgorithmModuleBase* algorithm = new AlgorithmModuleBase(this);
+  algorithm->SetDataManager(m_DataManager);
+  algorithm->SetUid(uid);
 
-	qDebug() << QString("Trying to run");
-	m_Scheduler->AddData(data);
+  connect(algorithm, SIGNAL(ProgressUpdateUI(long, QString, int)), 
+    m_DataView, SLOT(UpdateProgressHandler(long, QString, int))
+  );
+  connect(algorithm, SIGNAL(AlgorithmFinished(AlgorithmModuleBase*)),
+    this, SLOT(OnAlgorithmFinished(AlgorithmModuleBase*))
+  );
+  connect(algorithm, SIGNAL(AlgorithmFinishedWithError(AlgorithmModuleBase*, QString)),
+    this, SLOT(OnAlgorithmFinishedWithError(AlgorithmModuleBase*, QString))
+  );
+
+  m_Scheduler->QueueAlgorithm(algorithm);
 }
 
-// void MainWindow::OnSchedulerResultReady(long uid)
-// {
-//   qDebug() << QString("OnSchedulerResultReady called for uid: ") << QString::number(uid);
-// }
-
-void MainWindow::OnSchedulerJobQueued(long uid)
+void MainWindow::OnSchedulerJobFinished(AlgorithmModuleBase* algorithmModuleBase)
 {
-	m_DataView->UpdateProgressHandler(uid, 0);
+  delete algorithmModuleBase;
+}
+
+void MainWindow::OnAlgorithmFinished(AlgorithmModuleBase* algorithmModuleBase)
+{
+  // Nothing needs to be done here
+}
+
+void MainWindow::OnAlgorithmFinishedWithError(AlgorithmModuleBase* algorithmModuleBase, 
+  QString errorMessage)
+{
+  QMessageBox::warning(
+		this,
+		algorithmModuleBase->GetAlgorithmName(),
+		errorMessage	
+	);
 }
 
 #ifdef BUILD_MITK

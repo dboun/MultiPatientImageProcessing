@@ -25,6 +25,10 @@ option( ${OPTION_NAME}
 if( ${OPTION_NAME} )
   message( STATUS "Adding module ${MODULE_NAME}." )
   add_subdirectory( ${CMAKE_CURRENT_LIST_DIR} )
+
+  target_link_libraries( ${MODULES_LIBRARY}  
+    PUBLIC ${MODULE_NAME}
+  )
   
   set( CORE_DEFINITIONS_TO_ADD ${CORE_DEFINITIONS_TO_ADD}
     ${DEFINITION_NAME} 

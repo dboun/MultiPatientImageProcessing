@@ -74,7 +74,7 @@ void DefaultScheduler::BackgroundCoordinator()
 void DefaultScheduler::ThreadJob(long tid, AlgorithmModuleBase* algorithmModule)
 {
 	algorithmModule->Run();
-	AlgorithmFinished(algorithmModule);
+	emit JobFinished(algorithmModule);
 	AddThreadToJoinQueue(tid);
 }
 

@@ -2,8 +2,8 @@ project( MpipBase )
 
 find_package( Qt5 COMPONENTS Core Gui Widgets REQUIRED )
 
-file(GLOB_RECURSE SOURCES "${PROJECT_SOURCE_DIR}/*.cpp")
-file(GLOB_RECURSE HEADERS "${PROJECT_SOURCE_DIR}/*.h") 
+file(GLOB_RECURSE SOURCES "*.cpp")
+file(GLOB_RECURSE HEADERS "*.h") 
 
 add_library( MpipBase SHARED
   ${SOURCES}

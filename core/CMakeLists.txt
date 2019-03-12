@@ -20,7 +20,7 @@ add_subdirectory( modules )
 # Create the MpipCore library
 add_library( MpipCore INTERFACE )
 
-target_link_libraries( MpipCore INTERFACE 
+target_link_libraries( MpipCore INTERFACE
   MpipBase
   MpipModules
 )

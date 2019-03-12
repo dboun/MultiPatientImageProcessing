@@ -35,7 +35,7 @@ void SchedulerBase::QueueAlgorithm(AlgorithmModuleBase* algorithmModule)
     DecrementRunningAlgorithms();
     // Emit signal for the UI
     // (The algorithm will have put it's files in DataManager beforehand)
-    emit AlgorithmFinished(a);
+    emit JobFinished(a);
 }
 
 bool SchedulerBase::IsSafeToExit()

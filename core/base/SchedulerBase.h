@@ -25,7 +25,7 @@ public:
     virtual void ClearQueuedAlgorithms(); // Override to make thread safe
 
 signals:
-	void AlgorithmFinished(AlgorithmModuleBase* algorithmModule);
+	void JobFinished(AlgorithmModuleBase* algorithmModule);
 
 protected:
     /** Increment/Decrement are thread safe */

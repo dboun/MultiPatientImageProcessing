@@ -9,17 +9,13 @@
 #include <set>
 
 #include "DataManager.h"
-#include "SchedulerBase.h"
+#include "DefaultScheduler.h"
 #include "ImageViewerBase.h"
 #include "DataViewBase.h"
 
 #ifdef BUILD_MITK
 #include "MitkViewer.h"
 class MPIPQmitkSegmentationPanel;
-#endif
-
-#ifdef BUILD_GEODESIC_TRAINING
-#include "Scheduler.h"
 #endif
 
 #include "DataTreeView.h"
@@ -44,8 +40,14 @@ public slots:
   void OnOpenSingleSubject();
   //void HandleConfigButton(); 
   void OnRunPressed();
-  //void OnSchedulerResultReady(long uid);
-  void OnSchedulerJobQueued(long uid);
+  
+  // Slots for Scheduler
+  void OnSchedulerJobFinished(AlgorithmModuleBase* algorithmModuleBase);
+
+  // Slots for AlgorithmModuleBase
+  void OnAlgorithmFinished(AlgorithmModuleBase* algorithmModuleBase);
+  void OnAlgorithmFinishedWithError(AlgorithmModuleBase* algorithmModuleBase, 
+    QString errorMessage);
   
 #ifdef BUILD_MITK
   void OnSegmentationButtonClicked();
