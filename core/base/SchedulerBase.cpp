@@ -80,7 +80,7 @@ AlgorithmModuleBase* SchedulerBase::PeekQueueHeadWithoutPop()
     return m_Queue.head();
 }
 
-AlgorithmModuleBase* SchedulerBaseAlgorithmModuleBase*::GetQueueHeadAndPop()
+AlgorithmModuleBase* SchedulerBase::GetQueueHeadAndPop()
 {
     AlgorithmModuleBase* a = m_Queue.head();
     m_Queue.dequeue();

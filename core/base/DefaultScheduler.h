@@ -2,10 +2,12 @@
 #define DEFAULT_SCHEDULER_H
 
 #include <QThread>
+#include <QQueue>
 
 #include <mutex>
 #include <thread>
 #include <atomic>
+#include <map>
 
 #include "SchedulerBase.h"
 #include "AlgorithmModuleBase.h"
@@ -18,17 +20,23 @@ public:
 	DefaultScheduler(QObject *parent = nullptr);
 	~DefaultScheduler() {}
 
-private:
     void QueueAlgorithm(AlgorithmModuleBase* algorithmModule) override;
     void ClearQueuedAlgorithms() override;
 
+private:
     void StartBackgroundCoordinatorIfNecessary();
     void BackgroundCoordinator();
-	void ThreadJob(AlgorithmModuleBase* algorithmModule);
+	void ThreadJob(long tid, AlgorithmModuleBase* algorithmModule);
+    void AddThreadToJoinQueue(long tid);
+
+    bool IsAlgorithmAllowedToRunYet(AlgorithmModuleBase::SEVERITY severity);
 
     std::mutex m_Mutex;
-	bool m_CoordinatorRunning = false;
+	std::atomic<bool> m_CoordinatorRunning {false};
 	std::thread m_BackgroundCoordinator;
+    std::map< long, std::thread > m_Threads; // key is thread unique id
+    QQueue<long> m_ThreadsToJoin;
+    long tidNextToGive = 0;
 
     std::atomic<int> m_NumberOfLowPriorityRunning {0};
     std::atomic<int> m_NumberOfMediumPriorityRunning {0};
@@ -44,7 +52,7 @@ private:
             QThread::idealThreadCount() / 2 :
             1;
 
-    const int m_NumberOfAllowedLowPriorityJobs = 
+    const int m_NumberOfAllowedHighPriorityJobs = 
         QThread::idealThreadCount();
 };
 

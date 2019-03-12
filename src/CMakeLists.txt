@@ -13,6 +13,7 @@ add_executable( ${PROJECT_NAME}
 )
 
 qt5_use_modules( ${PROJECT_NAME} Core Gui Widgets )
+SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 target_link_libraries( ${PROJECT_NAME} 
   MpipCore

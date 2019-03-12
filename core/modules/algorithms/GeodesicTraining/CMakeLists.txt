@@ -29,7 +29,7 @@ set( H_FILES
 )
 
 # Create the library
-add_library( ${MODULE_NAME} 
+add_library( ${MODULE_NAME} SHARED
   ${CPP_FILES} ${H_FILES} ${UI_FILES} ${MOC_H_FILES} 
 )
 
