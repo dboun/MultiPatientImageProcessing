@@ -1,42 +1,14 @@
-# Give here the name of the library you want to generate
-# This is used by the module's CMakeLists.txt as
-# project/library name
-set( MODULE_NAME ExampleModule )
+# MODULE_NAME:
+#   Every module has a name and builds only one library with the same name
+#   This is used by the module's CMakeLists.txt (see template)
+# ON_OR_OFF_BY_DEFAULT:
+#   The default cmake option value
+# NEEDS_MODULES:
+#   A list of other modules to turn on if this module needs them
+set( MODULE_NAME ExampleAlgorithm )
+set( ON_OR_OFF_BY_DEFAULT OFF )
+set( NEEDS_MODULES  )
 
-# ------------------------------------------------------
-# ------------------------------------------------------
-# Don't change anything below unless your module
-# depends on another module.
-# In that case, change the other module's option value.
-#
-# Maybe you also want to add a better option description.
-
-set( OPTION_NAME BUILD_${MODULE_NAME} )
-set( DEFINITION_NAME -D${MODULE_NAME} )
-
-option( ${OPTION_NAME} 
-  "Build ${MODULE_NAME}" 
-  OFF
-)
-
-# The if-else statement adds the subproject if necessary
-# and also accumulates definitions so they are added by
-# master.cmake. That way they are global to the application.
-if( ${OPTION_NAME} )
-  message( STATUS "Adding module ${MODULE_NAME}." )
-  add_subdirectory( ${CMAKE_CURRENT_LIST_DIR} )
-
-  target_link_libraries( ${MODULES_LIBRARY}  
-    INTERFACE ${MODULE_NAME}
-  )
-  
-  set( CORE_DEFINITIONS_TO_ADD ${CORE_DEFINITIONS_TO_ADD}
-    ${DEFINITION_NAME} 
-    CACHE INTERNAL ""
-  )
-else( ${OPTION_NAME} )
-  set( CORE_DEFINITIONS_TO_REMOVE ${CORE_DEFINITIONS_TO_REMOVE}
-    ${DEFINITION_NAME} 
-    CACHE INTERNAL ""
-  )
-endif( ${OPTION_NAME} )
+# CREATE_MODULE is a macro in core/cmake.
+# It creates a cmake option and adds the subdirectory if necessary
+CREATE_MODULE( ${MODULE_NAME} ${ON_OR_OFF_BY_DEFAULT} ${NEEDS_MODULES} )

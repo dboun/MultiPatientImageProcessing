@@ -1,45 +1,26 @@
 # Note: Project name is set by options.cmake
 project( ${MODULE_NAME} )
 
-find_package( Qt5 COMPONENTS Widgets REQUIRED )
-
-set(CMAKE_AUTOMOC ON)
-
-qt5_wrap_ui( UI_Srcs ${UI_FILES} )
+#find_package(Qt5 COMPONENTS Core)
+#set(CMAKE_AUTOMOC ON)
 
 add_subdirectory( 
-  GeodesicTraining_external/GeodesicTrainingSegmentation 
-)
-
-# Setting the files of the module
-set( CPP_FILES
-  ModuleGeodesicTraining.cpp
-)
-
-set( MOC_H_FILES
-  ModuleGeodesicTraining.h
-)
-
-set( UI_FILES
-  
-)
-
-set( H_FILES
-  ModuleGeodesicTraining.h
+  GeodesicTraining_external
 )
 
 # Create the library
-add_library( ${MODULE_NAME} SHARED
-  ${CPP_FILES} ${H_FILES} ${UI_FILES} ${MOC_H_FILES} 
+add_library( ${MODULE_NAME} STATIC
+  ModuleGeodesicTraining.cpp
+  GeodesicTrainingQt.cpp
+  GeodesicTrainingQtOnly.cpp
 )
-
-qt5_use_modules( ${MODULE_NAME} Widgets )
 
 target_link_libraries( ${MODULE_NAME} 
   MpipBase
   GeodesicTrainingSegmentation
+  #Qt5::Core
 )
 
 target_include_directories( ${MODULE_NAME} PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${PROJECT_SOURCE_DIR}
 )

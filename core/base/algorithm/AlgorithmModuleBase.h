@@ -30,6 +30,8 @@ public:
   QString       GetAlgorithmName();
   QString       GetAlgorithmNameShort();
   SEVERITY      GetSeverity();
+  void          SetAppName(QString appName);
+  void          SetAppNameShort(QString appNameShort);
   bool          IsRunning();
   bool          IsCanceled();
 
@@ -52,6 +54,8 @@ protected:
   void          SetAlgorithmName(QString algorithmName);
   void          SetAlgorithmNameShort(QString algorithmNameShort);
   void          SetSeverity(SEVERITY severity);
+  QString       GetAppName();
+  QString       GetAppNameShort();
 
   DataManager*  m_DataManager;
   DataViewBase* m_DataView;
@@ -62,6 +66,8 @@ protected:
   QString m_AlgorithmName      = "Full algorithm name";
   QString m_AlgorithmNameShort = "Short algorithm name";
   SEVERITY m_Severity          = SEVERITY::MEDIUM;
+  QString m_AppName            = "Multi-Patient Image Processing";
+  QString m_AppNameShort       = "MPIP";
 };
 
 #endif // ! ALGORITHM_MODULE_BASE_H

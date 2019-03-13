@@ -12,13 +12,9 @@ SET( Project_Src_Dir "${PROJECT_SOURCE_DIR}/src" )
 # Setting the sources
 FILE(GLOB_RECURSE AGD_Sources "${Project_Src_Dir}/*.*")
 
-# Including the path for headers
-include_directories("${Project_Include_Dir}")
-
 # For ITK
 FIND_PACKAGE( ITK REQUIRED )
 SET(ITK_NO_IO_FACTORY_REGISTER_MANAGER "OFF")
-INCLUDE( ${ITK_USE_FILE} )
 
 # Creating the library
 add_library(${PROJECT_NAME} STATIC 
@@ -28,4 +24,9 @@ add_library(${PROJECT_NAME} STATIC
 # Linking the dependencies of the library
 TARGET_LINK_LIBRARIES( ${PROJECT_NAME}
     ${ITK_LIBRARIES}
+)
+
+target_include_directories( ${PROJECT_NAME} PUBLIC
+	${Project_Include_Dir}
+	${ITK_INCLUDE_DIRS}
 )

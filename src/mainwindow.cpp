@@ -11,6 +11,10 @@
 
 #include <vector>
 
+//#ifdef BUILD_MODULE_GeodesicTraining
+#include "ModuleGeodesicTraining.h"
+//#endif
+
 #ifdef BUILD_MITK
 #include "MPIPQmitkSegmentationPanel.h"
 #endif
@@ -209,7 +213,7 @@ void MainWindow::OnRunPressed()
 		return;
 	}
 
-	AlgorithmModuleBase* algorithm = new AlgorithmModuleBase(this);
+	AlgorithmModuleBase* algorithm = new GeodesicTrainingModule(this);
   algorithm->SetDataManager(m_DataManager);
   algorithm->SetUid(uid);
 

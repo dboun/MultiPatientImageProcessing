@@ -47,6 +47,15 @@ AlgorithmModuleBase::SEVERITY AlgorithmModuleBase::GetSeverity()
     return m_Severity;
 }
 
+void AlgorithmModuleBase::SetAppName(QString appName)
+{
+    m_AppName = appName;
+}
+void AlgorithmModuleBase::SetAppNameShort(QString appNameShort)
+{
+    m_AppNameShort = appNameShort;
+}
+
 bool AlgorithmModuleBase::IsRunning()
 {
     return m_IsRunning;
@@ -60,6 +69,13 @@ bool AlgorithmModuleBase::IsCanceled()
 void AlgorithmModuleBase::Run()
 {
     qDebug() << "Algorithm module" << m_AlgorithmName << "Running";
+
+    if(!m_DataManager)
+    {
+        emit AlgorithmFinishedWithError(this, 
+            m_AlgorithmNameShort + QString("No DataManager set")
+        );
+    }
     
     if (m_IsRunning)
     {
@@ -123,4 +139,19 @@ void AlgorithmModuleBase::SetAlgorithmName(QString algorithmName)
 void AlgorithmModuleBase::SetAlgorithmNameShort(QString algorithmNameShort)
 {
     m_AlgorithmNameShort = algorithmNameShort;
+}
+
+void AlgorithmModuleBase::SetSeverity(SEVERITY severity)
+{
+    m_Severity = severity;
+}
+
+QString AlgorithmModuleBase::GetAppName()
+{
+    return m_AppName;
+}
+
+QString AlgorithmModuleBase::GetAppNameShort()
+{
+    return m_AppNameShort;
 }

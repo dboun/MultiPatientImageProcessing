@@ -19,14 +19,6 @@ SET( Project_Src_Dir "${PROJECT_SOURCE_DIR}/src" )
 # Setting the sources
 FILE(GLOB_RECURSE SVM_SUITE_Sources "${Project_Src_Dir}/*.*")
 
-# Including the paths for headers
-include_directories(
-    "${PROJECT_SOURCE_DIR}/thirdparty/yaml-cpp/include"
-	"${Project_Src_Dir}/convertions"
-    "${Project_Include_Dir}"
-    "${OpenCV_INCLUDE_DIRS}"
-)
-
 # Creating the library
 add_library(${PROJECT_NAME} STATIC 
     ${YAMLCPP_Sources}
@@ -37,4 +29,10 @@ add_library(${PROJECT_NAME} STATIC
 # Linking the dependencies of the library
 TARGET_LINK_LIBRARIES( ${PROJECT_NAME}
     ${OpenCV_LIBRARIES}
+)
+
+target_include_directories( ${PROJECT_NAME} PUBLIC
+    "${Project_Include_Dir}"
+    "${PROJECT_SOURCE_DIR}/thirdparty/yaml-cpp/include"
+	"${Project_Src_Dir}/convertions"
 )
