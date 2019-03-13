@@ -13,10 +13,9 @@
 #include "ImageViewerBase.h"
 #include "DataViewBase.h"
 
-#ifdef BUILD_MITK
-#include "MitkViewer.h"
+#ifdef BUILD_MODULE_MitkDrawingTool
 class MPIPQmitkSegmentationPanel;
-#endif
+#endif 
 
 #include "DataTreeView.h"
 #include "ui_mainwindow.h"

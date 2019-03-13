@@ -11,11 +11,15 @@
 
 #include <vector>
 
-//#ifdef BUILD_MODULE_GeodesicTraining
+#ifdef BUILD_MODULE_GeodesicTraining
 #include "GeodesicTrainingModule.h"
-//#endif
+#endif
 
-#ifdef BUILD_MITK
+#ifdef BUILD_MODULE_MitkImageViewer
+#include "MitkImageViewer.h"
+#endif
+
+#ifdef BUILD_MODULE_MitkDrawingTool
 #include "MPIPQmitkSegmentationPanel.h"
 #endif
 
@@ -43,19 +47,21 @@ MainWindow::MainWindow(QWidget *parent) :
   m_DataView->SetDataManager(m_DataManager);
 
   // Initialize ImageViewer
-#ifdef BUILD_MITK
-  m_ImageViewer = new MitkViewer(ui->viewerContainer);
+#ifdef BUILD_MODULE_MitkImageViewer
+  m_ImageViewer = new MitkImageViewer(ui->viewerContainer);
   m_ImageViewer->setMinimumWidth(600);
   m_ImageViewer->setMinimumHeight(500);
-  this->m_SegmentationPanel = new MPIPQmitkSegmentationPanel(qobject_cast<MitkViewer*>(m_ImageViewer)->GetDataStorage(), this);
+#else
+  qDebug() << "Using abstract image viewer";
+  m_ImageViewer = new ImageViewerBase(ui->viewerContainer);
+#endif
+
+  // Initialize MitkDrawingTool
+#ifdef BUILD_MODULE_MitkDrawingTool
+  this->m_SegmentationPanel = new MPIPQmitkSegmentationPanel(qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), this);
   this->m_SegmentationPanel->SetDataManager(m_DataManager);
   this->ui->rightPanel->layout()->addWidget(this->m_SegmentationPanel);
   this->m_SegmentationPanel->hide();
-#else
-  m_ImageViewer = new ImageViewerBase(ui->viewerContainer);
-  //m_ImageViewer->setGeometry(0, 0, 300, 300);
-  //m_ImageViewer->setStyleSheet("background-color:black");
-  //m_ImageViewer->show();
 #endif
 
   ui->viewerContainer->layout()->addWidget(m_ImageViewer);
@@ -98,7 +104,7 @@ MainWindow::MainWindow(QWidget *parent) :
     this, SLOT(SelectedSubjectChangedHandler(long))
   );
 
-#ifdef BUILD_MITK
+#ifdef BUILD_MODULE_MitkDrawingTool
   connect(ui->SegmentationBtn, SIGNAL(clicked()), this, SLOT(OnSegmentationButtonClicked()));
   connect(this, SIGNAL(EnableSegmentation()), m_SegmentationPanel, SLOT(OnEnableSegmentation()));
   connect(this, SIGNAL(DisableSegmentation()), m_SegmentationPanel, SLOT(OnDisableSegmentation()));
@@ -213,7 +219,12 @@ void MainWindow::OnRunPressed()
 		return;
 	}
 
+#ifdef BUILD_MODULE_GeodesicTraining
 	AlgorithmModuleBase* algorithm = new GeodesicTrainingModule(this);
+#else
+  AlgorithmModuleBase* algorithm = new AlgorithmModuleBase(this);
+#endif
+
   algorithm->SetDataManager(m_DataManager);
   algorithm->SetUid(uid);
 

@@ -1,30 +1,21 @@
 # Note: Project name is set by options.cmake
 project( ${MODULE_NAME} )
 
-find_package(Qt5 COMPONENTS Core)
+find_package( Qt5 COMPONENTS Core Gui Widgets )
+find_package( MITK REQUIRED )
 set(CMAKE_AUTOMOC ON)
 
-add_subdirectory( 
-  GeodesicTraining_external
-)
-
 set( CPP_FILES
-  GeodesicTrainingModule.cpp
-  GeodesicTrainingQt.cpp
-  GeodesicTrainingQtOnly.cpp
+  MitkImageViewer.cpp
 ) 
 set( H_FILES
-  GeodesicTrainingModule.h
-  GeodesicTrainingQt.h
-  GeodesicTrainingQtOnly.h
+  MitkImageViewer.h
 ) 
 set( UI_FILES
 
 ) 
 set( MOC_H_FILES
-  GeodesicTrainingModule.h
-  GeodesicTrainingQt.h
-  GeodesicTrainingQtOnly.h
+  MitkImageViewer.h
 ) 
 
 
@@ -35,8 +26,14 @@ add_library( ${MODULE_NAME} STATIC
 
 target_link_libraries( ${MODULE_NAME} 
   MpipBase
-  GeodesicTrainingSegmentation
+
   Qt5::Core
+  Qt5::Gui
+  Qt5::Widgets
+
+  MitkCore 
+  MitkQtWidgets 
+  MitkQtWidgetsExt
 )
 
 target_include_directories( ${MODULE_NAME} PUBLIC

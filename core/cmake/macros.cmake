@@ -15,6 +15,7 @@ macro( CREATE_MODULE MODULE_NAME ON_OR_OFF_BY_DEFAULT )
     # Note: CMAKE_CURRENT_LIST_DIR refers to the directory calling
     if( ${OPTION_NAME} )
       message( STATUS "Adding module ${MODULE_NAME}." )
+      message( STATUS "Use definition ${DEFINITION_NAME}" )
       
       # Turn on modules that this needs
       foreach( MODULE_TO_TURN_ON ${NEEDS_MODULES} )

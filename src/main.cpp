@@ -4,14 +4,14 @@
 #include <QApplication>
 #include <QColor>
 
-#ifdef BUILD_MITK
+#ifdef BUILD_MODULE_MitkImageViewer
 #include "QmitkRegisterClasses.h"
 //#include "QVTKOpenGLWidget.h"
 #endif
 
 int main(int argc, char *argv[])
 {
-#ifdef BUILD_MITK
+#ifdef BUILD_MODULE_MitkImageViewer
 	QmitkRegisterClasses();
 	//QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
 #endif
