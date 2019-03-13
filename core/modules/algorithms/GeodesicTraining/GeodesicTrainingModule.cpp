@@ -1,4 +1,4 @@
-#include "ModuleGeodesicTraining.h"
+#include "GeodesicTrainingModule.h"
 
 #include <vector>
 #include <string>
@@ -10,6 +10,11 @@ GeodesicTrainingModule::GeodesicTrainingModule(QObject *parent) : AlgorithmModul
     this->SetSeverity(AlgorithmModuleBase::SEVERITY::HIGH);
     this->SetAlgorithmName("Geodesic Training Segmentation");
     this->SetAlgorithmNameShort("GeodesicTraining");
+}
+
+GeodesicTrainingModule::~GeodesicTrainingModule()
+{
+
 }
 
 void GeodesicTrainingModule::GeodesicTrainingProgressUpdateHandler(QString message, int progress)

@@ -17,8 +17,8 @@ public:
     LOW, MEDIUM, HIGH
   };
 
-  explicit AlgorithmModuleBase(QObject *parent = nullptr);
-  ~AlgorithmModuleBase() {}
+  AlgorithmModuleBase(QObject *parent = nullptr);
+  virtual ~AlgorithmModuleBase() {}
 
   /** These should be set by the scheduler */
   void SetDataManager(DataManager* dataManager);

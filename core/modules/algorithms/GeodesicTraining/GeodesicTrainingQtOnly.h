@@ -10,7 +10,7 @@ class GeodesicTrainingQtOnly : public QObject
 
 public:
     explicit GeodesicTrainingQtOnly(QObject* parent = nullptr) : QObject(parent) {}
-	~GeodesicTrainingQtOnly() {}
+	virtual ~GeodesicTrainingQtOnly() {}
 
 signals:
     void GeodesicTrainingProgressUpdate(QString message, int progress);

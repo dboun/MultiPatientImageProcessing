@@ -12,7 +12,7 @@
 #include <vector>
 
 //#ifdef BUILD_MODULE_GeodesicTraining
-#include "ModuleGeodesicTraining.h"
+#include "GeodesicTrainingModule.h"
 //#endif
 
 #ifdef BUILD_MITK

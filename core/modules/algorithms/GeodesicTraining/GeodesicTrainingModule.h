@@ -5,11 +5,9 @@
 
 class GeodesicTrainingModule : public AlgorithmModuleBase
 {
-	Q_OBJECT
-
 public:
-	explicit GeodesicTrainingModule(QObject *parent = nullptr);
-	~GeodesicTrainingModule() {}
+	GeodesicTrainingModule(QObject *parent = nullptr);
+	~GeodesicTrainingModule();
 
 public slots:
 	void GeodesicTrainingProgressUpdateHandler(QString message, int progress);
