@@ -118,7 +118,7 @@ void MainWindow::dropEvent(QDropEvent *e)
 {
   foreach(const QUrl &url, e->mimeData()->urls()) {
     QString fileName = url.toLocalFile();
-    qDebug(("Dropped file:" + fileName).toStdString().c_str());
+    qDebug() << "Dropped file:" + fileName;
 
     m_DataManager->AddSubjectAndDataByDirectoryPath(fileName);
   }

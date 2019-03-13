@@ -3,6 +3,11 @@
 #include <QDebug>
 #include <QGridLayout>
 
+GuiModuleBase::GuiModuleBase(QWidget *parent) : QWidget(parent)
+{
+
+}
+
 void GuiModuleBase::SetDataManager(DataManager* dataManager)
 {
     m_DataManager = dataManager;
@@ -28,7 +33,7 @@ DataManager* GuiModuleBase::GetDataManager()
     return m_DataManager;
 }
 
-static void PlaceWidgetInWidget(QWidget* top, QWidget* bottom)
+void GuiModuleBase::PlaceWidgetInWidget(QWidget* top, QWidget* bottom)
 {
 	QGridLayout *layout = new QGridLayout(bottom);
 	layout->addWidget(top, 0, 0);

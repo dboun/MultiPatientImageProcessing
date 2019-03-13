@@ -2,6 +2,8 @@ project( MpipBase )
 
 find_package( Qt5 COMPONENTS Core Gui Widgets REQUIRED )
 
+set(CMAKE_AUTOMOC ON)
+
 file(GLOB_RECURSE SOURCES "*.cpp")
 file(GLOB_RECURSE HEADERS "*.h") 
 

@@ -17,7 +17,7 @@ public:
     LOW, MEDIUM, HIGH
   };
 
-  explicit AlgorithmModuleBase(QObject *parent = nullptr) : QObject(parent) {}
+  explicit AlgorithmModuleBase(QObject *parent = nullptr);
   ~AlgorithmModuleBase() {}
 
   /** These should be set by the scheduler */

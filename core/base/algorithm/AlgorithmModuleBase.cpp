@@ -3,6 +3,11 @@
 #include <QDebug>
 #include <QThread>
 
+AlgorithmModuleBase::AlgorithmModuleBase(QObject *parent) : QObject(parent)
+{
+    
+}
+
 void AlgorithmModuleBase::SetDataManager(DataManager* dataManager)
 {
     m_DataManager = dataManager;

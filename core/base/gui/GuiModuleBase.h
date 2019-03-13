@@ -11,7 +11,7 @@ class GuiModuleBase : public QWidget
   Q_OBJECT
 
 public:
-  explicit GuiModuleBase(QWidget *parent = nullptr) : QWidget(parent) {}
+  explicit GuiModuleBase(QWidget *parent = nullptr);
   ~GuiModuleBase() {}
 
   /** These should be set by the main window or whatever uses the widget */
