@@ -44,8 +44,8 @@ signals:
 private:
 	QmitkStdMultiWidget* m_MitkWidget;
 	mitk::StandaloneDataStorage::Pointer m_DataStorage;
-    QList<long> m_LoadedImages;
-    long m_CurrentData = -1; // TODO: Delete this
+    //QList<long> m_LoadedImages;
+    //long m_CurrentData = -1; // TODO: Delete this
 };
 
 #endif // ! MITK_IMAGE_VIEWER_H

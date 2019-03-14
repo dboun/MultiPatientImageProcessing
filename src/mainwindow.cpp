@@ -222,6 +222,16 @@ void MainWindow::OnRunPressed()
 		return;
 	}
 
+#ifdef BUILD_MODULE_MitkImageViewer
+  auto iids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
+    uid, "Mask"
+  );
+
+  qDebug() << "iidsSize" << iids.size() << "iid: " << iids[0];
+
+  qobject_cast<MitkImageViewer*>(m_ImageViewer)->SaveImageToFile(iids[0]);
+#endif
+
 #ifdef BUILD_MODULE_GeodesicTraining
 	AlgorithmModuleBase* algorithm = new GeodesicTrainingModule(this);
 #else

@@ -59,7 +59,7 @@ std::vector<long> DataManager::GetAllDataIdsOfSubjectWithSpecialRole(long uid, Q
 	if (m_Subjects.find(uid) != m_Subjects.end())
 	{
 		std::vector<long> ret;
-		for (const auto& iid : m_Subjects[uid].dataIds)
+		for (const long& iid : m_Subjects[uid].dataIds)
 		{
 			if (m_Data[iid].specialRole == specialRole)
 			{

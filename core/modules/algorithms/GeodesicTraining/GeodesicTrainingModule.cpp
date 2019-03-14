@@ -45,12 +45,14 @@ void GeodesicTrainingModule::Algorithm()
     for (const long& iid : iids)
 	{
 		QString dataSpecialRole = m_DataManager->GetDataSpecialRole(iid); 
+        QString dataPath = m_DataManager->GetDataPath(iid);
 
-		if (dataSpecialRole == "Mask") {
+		if (dataSpecialRole == "Mask" && dataPath.endsWith(".nii.gz", Qt::CaseSensitive)) {
 			numberOfMasks++;
-            mask = dm->GetDataPath(iid).toStdString();
+            qDebug() << "Found nifti mask, with path" << dataPath;
+            mask = dataPath.toStdString();
 		}
-		else if (dataSpecialRole != "Segmentation")
+		else if (dataSpecialRole != "Segmentation" && dataPath.endsWith(".nii.gz", Qt::CaseSensitive))
 		{
 			numberOfImages++;
             images.push_back(dm->GetDataPath(iid).toStdString());
@@ -88,6 +90,7 @@ void GeodesicTrainingModule::Algorithm()
 
 
     qDebug() << "GeodesicTraining will use " << m_IdealNumberOfThreads << " threads";
+    qDebug() << "GeodesicTraining will use mask " << mask.c_str();
 
     geodesicTraining->SetInputImages(images);
     geodesicTraining->SetLabels(mask);

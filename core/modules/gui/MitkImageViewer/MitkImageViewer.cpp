@@ -2,10 +2,12 @@
 
 #include <QDebug>
 #include <QMouseEvent>
+#include <QMessageBox>
+#include <QDir>
+
 #include <mitkImage.h>
 #include <mitkIOUtil.h>
 #include <mitkLabelSetImage.h>
-#include <QMessageBox>
 
 MitkImageViewer::MitkImageViewer(QWidget *parent) : ImageViewerBase(parent)
 {
@@ -75,7 +77,7 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 		m_DataStorage->Remove(it.Value());
 	}
 
-	m_LoadedImages.clear();
+	//m_LoadedImages.clear();
 
 	auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(
 		this->GetDataView()->GetCurrentSubjectID()
@@ -367,7 +369,69 @@ void MitkImageViewer::SaveImageToFile(long iid)
 	// Since the image has an iid, info about it
 	// including the full path to it can be obtained
 	// from the DataManager (already set up by ImageViewerBase).
-	QString fullPath = m_DataManager->GetDataPath(iid);
+	qDebug() << "MitkImageViewer::SaveImageToFile";
+
+	// Find the node
+	mitk::DataNode::Pointer dataNode;
+
+	mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+	for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
+		if (QString::number(iid).toStdString() == it->Value()->GetName())
+		{
+			dataNode = it->Value();
+			break;
+		}
+	}
+
+	if (!m_DataStorage->Exists(dataNode))
+	{
+		qDebug() << "Can't find dataNode to save image " << iid;
+		return;
+	}
+
+	long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
+	
+	QFileInfo f(this->GetDataManager()->GetDataPath(iid));
+	QString baseName = f.baseName();
+
+	QString directoryName = this->GetDataManager()->GetSubjectPath(uid) 
+		+ QString("/") + m_AppNameShort + QString("/")
+		+ m_AppNameShort + "_" + "Mask";
+
+	if (!QDir(directoryName).exists())
+	{
+		QDir().mkpath(directoryName);
+	}
+
+	QString nifti = directoryName + QString("/") + baseName + QString(".nii.gz");
+	QString nrrd  = directoryName + QString("/") + baseName + QString("_for_mitk.nrrd");
+
+	qDebug() << "Will save image to: ";
+	qDebug() << "-  " << nifti;
+	qDebug() << "-  " << nrrd;
+
+	mitk::IOUtil::Save(
+		dataNode->GetData(), 
+		nifti.toStdString()
+	);
+
+	mitk::IOUtil::Save(
+		dataNode->GetData(), 
+		nrrd.toStdString()
+	);
+
+
+	if (this->GetDataManager()->GetAllDataIdsOfSubjectWithSpecialRole(
+		uid, "Mask"
+	).size() == 1)
+	{
+		qDebug() << "Adding nifti to subject";
+		this->GetDataManager()->AddDataToSubject(
+			uid, nifti, "Mask"
+		);
+	}
+
+	qDebug() << "Saved";
 
 	// If you need to create a new image (probably from the drawing tool?)
 	// then show a dialog to get the filepath from the user,
@@ -380,6 +444,4 @@ void MitkImageViewer::SaveImageToFile(long iid)
 	// name should probably be "<Mask>" or something
 	// type doesn't do anything for now
 	// This will automatically update the tree and everything
-
-	// TODO: Actually write the image 
 }
