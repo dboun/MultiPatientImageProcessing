@@ -224,7 +224,9 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 
 void DataTreeView::UpdateProgressHandler(long uid, QString message, int progress)
 {
-    QProgressBar *progressBar = m_TreeWidget->findChild<QProgressBar*>(QString("ProgressBar") + QString::number(uid));
+    QProgressBar *progressBar = m_TreeWidget->findChild<QProgressBar*>(
+		QString("ProgressBar") + QString::number(uid)
+	);
 	progressBar->setVisible(true);
 	progressBar->setValue(progress);
 }
@@ -235,51 +237,74 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 
 	if (!m_TreeWidget->currentItem())
 	{
+		item->setSelected(true);
 		m_TreeWidget->setCurrentItem(item);
 	}
 
 	bool isTopLevelItem = (!item->parent());
 
-	// If it's a data item and it's check state changed
-	if (!isTopLevelItem && item->checkState(0) != item->data(0, IS_CHECKED).toBool())
+	if (!isTopLevelItem)
 	{
-		item->setData(0, IS_CHECKED, (item->checkState(0)) ? true : false);
-
-		qDebug() << "Emit DataTreeView::DataCheckedStateChanged";
+		// If it's a data item
+		
 		long iid = item->data(0, ID).toLongLong();
-		qDebug() << "Emit DataTreeView::SelectedSubjectChanged";
-		//emit SelectedSubjectChanged(m_DataManager->GetSubjectIdFromDataId(iid));
-		emit DataCheckedStateChanged(iid, item->data(0, IS_CHECKED).toBool()); 
+		long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
+
+		bool dataChanged    = (iid != m_CurrentDataID);
+		bool subjectChanged = (uid != m_CurrentSubjectID);
+		bool dataCheckStateChanged = (
+			item->checkState(0) != Qt::CheckState(item->data(0, IS_CHECKED).toBool())
+		);
+
+		// If the active current data item actually changed and it's active
+		if (subjectChanged && dataChanged)
+		{
+			m_CurrentDataID = iid;
+			m_CurrentSubjectID = uid;
+
+			qDebug() << "Emit DataTreeView::SelectedSubjectChanged";
+			emit SelectedSubjectChanged(uid);
+			SwitchExpandedView(item->parent());
+
+			qDebug() << "Emit DataTreeView::SelectedDataChanged" << iid;
+			emit SelectedDataChanged(iid);
+		}
+		else if (!subjectChanged && dataChanged)
+		{
+			m_CurrentDataID = iid;
+
+			qDebug() << "Emit DataTreeView::SelectedDataChanged" << iid;
+			emit SelectedDataChanged(iid);
+		}
+
+		if (dataCheckStateChanged)
+		{
+			bool newCheckState = (item->checkState(0)) ? true : false;
+			item->setData(0, IS_CHECKED, newCheckState);
+
+			qDebug() << "Emit DataTreeView::DataCheckedStateChanged";
+			emit DataCheckedStateChanged(iid, newCheckState);			
+		}
 	}
+	else {
+		// If it's a subject item
 
-	QTreeWidgetItem* topLevelItem = (
-		(item->parent()) ?
-			item->parent() :
-			item
-	);
+		long uid = item->data(0, ID).toLongLong();
 
-	// If it's a data item and it got selected and it's checked
-	if (item->parent() && m_CurrentDataID != item->data(0, ID).toLongLong()
-		&& item->checkState(0) == Qt::Checked)
-	{
-		m_CurrentDataID = item->data(0, ID).toLongLong();
-		qDebug() << "Emit DataTreeView::SelectedDataChanged" << item->data(0, ID).toLongLong();
-		emit SelectedDataChanged(item->data(0, ID).toLongLong());
-	}
+		if (uid != m_CurrentSubjectID)
+		{
+			long iid = item->child(0)->data(0, ID).toLongLong(); // "Random" selected data
 
-	long currentSubjectID = topLevelItem->data(0, ID).toLongLong();
+			m_CurrentDataID = iid;
+			m_CurrentSubjectID = uid;
 
-	// If the subject generally changed
-	if (m_CurrentSubjectID != currentSubjectID)
-	{
-		m_CurrentSubjectID = currentSubjectID;
-		qDebug() << "Emit DataTreeView::SelectedSubjectChanged" << currentSubjectID;
-		emit SelectedSubjectChanged(currentSubjectID);
-	}
+			qDebug() << "Emit DataTreeView::SelectedSubjectChanged";
+			emit SelectedSubjectChanged(uid);
+			SwitchExpandedView(item);
 
-	// If it's a subject
-	if (isTopLevelItem) {
-		SwitchExpandedView(topLevelItem);
+			qDebug() << "Emit DataTreeView::SelectedDataChanged" << iid;
+			emit SelectedDataChanged(iid);
+		}
 	}
 }
 

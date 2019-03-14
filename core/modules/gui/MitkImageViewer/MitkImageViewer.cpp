@@ -41,7 +41,7 @@ void MitkImageViewer::OpacitySliderHandler(int value)
 	// We should probably leave this for last
   //QString name = m_DataManager->GetDataName(value);
   
-  long iid = this->GetDataView()->GetCurrentSubjectID();
+  long iid = this->GetDataView()->GetCurrentDataID();
 
   if (iid == -1) { return; }
 	
