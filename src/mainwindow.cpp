@@ -19,10 +19,6 @@
 #include "MitkImageViewer.h"
 #endif
 
-#ifdef BUILD_MODULE_MitkDrawingTool
-#include "MPIPQmitkSegmentationPanel.h"
-#endif
-
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
@@ -63,10 +59,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Initialize MitkDrawingTool
 #ifdef BUILD_MODULE_MitkDrawingTool
-  this->m_SegmentationPanel = new MPIPQmitkSegmentationPanel(qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), this);
-  this->m_SegmentationPanel->SetDataManager(m_DataManager);
-  this->ui->rightPanel->layout()->addWidget(this->m_SegmentationPanel);
-  this->m_SegmentationPanel->hide();
+  m_MitkDrawingTool = new MitkDrawingTool(
+    qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), this
+  );
+
+  m_MitkDrawingTool->SetMitkImageViewer(
+    qobject_cast<MitkImageViewer*>(m_ImageViewer)
+  );
+
+  m_MitkDrawingTool->SetDataManager(m_DataManager);
+  this->ui->rightPanel->layout()->addWidget(this->m_MitkDrawingTool);
+  //this->m_SegmentationPanel->hide();
 #endif
 
   // Disable unused buttons
@@ -105,10 +108,10 @@ MainWindow::MainWindow(QWidget *parent) :
   );
 
 #ifdef BUILD_MODULE_MitkDrawingTool
-  connect(ui->SegmentationBtn, SIGNAL(clicked()), this, SLOT(OnSegmentationButtonClicked()));
-  connect(this, SIGNAL(EnableSegmentation()), m_SegmentationPanel, SLOT(OnEnableSegmentation()));
-  connect(this, SIGNAL(DisableSegmentation()), m_SegmentationPanel, SLOT(OnDisableSegmentation()));
-  connect(m_ImageViewer, SIGNAL(DisplayedDataName(long)), m_SegmentationPanel, SLOT(SetDisplayDataName(long)));
+  //connect(ui->SegmentationBtn, SIGNAL(clicked()), this, SLOT(OnSegmentationButtonClicked()));
+  //connect(this, SIGNAL(EnableSegmentation()), m_SegmentationPanel, SLOT(OnEnableSegmentation()));
+  //connect(this, SIGNAL(DisableSegmentation()), m_SegmentationPanel, SLOT(OnDisableSegmentation()));
+  //connect(m_ImageViewer, SIGNAL(DisplayedDataName(long)), m_SegmentationPanel, SLOT(SetDisplayDataName(long)));
 #endif
 }
 

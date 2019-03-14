@@ -23,11 +23,6 @@ void GuiModuleBase::SetAppNameShort(QString appNameShort)
     m_AppNameShort = appNameShort;
 }
 
-void GuiModuleBase::SetupUI()
-{
-    qDebug() << "GuiModuleBase::SetupUI()";
-}
-
 DataManager* GuiModuleBase::GetDataManager()
 {
     return m_DataManager;

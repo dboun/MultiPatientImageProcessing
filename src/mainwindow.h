@@ -14,7 +14,7 @@
 #include "DataViewBase.h"
 
 #ifdef BUILD_MODULE_MitkDrawingTool
-class MPIPQmitkSegmentationPanel;
+#include "MitkDrawingTool.h"
 #endif 
 
 #include "DataTreeView.h"
@@ -79,8 +79,8 @@ private:
   ImageViewerBase* m_ImageViewer;
   DataViewBase*    m_DataView;
   
-#ifdef BUILD_MITK
-  MPIPQmitkSegmentationPanel *m_SegmentationPanel;
+#ifdef BUILD_MODULE_MitkDrawingTool
+  MitkDrawingTool *m_MitkDrawingTool;
 #endif
 
   bool m_IsSegmentationPanelOpen = false;

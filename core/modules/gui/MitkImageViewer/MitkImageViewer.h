@@ -4,6 +4,7 @@
 #include <QString>
 #include <QWidget>
 #include <QList>
+#include <mitkDataNode.h>
 #include <mitkStandaloneDataStorage.h>
 #include <QmitkStdMultiWidget.h>
 
@@ -37,7 +38,8 @@ public slots:
 	void SaveImageToFile(long iid) override;
 
 signals:
-	void MitkDataStorageAboutToGetCleared(mitk::StandaloneDataStorage::Pointer dataStorage);
+	void LoadedNewMask(mitk::DataNode::Pointer dataNode);
+	void MitkDataNodeAboutToGetRemoved(mitk::DataNode::Pointer dataNode);
 
 private:
 	QmitkStdMultiWidget* m_MitkWidget;

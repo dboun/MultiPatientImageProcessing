@@ -18,9 +18,6 @@ public:
   virtual void SetDataManager(DataManager* dataManager);
   void SetAppName(QString appName);
   void SetAppNameShort(QString appNameShort);
-
-  /** Override this to add functionality */
-  virtual void SetupUI();
   
 protected:
   DataManager* GetDataManager();

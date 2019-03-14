@@ -103,10 +103,15 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 		dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
 		//dataNode->SetVisibility(true);
 
+		dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
+		dataNode->SetProperty("layer", mitk::IntProperty::New(2));
+
 		if (specialRole == QString("Mask"))
 		{
 			dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
-			dataNode->SetProperty("layer", mitk::IntProperty::New(1024));
+			dataNode->SetProperty("layer", mitk::IntProperty::New(48));
+
+			emit LoadedNewMask(dataNode);
 		}
 	}
 
@@ -202,10 +207,12 @@ void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 	if (checkState)
 	{
 		//dataNode->SetVisibility(true);
+		dataNode->SetProperty("layer", mitk::IntProperty::New(2));
 		dataNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
 	}
 	else {
 		//dataNode->SetVisibility(false);
+		dataNode->SetProperty("layer", mitk::IntProperty::New(1));
 		dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
 	}
 

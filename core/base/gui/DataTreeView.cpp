@@ -248,7 +248,7 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 		qDebug() << "Emit DataTreeView::DataCheckedStateChanged";
 		long iid = item->data(0, ID).toLongLong();
 		qDebug() << "Emit DataTreeView::SelectedSubjectChanged";
-		emit SelectedSubjectChanged(m_DataManager->GetSubjectIdFromDataId(iid));
+		//emit SelectedSubjectChanged(m_DataManager->GetSubjectIdFromDataId(iid));
 		emit DataCheckedStateChanged(iid, item->data(0, IS_CHECKED).toBool()); 
 	}
 
