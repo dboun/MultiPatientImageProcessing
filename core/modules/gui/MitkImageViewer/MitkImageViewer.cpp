@@ -41,25 +41,20 @@ void MitkImageViewer::OpacitySliderHandler(int value)
 	// We should probably leave this for last
   //QString name = m_DataManager->GetDataName(value);
   
-  if (m_CurrentData == -1) { return; }
+  long iid = this->GetDataView()->GetCurrentSubjectID();
+
+  if (iid == -1) { return; }
 	
-  QString path = m_DataManager->GetDataPath(m_CurrentData);
-  QFileInfo f(path);
-  f.baseName();
-  qDebug() << "basename = " << f.baseName();
-  QString name = f.baseName();
+  qDebug() << "Changing opacity of " << iid <<" to value " << value;
 
-  qDebug() << name;
-  qDebug() << "opacity value = " << value;
-
-  mitk::DataNode* node = m_DataStorage->GetNamedNode(name.toStdString().c_str());
-  std::string nodename = node->GetName();
+  mitk::DataNode* node = m_DataStorage->GetNamedNode(
+	  QString::number(iid).toStdString().c_str()
+  );
   node->SetProperty("layer", mitk::IntProperty::New(1));
   node->SetProperty("opacity", mitk::FloatProperty::New(value/100.0));
-  node->GetData()->Modified();
+  //node->GetData()->Modified();
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-
 }
 
 MitkImageViewer::~MitkImageViewer()
