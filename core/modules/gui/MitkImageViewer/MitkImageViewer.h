@@ -15,6 +15,8 @@ class MitkImageViewer : public ImageViewerBase
 
 public:
 	MitkImageViewer(QWidget *parent = nullptr);
+	~MitkImageViewer();
+	
     inline mitk::DataStorage* GetDataStorage()
     {
         return m_DataStorage;

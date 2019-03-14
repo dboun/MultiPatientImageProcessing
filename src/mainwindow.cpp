@@ -56,6 +56,11 @@ MainWindow::MainWindow(QWidget *parent) :
   m_ImageViewer = new ImageViewerBase(ui->viewerContainer);
 #endif
 
+  ui->viewerContainer->layout()->addWidget(m_ImageViewer);
+  m_ImageViewer->SetDataManager(m_DataManager);
+  m_ImageViewer->SetDataView(m_DataView);
+  m_ImageViewer->SetOpacitySlider(ui->opacitySlider);
+
   // Initialize MitkDrawingTool
 #ifdef BUILD_MODULE_MitkDrawingTool
   this->m_SegmentationPanel = new MPIPQmitkSegmentationPanel(qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), this);
@@ -63,11 +68,6 @@ MainWindow::MainWindow(QWidget *parent) :
   this->ui->rightPanel->layout()->addWidget(this->m_SegmentationPanel);
   this->m_SegmentationPanel->hide();
 #endif
-
-  ui->viewerContainer->layout()->addWidget(m_ImageViewer);
-  m_ImageViewer->SetDataManager(m_DataManager);
-  m_ImageViewer->SetDataView(m_DataView);
-  m_ImageViewer->SetOpacitySlider(ui->opacitySlider);
 
   // Disable unused buttons
   ui->actionAdd_image_for_selected_subject->setVisible(false);

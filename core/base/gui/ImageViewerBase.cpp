@@ -75,3 +75,8 @@ void ImageViewerBase::SaveImageToFile(long iid)
 {
 	qDebug() << QString("ViewerBase::SaveImageToFile()") << iid;
 }
+
+DataViewBase* ImageViewerBase::GetDataView()
+{
+	return m_DataView;
+}

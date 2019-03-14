@@ -1,5 +1,7 @@
 #include "GeodesicTrainingModule.h"
 
+#include <QDebug>
+
 #include <vector>
 #include <string>
 
@@ -84,9 +86,13 @@ void GeodesicTrainingModule::Algorithm()
     QString outputPath = dm->GetSubjectPath(m_Uid) + 
         "/" + this->GetAppNameShort() + "_Segmentation";
 
+
+    qDebug() << "GeodesicTraining will use " << m_IdealNumberOfThreads << " threads";
+
     geodesicTraining->SetInputImages(images);
     geodesicTraining->SetLabels(mask);
     geodesicTraining->SetOutputPath(outputPath.toStdString());
+    geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
     geodesicTraining->SetSaveAll(true);
     geodesicTraining->Execute();
 

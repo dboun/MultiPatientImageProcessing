@@ -35,6 +35,8 @@ public slots:
 	virtual void SaveImageToFile(long iid);
 
 protected:
+	DataViewBase* GetDataView();
+
 	DataManager*  m_DataManager;
 	DataViewBase* m_DataView;
 };
