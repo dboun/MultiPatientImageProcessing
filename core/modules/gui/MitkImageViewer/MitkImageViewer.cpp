@@ -85,10 +85,16 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 
 	for(const long& iid : iids)
 	{
-		qDebug() << "MitkImageViewer: Adding iid" << iid;
-
 		QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
 		QString dataPath    = this->GetDataManager()->GetDataPath(iid);
+
+		if ((specialRole == "Mask" /*|| specialRole == "Segmentation"*/) &&
+        	!dataPath.endsWith(".nrrd", Qt::CaseSensitive)
+    	) {
+    		continue;
+		}
+
+		qDebug() << "MitkImageViewer: Adding iid" << iid;
 		QString dataName    = this->GetDataManager()->GetDataName(iid);
 
 		mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(
@@ -404,44 +410,55 @@ void MitkImageViewer::SaveImageToFile(long iid)
 	}
 
 	QString nifti = directoryName + QString("/") + baseName + QString(".nii.gz");
-	QString nrrd  = directoryName + QString("/") + baseName + QString("_for_mitk.nrrd");
+	QString nrrd  = directoryName + QString("/") + baseName + QString(".nrrd");
 
 	qDebug() << "Will save image to: ";
 	qDebug() << "-  " << nifti;
 	qDebug() << "-  " << nrrd;
+
+	qDebug() << "MitkImageViewer saving image" << nifti;
+	qDebug() << "MitkImageViewer saving image" << nrrd;
+
+	auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(
+		this->GetDataManager()->GetSubjectIdFromDataId(iid)
+	);
+
+	QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
+
+	for (const long& tIid : iids)
+	{
+		QString tPath = this->GetDataManager()->GetDataPath(tIid);
+		
+		if (tPath == nifti || tPath == nrrd)
+		{
+			this->GetDataManager()->RemoveData(tIid);
+		}
+	}
 
 	mitk::IOUtil::Save(
 		dataNode->GetData(), 
 		nifti.toStdString()
 	);
 
-	mitk::IOUtil::Save(
-		dataNode->GetData(), 
-		nrrd.toStdString()
-	);
-
-
-	if (this->GetDataManager()->GetAllDataIdsOfSubjectWithSpecialRole(
-		uid, "Mask"
-	).size() == 1)
+	
+	if (specialRole == "Mask" || specialRole == "Segmentation")
 	{
-		qDebug() << "Adding nifti to subject";
-		this->GetDataManager()->AddDataToSubject(
-			uid, nifti, "Mask"
+		mitk::IOUtil::Save(
+			dataNode->GetData(), 
+			nrrd.toStdString()
 		);
 	}
 
-	qDebug() << "Saved";
+	this->GetDataManager()->AddDataToSubject(
+		uid, nifti, specialRole
+	);
 
-	// If you need to create a new image (probably from the drawing tool?)
-	// then show a dialog to get the filepath from the user,
-	// and from a reference to the DataManager, call
-	// long DataManager::AddDataToSubject(long uid, QString path, QString specialRole = QString(), 
-	//	                                  QString type = QString(), QString name = QString()); 
-	// uid is the subject id. 
-	// path is... the path
-	// specialRole should be "Mask" for a mask.
-	// name should probably be "<Mask>" or something
-	// type doesn't do anything for now
-	// This will automatically update the tree and everything
+	this->GetDataManager()->AddDataToSubject(
+		uid, nrrd, specialRole
+	);
+}
+
+void MitkImageViewer::AddToDataStorage(long iid)
+{
+
 }

@@ -86,8 +86,8 @@ void GeodesicTrainingModule::Algorithm()
     );
 
     QString outputPath = dm->GetSubjectPath(m_Uid) + 
+        "/" + this->GetAppNameShort() +
         "/" + this->GetAppNameShort() + "_Segmentation";
-
 
     qDebug() << "GeodesicTraining will use " << m_IdealNumberOfThreads << " threads";
     qDebug() << "GeodesicTraining will use mask " << mask.c_str();
@@ -100,4 +100,8 @@ void GeodesicTrainingModule::Algorithm()
     geodesicTraining->Execute();
 
     delete geodesicTraining;
+
+    this->GetDataManager()->AddDataToSubject(this->GetUid(), 
+        outputPath + QString("/labels_res.nii.gz"), "Segmentation"
+    );
 }

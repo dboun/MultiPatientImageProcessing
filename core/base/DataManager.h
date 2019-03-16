@@ -133,7 +133,7 @@ private:
 
 	long uidNextToGive = 0;
 	long iidNextToGive = 0;
-	std::mutex m_Mutex;
+	std::mutex  m_Mutex;
 	QStringList m_AcceptedFileTypes = QStringList() << "*";
 	QString     m_AppNameShort      = "MPIP";
 };

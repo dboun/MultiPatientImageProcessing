@@ -151,7 +151,7 @@ long DataManager::AddSubjectAndDataByDirectoryPath(QString dirPath, QString subj
 			qDebug() << "Special Role detected" << specialRole;
 		}
 
-		// Actually add the data
+		// Actually add the data if necessary
 		AddDataToSubject(uid, filePath, specialRole);
 	}
 

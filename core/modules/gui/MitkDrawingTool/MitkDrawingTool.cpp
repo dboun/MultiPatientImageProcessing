@@ -1,3 +1,8 @@
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QFileDialog>
+#include <QDebug>
+
 #include "MitkDrawingTool.h"
 #include "ui_MitkDrawingTool.h"
 #include "QmitkSegmentationOrganNamesHandling.cpp"
@@ -5,9 +10,6 @@
 #include <mitkIOUtil.h>
 #include "QmitkToolGUI.h"
 
-#include <QMessageBox>
-#include <QInputDialog>
-#include <QFileDialog>
 #include "DataManager.h"
 
 MitkDrawingTool::MitkDrawingTool(mitk::DataStorage *datastorage, QWidget *parent) :
@@ -43,9 +45,9 @@ MitkDrawingTool::MitkDrawingTool(mitk::DataStorage *datastorage, QWidget *parent
 
 MitkDrawingTool::~MitkDrawingTool()
 {
-  if (m_WorkingMaskNode)
+  if (m_LoadedMaskNode)
   {
-    this->OnMitkDataNodeAboutToGetRemoved(m_WorkingMaskNode);
+    this->OnMitkDataNodeAboutToGetRemoved(m_LoadedMaskNode);
   }
 
   delete ui;
@@ -63,16 +65,11 @@ void MitkDrawingTool::SetMitkImageViewer(MitkImageViewer* mitkImageViewer)
 
 void MitkDrawingTool::OnLoadedNewMask(mitk::DataNode::Pointer dataNode)
 {
+  qDebug() << "MitkDrawingTool::OnLoadedNewMask";
+
   // Connect the mask to the tool
   m_LoadedMaskNode = dataNode;
 
-  mitk::DataNode::Pointer m_WorkingMaskNode = mitk::DataNode::New();
-  m_WorkingMaskNode->SetData(dynamic_cast<mitk::Image *>(dataNode->GetData()));
-  m_WorkingMaskNode->SetName("Mask");
-
-  //this->m_DataStorage->Add(m_WorkingMaskNode, m_LoadedMaskNode);
-
-  //this->m_ToolManager->SetWorkingData(m_WorkingMaskNode);
   this->m_ToolManager->SetWorkingData(m_LoadedMaskNode);
   this->m_ToolManager->SetReferenceData(m_LoadedMaskNode);
   
@@ -81,7 +78,7 @@ void MitkDrawingTool::OnLoadedNewMask(mitk::DataNode::Pointer dataNode)
   ui->labelSetWidget->ResetAllTableWidgetItems();
 
   mitk::RenderingManager::GetInstance()->InitializeViews(
-    m_WorkingMaskNode->GetData()->GetTimeGeometry(), 
+    m_LoadedMaskNode->GetData()->GetTimeGeometry(), 
     mitk::RenderingManager::REQUEST_UPDATE_ALL, true
   );
 

@@ -7,6 +7,8 @@
 
 class GeodesicTrainingModule : public AlgorithmModuleBase
 {
+	Q_OBJECT
+
 public:
 	GeodesicTrainingModule(QObject *parent = nullptr);
 	~GeodesicTrainingModule();

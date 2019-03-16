@@ -37,10 +37,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Initialize DataView
   m_DataView = new DataTreeView(ui->dataViewContainer);
+  m_DataView->AcceptOnlyNrrdMaskAndSegmentations(true);
   m_DataView->setMinimumWidth(350);
-  /*QGridLayout*/QHBoxLayout *layoutDataViewer = new QHBoxLayout(ui->dataViewContainer);
+  QHBoxLayout *layoutDataViewer = new QHBoxLayout(ui->dataViewContainer);
   layoutDataViewer->addWidget(m_DataView);
   m_DataView->SetDataManager(m_DataManager);
+  m_DataView->SetAppName(m_AppName);
+  m_DataView->SetAppNameShort(m_AppNameShort);
 
   // Initialize ImageViewer
 #ifdef BUILD_MODULE_MitkImageViewer
@@ -56,6 +59,8 @@ MainWindow::MainWindow(QWidget *parent) :
   m_ImageViewer->SetDataManager(m_DataManager);
   m_ImageViewer->SetDataView(m_DataView);
   m_ImageViewer->SetOpacitySlider(ui->opacitySlider);
+  m_ImageViewer->SetAppName(m_AppName);
+  m_ImageViewer->SetAppNameShort(m_AppNameShort);
 
   // Initialize MitkDrawingTool
 #ifdef BUILD_MODULE_MitkDrawingTool
@@ -68,6 +73,8 @@ MainWindow::MainWindow(QWidget *parent) :
   );
 
   m_MitkDrawingTool->SetDataManager(m_DataManager);
+  m_MitkDrawingTool->SetAppName(m_AppName);
+  m_MitkDrawingTool->SetAppNameShort(m_AppNameShort);
   this->ui->rightPanel->layout()->addWidget(this->m_MitkDrawingTool);
   //this->m_SegmentationPanel->hide();
 #endif
@@ -177,69 +184,80 @@ void MainWindow::OnRunPressed()
 
 	qDebug() << QString("(Run) uid:  ") << QString::number(uid);
 
-	std::vector<long> iidsOfSubject = m_DataManager->GetAllDataIdsOfSubject(uid);
+	// std::vector<long> iidsOfSubject = m_DataManager->GetAllDataIdsOfSubject(uid);
 
-	int numberOfImages = 0, numberOfMasks = 0;
+	// int numberOfImages = 0, numberOfMasks = 0;
 
-	for (const long& iid : iidsOfSubject)
-	{
-		QString dataSpecialRole = m_DataManager->GetDataSpecialRole(iid); 
+	// for (const long& iid : iidsOfSubject)
+	// {
+	// 	QString dataSpecialRole = m_DataManager->GetDataSpecialRole(iid); 
 
-		if (dataSpecialRole == "Mask") {
-			numberOfMasks++;
-		}
-		else if (dataSpecialRole != "Segmentation")
-		{
-			numberOfImages++;
-		}
-	}
+	// 	if (dataSpecialRole == "Mask") {
+	// 		numberOfMasks++;
+	// 	}
+	// 	else if (dataSpecialRole != "Segmentation")
+	// 	{
+	// 		numberOfImages++;
+	// 	}
+	// }
 
-	if (numberOfMasks == 0)
-	{
-		QMessageBox::information(
-		  this,
-		  tr("No mask drawn"),
-		  tr("Please create a mask and run again.")
-		);
-		return;
-	}
-	if (numberOfMasks > 1)
-	{
-		QMessageBox::information(
-			this,
-			tr("Multiple masks"),
-			tr("Please remove all but one masks (Right click & Remove won't delete an image from the disk).")
-		);
-		return;
-	}
-	if (numberOfImages == 0)
-	{
-		QMessageBox::information(
-			this,
-			tr("No images"),
-			tr("Please load some images.")
-		);
-		return;
-	}
+	// if (numberOfMasks == 0)
+	// {
+	// 	QMessageBox::information(
+	// 	  this,
+	// 	  tr("No mask drawn"),
+	// 	  tr("Please create a mask and run again.")
+	// 	);
+	// 	return;
+	// }
+	// if (numberOfMasks > 1)
+	// {
+	// 	QMessageBox::information(
+	// 		this,
+	// 		tr("Multiple masks"),
+	// 		tr("Please remove all but one masks (Right click & Remove won't delete an image from the disk).")
+	// 	);
+	// 	return;
+	// }
+	// if (numberOfImages == 0)
+	// {
+	// 	QMessageBox::information(
+	// 		this,
+	// 		tr("No images"),
+	// 		tr("Please load some images.")
+	// 	);
+	// 	return;
+	// }
 
 #ifdef BUILD_MODULE_MitkImageViewer
   auto iids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
     uid, "Mask"
   );
 
-  qDebug() << "iidsSize" << iids.size() << "iid: " << iids[0];
+  long maskNrrd = -1;
 
-  qobject_cast<MitkImageViewer*>(m_ImageViewer)->SaveImageToFile(iids[0]);
+  for (const long& iid : iids)
+  {
+    if (m_DataManager->GetDataPath(iid).endsWith(".nrrd", Qt::CaseSensitive))
+    {
+      maskNrrd = iid;
+      break;
+    }
+  }
+
+  qobject_cast<MitkImageViewer*>(m_ImageViewer)->SaveImageToFile(maskNrrd);
 #endif
 
 #ifdef BUILD_MODULE_GeodesicTraining
-	AlgorithmModuleBase* algorithm = new GeodesicTrainingModule(this);
+	AlgorithmModuleBase* algorithm = new GeodesicTrainingModule();
 #else
-  AlgorithmModuleBase* algorithm = new AlgorithmModuleBase(this);
+  AlgorithmModuleBase* algorithm = new AlgorithmModuleBase();
 #endif
 
   algorithm->SetDataManager(m_DataManager);
   algorithm->SetUid(uid);
+  algorithm->SetAppName(m_AppName);
+  algorithm->SetAppNameShort(m_AppNameShort);
 
   connect(algorithm, SIGNAL(ProgressUpdateUI(long, QString, int)), 
     m_DataView, SLOT(UpdateProgressHandler(long, QString, int))

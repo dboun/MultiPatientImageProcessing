@@ -144,79 +144,71 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 {
 	QTreeWidgetItem* subject = m_Subjects[uid];
 
-	if (subject)
+	if (!subject) { return; }
+
+	std::vector<long> iids = m_DataManager->GetAllDataIdsOfSubject(uid);
+
+	// Check if any new data were loaded
+	for (const long& iid : iids)
 	{
-		std::vector<long> iids = m_DataManager->GetAllDataIdsOfSubject(uid);
-
-		for (long& iid : iids)
+		if (m_Data.find(iid) != m_Data.end())
 		{
-			if (m_Data.find(iid) == m_Data.end())
-			{
-				QTreeWidgetItem* dataToAdd = new QTreeWidgetItem(subject);
-				//dataToAdd->setSelected(true);
-				dataToAdd->setCheckState(0, Qt::Unchecked);
-				dataToAdd->setText(0, m_DataManager->GetDataName(iid));
-                dataToAdd->setData(0, ID, QVariant(static_cast<long long int>(iid)));
-				dataToAdd->setData(0, IS_CHECKED, false);
-
-				QString specialRole = m_DataManager->GetDataSpecialRole(iid);
-				if (specialRole != QString())
-				{
-					if (specialRole == "Mask")
-					{
-						for (int i = 0; i < subject->childCount(); i++)
-						{
-							QTreeWidgetItem* item = subject->child(i);
-							long itemId = item->data(0, ID).toLongLong();
-							QString itemSpecialRole = m_DataManager->GetDataSpecialRole(itemId);
-							
-							if (itemSpecialRole == "Mask")
-							{
-								item->setText(0, m_DataManager->GetDataName(itemId));
-							}
-						}
-					}
-
-					if (specialRole == "Segmentation")
-					{
-						for (int i = 0; i < subject->childCount(); i++)
-						{
-							QTreeWidgetItem* item = subject->child(i);
-							long itemId = item->data(0, ID).toLongLong();
-							QString itemSpecialRole = m_DataManager->GetDataSpecialRole(itemId);
-
-							if (itemSpecialRole == "Segmentation")
-							{
-								m_DataManager->RemoveData(itemId);
-							}
-						}
-					}
-
-					dataToAdd->setText(0, "<" + m_DataManager->GetDataSpecialRole(iid) + ">");
-				}
-
-				m_Data[iid] = dataToAdd;	
-
-				if (m_CurrentSubjectID == uid)
-				{
-					qDebug() << "Emit DataTreeView::DataAddedForSelectedSubject" << iid;
-					emit DataAddedForSelectedSubject(iid);
-				}
-			}
+			// Data is already in tree view
+			continue;
 		}
-		
-		for (int i = 0; i < subject->childCount(); i++)
-		{
-			long iid = subject->child(i)->data(0, ID).toLongLong();
-			if (std::find(iids.begin(), iids.end(), iid) == iids.end())
-			{
-				delete m_Data[iid];
 
-				if (m_CurrentSubjectID == uid)
-				{
-					qDebug() << "Emit DataTreeView::DataRemovedFromSelectedSubject" << iid;
-					emit DataRemovedFromSelectedSubject(iid);
-				}
+		QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
+		QString filePath    = this->GetDataManager()->GetDataPath(iid);
+
+    // More checks
+    if (m_AcceptOnlyNrrdMaskAndSegmentations && 
+        (specialRole == "Mask" || specialRole == "Segmentation") &&
+        !filePath.endsWith(".nrrd", Qt::CaseSensitive)
+    ) {
+    	continue;
+		}
+
+		// Add new data in tree view
+		QTreeWidgetItem* dataToAdd = new QTreeWidgetItem(subject);
+		dataToAdd->setCheckState(0, Qt::Unchecked);
+		dataToAdd->setData(0, ID, QVariant(static_cast<long long int>(iid)));
+		dataToAdd->setData(0, IS_CHECKED, false);
+
+		if (specialRole != QString())
+		{
+			// Data has a special role
+			dataToAdd->setText(0, 
+				QString("<") + specialRole + QString(">")
+			);
+		}
+		else {
+			// No special role, set the name of the image
+			dataToAdd->setText(0, m_DataManager->GetDataName(iid));
+		}
+
+		m_Data[iid] = dataToAdd;
+
+		// Broadcast what happened if necessary
+		if (m_CurrentSubjectID == uid)
+		{
+			qDebug() << "Emit DataTreeView::DataAddedForSelectedSubject" << iid;
+			emit DataAddedForSelectedSubject(iid);
+		}
+	}
+	
+	// Check if any data were removed
+	for (int i = 0; i < subject->childCount(); i++)
+	{
+		long iid = subject->child(i)->data(0, ID).toLongLong();
+		
+		if (std::find(iids.begin(), iids.end(), iid) == iids.end())
+		{
+			delete m_Data[iid];
+
+			if (m_CurrentSubjectID == uid)
+			{
+				qDebug() << "Emit DataTreeView::DataRemovedFromSelectedSubject" << iid;
+				emit DataRemovedFromSelectedSubject(iid);
 			}
 		}
 	}

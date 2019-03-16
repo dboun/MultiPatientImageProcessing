@@ -36,9 +36,7 @@ private:
 	// void CreateNewSegmentation();
 
 	bool m_WaitingOnLabelsImageCreation = false;
-	long m_CurrentSubjectID = -1;
-
-	mitk::DataNode::Pointer m_WorkingMaskNode;
+	
 	mitk::DataNode::Pointer m_LoadedMaskNode;
 
 	Ui::MitkDrawingTool *ui;
