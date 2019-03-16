@@ -48,19 +48,8 @@ public slots:
   void OnAlgorithmFinishedWithError(AlgorithmModuleBase* algorithmModuleBase, 
     QString errorMessage);
   
-#ifdef BUILD_MITK
-  void OnSegmentationButtonClicked();
-#endif
-
   void SelectedSubjectChangedHandler(long uid);
-
-signals:
-
-#ifdef BUILD_MITK
-  void EnableSegmentation(); // Segmentation here means the drawing tools
-  void DisableSegmentation();
-#endif
-
+  
 private:
 
   //void EnableRunButton();

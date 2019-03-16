@@ -2,6 +2,7 @@
 #include <QInputDialog>
 #include <QFileDialog>
 #include <QString>
+#include <QRegExp>
 #include <QDebug>
 
 #include "MitkDrawingTool.h"
@@ -48,7 +49,9 @@ MitkDrawingTool::~MitkDrawingTool()
 {
   if (m_LoadedMaskNode)
   {
-    this->OnMitkDataNodeAboutToGetRemoved(m_LoadedMaskNode);
+    this->OnDataAboutToGetRemoved(
+      QString(m_LoadedMaskNode->GetName().c_str()).toLong()
+    );
   }
 
   delete ui;
@@ -60,14 +63,37 @@ void MitkDrawingTool::SetMitkImageViewer(MitkImageViewer* mitkImageViewer)
   connect(mitkImageViewer, SIGNAL(MitkLoadedNewMask(mitk::DataNode::Pointer)),
     this, SLOT(OnMitkLoadedNewMask(mitk::DataNode::Pointer))
   );
-  connect(mitkImageViewer, SIGNAL(MitkDataNodeAboutToGetRemoved(mitk::DataNode::Pointer)),
-    this, SLOT(OnMitkDataNodeAboutToGetRemoved(mitk::DataNode::Pointer))
-  );
 
   // Signals to MitkImageViewer
-  connect(this, SIGNAL(MitkDrawingToolSaveImageToFile(long)),
-    mitkImageViewer, SLOT(SaveImageToFile(long))
+  connect(this, SIGNAL(MitkDrawingToolSaveImageToFile(long, bool)),
+    mitkImageViewer, SLOT(SaveImageToFile(long, bool))
   );
+  connect(this, SIGNAL(MitkDrawingToolCreateEmptyMask(long)),
+    mitkImageViewer, SLOT(CreateEmptyMask(long))
+  );
+}
+
+void MitkDrawingTool::OnDataAboutToGetRemoved(long iid)
+{
+  qDebug() << "MitkDrawingTool::OnDataAboutToGetRemoved";
+
+  if (!m_MaskLoadedForThisSubject || !m_LoadedMaskNode || iid == -1)
+  {
+    return;
+  }
+
+  long loadedMaskIid = QString(m_LoadedMaskNode->GetName().c_str()).toLong();
+
+  if (loadedMaskIid == iid)
+  {
+    emit MitkDrawingToolSaveImageToFile(loadedMaskIid, false);
+
+    m_MaskLoadedForThisSubject = false;
+    
+    m_LoadedMaskNode = nullptr;
+    m_ToolManager->SetWorkingData(nullptr);
+    m_ToolManager->SetReferenceData(nullptr);
+  }
 }
 
 void MitkDrawingTool::OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode)
@@ -77,12 +103,13 @@ void MitkDrawingTool::OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode)
 
   // Connect the mask to the tool
   m_LoadedMaskNode = dataNode;
-
+  
   this->m_ToolManager->SetWorkingData(m_LoadedMaskNode);
   this->m_ToolManager->SetReferenceData(m_LoadedMaskNode);
   
-  if (ui->labelSetWidget->isHidden())
+  if (ui->labelSetWidget->isHidden()) {
     ui->labelSetWidget->show();
+  }
   ui->labelSetWidget->ResetAllTableWidgetItems();
 
   mitk::RenderingManager::GetInstance()->InitializeViews(
@@ -98,23 +125,13 @@ void MitkDrawingTool::OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode)
   }
 }
 
-void MitkDrawingTool::OnMitkDataNodeAboutToGetRemoved(mitk::DataNode::Pointer dataNode)
+void MitkDrawingTool::SetDataManager(DataManager* dataManager)
 {
-  qDebug() << "MitkDrawingTool::OnMitkDataNodeAboutToGetRemoved";
+  m_DataManager = dataManager;
 
-  long dataNodeNodeIid = QString(        dataNode->GetName().c_str()).toLong();
-  long loadedMaskIid   = QString(m_LoadedMaskNode->GetName().c_str()).toLong();
-
-  if ( m_MaskLoadedForThisSubject && 
-       m_LoadedMaskNode && 
-       loadedMaskIid == dataNodeNodeIid )
-  {
-    emit MitkDrawingToolSaveImageToFile(
-      QString(dataNode->GetName().c_str()).toLong()
-    );
-
-    m_MaskLoadedForThisSubject = false;
-  }
+  connect(m_DataManager, SIGNAL(DataAboutToGetRemoved(long)),
+    this, SLOT(OnDataAboutToGetRemoved(long))
+  );
 }
 
 // void MitkDrawingTool::OnEnableSegmentation()
@@ -220,10 +237,21 @@ void MitkDrawingTool::OnCreateNewLabel()
   if (!m_MaskLoadedForThisSubject)
   {
     qDebug() << "MitkDrawingTool::OnCreateNewLabel: No mask";
-    // Create image
-    // add to data storage and save the iid
-    // emit MitkDrawingToolSaveImageToFile(iid);
-    return;
+    
+    // Find the first node, if there is one
+    long referenceIid = -1;
+    mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
+      referenceIid = QString(it.Value()->GetName().c_str()).toLong();
+      break;
+    }
+    
+    if (referenceIid != -1)
+    {
+      m_WaitingOnLabelsImageCreation = true;
+      emit MitkDrawingToolCreateEmptyMask(referenceIid);
+      return;
+    }
   }
 
   m_ToolManager->ActivateTool(-1);

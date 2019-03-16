@@ -103,13 +103,16 @@ public slots:
 
 	/** Remove image
 	@param iid the data's id.
+	@param silent will not emit a DataAboutToGetRemoved(long) to avoid infinite loops
 	*/
-	void RemoveData(long iid);
+	void RemoveData(long iid, bool silent = false);
 
 signals:
 	void SubjectAdded(long uid);
 	void SubjectRemoved(long uid);
 	void SubjectDataChanged(long uid);
+
+	void DataAboutToGetRemoved(long iid);
 
 protected:
 	std::map<long, Subject> m_Subjects; 

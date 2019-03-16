@@ -198,6 +198,7 @@ void DataManager::RemoveSubject(long uid)
 
 	for (long& iid :  m_Subjects[uid].dataIds)
 	{
+		emit DataAboutToGetRemoved(iid);
 		m_Data.erase(iid);
 	}
 
@@ -243,10 +244,15 @@ long DataManager::AddDataToSubject(long uid, QString path, QString specialRole,
 	return iid;
 }
 
-void DataManager::RemoveData(long iid)
+void DataManager::RemoveData(long iid, bool silent)
 {
 	std::unique_lock<std::mutex> ul(m_Mutex);
 	
+	if (!silent)
+	{
+		emit DataAboutToGetRemoved(iid);
+	}
+
 	if (m_Data.find(iid) == m_Data.end())
 	{
 		return;

@@ -21,8 +21,8 @@ public:
   virtual ~AlgorithmModuleBase() {}
 
   /** These should be set by the scheduler */
-  void SetDataManager(DataManager* dataManager);
-  void SetDataView(DataViewBase* dataView);
+  virtual void SetDataManager(DataManager* dataManager);
+  virtual void SetDataView(DataViewBase* dataView);
   void SetUid(long uid);
 
   /** Getters */

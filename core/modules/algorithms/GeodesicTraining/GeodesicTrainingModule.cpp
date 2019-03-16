@@ -97,11 +97,20 @@ void GeodesicTrainingModule::Algorithm()
     geodesicTraining->SetOutputPath(outputPath.toStdString());
     geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
     geodesicTraining->SetSaveAll(true);
-    geodesicTraining->Execute();
+    geodesicTraining->SetVerbose(true);
+    geodesicTraining->SetTimerEnabled(true);
+    auto result = geodesicTraining->Execute();
+
+    if (result->ok)
+    {
+        this->GetDataManager()->AddDataToSubject(this->GetUid(), 
+            outputPath + QString("/labels_res.nii.gz"), "Segmentation"
+        );
+    }
+    else {
+        qDebug() << "GeodesicTraining finished with internal error";
+        emit AlgorithmFinishedWithError(this, result->errorMessage.c_str());
+    }
 
     delete geodesicTraining;
-
-    this->GetDataManager()->AddDataToSubject(this->GetUid(), 
-        outputPath + QString("/labels_res.nii.gz"), "Segmentation"
-    );
 }

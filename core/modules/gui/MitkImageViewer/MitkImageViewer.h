@@ -35,15 +35,15 @@ public slots:
 	virtual void DataCheckedStateChangedHandler(long iid, bool checkState) override;
 
 	// Slot, but usually just called.
-	void SaveImageToFile(long iid) override;
+	void SaveImageToFile(long iid, bool updateDataManager = true);
 
 	// Reference is an nrrd image that shows which labels to use
-	void ConvertToNrrdAndSave(long iid, long referenceIid = -1);
+	void ConvertToNrrdAndSave(long iid, long referenceIid = -1, bool updateDataManager = true);
+
+	long CreateEmptyMask(long referenceIid);
 
 signals:
 	void MitkLoadedNewMask(mitk::DataNode::Pointer dataNode);
-	void MitkDataNodeAboutToGetRemoved(mitk::DataNode::Pointer dataNode);
-
 protected:
 	virtual void AddToDataStorage(long iid);
 

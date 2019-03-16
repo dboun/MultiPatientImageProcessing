@@ -250,6 +250,12 @@ void MainWindow::OnRunPressed()
   {
     qobject_cast<MitkImageViewer*>(m_ImageViewer)->SaveImageToFile(maskNrrd);
   }
+
+  // Remove all previous masks (if they exist)
+  for (const long& iid : iids)
+  {
+    m_DataManager->RemoveData(iid);
+  }  
 #endif
 
 #ifdef BUILD_MODULE_GeodesicTraining
@@ -345,13 +351,6 @@ void MainWindow::OnAlgorithmFinishedWithError(AlgorithmModuleBase* algorithmModu
 	);
 }
 
-#ifdef BUILD_MITK
-void MainWindow::OnSegmentationButtonClicked()
-{
-  this->m_SegmentationPanel->setVisible(true);
-}
-#endif
-
 void MainWindow::SelectedSubjectChangedHandler(long uid)
 {
 	qDebug() << "Selected Subject Changed for MainWindow";
@@ -368,16 +367,6 @@ void MainWindow::SelectedSubjectChangedHandler(long uid)
       break;
     }
   }
-
-#ifdef BUILD_MITK
-  if (foundMask) {
-    this->m_SegmentationPanel->setVisible(true);
-  }
-  else {
-    this->m_SegmentationPanel->setVisible(false);
-  }
-#endif 
-
 }
 
 // void MainWindow::EnableRunButton()

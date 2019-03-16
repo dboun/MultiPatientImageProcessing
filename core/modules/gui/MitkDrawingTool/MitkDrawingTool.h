@@ -1,6 +1,8 @@
 #ifndef MITK_DRAWING_TOOL_H
 #define MITK_DRAWING_TOOL_H
 
+#include <QString>
+
 #include <mitkToolManagerProvider.h>
 #include <mitkStandaloneDataStorage.h>
 
@@ -23,17 +25,24 @@ public:
 
 	void SetMitkImageViewer(MitkImageViewer* mitkImageViewer);
 
-public slots:
-	void OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode);
-	void OnMitkDataNodeAboutToGetRemoved(mitk::DataNode::Pointer dataNode);
+	void SetDataManager(DataManager* dataManager) override;
 
+public slots:
+	// Slots for DataManager
+	void OnDataAboutToGetRemoved(long iid);
+	
+	// Slots for MitkViewer
+	void OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode);
+
+	// Internal slots
 	void OnCreateNewLabel();
 	void OnConfirmSegmentation();
 	void OnManualTool2DSelected(int);
 	// void OnDisableSegmentation();
 
 signals:
-	void MitkDrawingToolSaveImageToFile(long iid);
+	void MitkDrawingToolSaveImageToFile(long iid, bool updateDataManager);
+	void MitkDrawingToolCreateEmptyMask(long referenceIid);
 
 private:
 	// void CreateNewSegmentation();
@@ -42,7 +51,7 @@ private:
 	bool m_MaskLoadedForThisSubject     = false;
 	
 	mitk::DataNode::Pointer m_LoadedMaskNode;
-
+	
 	Ui::MitkDrawingTool *ui;
 	
 	mitk::ToolManager::Pointer m_ToolManager;
