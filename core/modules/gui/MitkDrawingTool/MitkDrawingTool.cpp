@@ -1,6 +1,7 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QFileDialog>
+#include <QString>
 #include <QDebug>
 
 #include "MitkDrawingTool.h"
@@ -55,17 +56,24 @@ MitkDrawingTool::~MitkDrawingTool()
 
 void MitkDrawingTool::SetMitkImageViewer(MitkImageViewer* mitkImageViewer)
 {
-  connect(mitkImageViewer, SIGNAL(LoadedNewMask(mitk::DataNode::Pointer)),
-    this, SLOT(OnLoadedNewMask(mitk::DataNode::Pointer))
+  // Signals from MitkImageViewer
+  connect(mitkImageViewer, SIGNAL(MitkLoadedNewMask(mitk::DataNode::Pointer)),
+    this, SLOT(OnMitkLoadedNewMask(mitk::DataNode::Pointer))
   );
   connect(mitkImageViewer, SIGNAL(MitkDataNodeAboutToGetRemoved(mitk::DataNode::Pointer)),
     this, SLOT(OnMitkDataNodeAboutToGetRemoved(mitk::DataNode::Pointer))
   );
+
+  // Signals to MitkImageViewer
+  connect(this, SIGNAL(MitkDrawingToolSaveImageToFile(long)),
+    mitkImageViewer, SLOT(SaveImageToFile(long))
+  );
 }
 
-void MitkDrawingTool::OnLoadedNewMask(mitk::DataNode::Pointer dataNode)
+void MitkDrawingTool::OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode)
 {
-  qDebug() << "MitkDrawingTool::OnLoadedNewMask";
+  qDebug() << "MitkDrawingTool::OnMitkLoadedNewMask";
+  m_MaskLoadedForThisSubject = true;
 
   // Connect the mask to the tool
   m_LoadedMaskNode = dataNode;
@@ -92,7 +100,21 @@ void MitkDrawingTool::OnLoadedNewMask(mitk::DataNode::Pointer dataNode)
 
 void MitkDrawingTool::OnMitkDataNodeAboutToGetRemoved(mitk::DataNode::Pointer dataNode)
 {
-  // TODO: Save changes
+  qDebug() << "MitkDrawingTool::OnMitkDataNodeAboutToGetRemoved";
+
+  long dataNodeNodeIid = QString(        dataNode->GetName().c_str()).toLong();
+  long loadedMaskIid   = QString(m_LoadedMaskNode->GetName().c_str()).toLong();
+
+  if ( m_MaskLoadedForThisSubject && 
+       m_LoadedMaskNode && 
+       loadedMaskIid == dataNodeNodeIid )
+  {
+    emit MitkDrawingToolSaveImageToFile(
+      QString(dataNode->GetName().c_str()).toLong()
+    );
+
+    m_MaskLoadedForThisSubject = false;
+  }
 }
 
 // void MitkDrawingTool::OnEnableSegmentation()
@@ -195,6 +217,15 @@ void MitkDrawingTool::OnMitkDataNodeAboutToGetRemoved(mitk::DataNode::Pointer da
 
 void MitkDrawingTool::OnCreateNewLabel()
 {
+  if (!m_MaskLoadedForThisSubject)
+  {
+    qDebug() << "MitkDrawingTool::OnCreateNewLabel: No mask";
+    // Create image
+    // add to data storage and save the iid
+    // emit MitkDrawingToolSaveImageToFile(iid);
+    return;
+  }
+
   m_ToolManager->ActivateTool(-1);
 
   mitk::DataNode* workingNode = m_ToolManager->GetWorkingData(0);
@@ -280,6 +311,11 @@ void MitkDrawingTool::OnConfirmSegmentation()
 
 void MitkDrawingTool::OnManualTool2DSelected(int id)
 {
+  // if (!m_MaskLoadedForThisSubject)
+  // {
+  //   return;
+  // }
+
   if (id >= 0)
   {
     std::string text = m_ToolManager->GetToolById(id)->GetName();

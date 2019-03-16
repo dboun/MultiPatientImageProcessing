@@ -96,6 +96,8 @@ void AlgorithmModuleBase::Run()
 
     Algorithm();
 
+    emit AlgorithmFinished(this);
+
     m_IsRunning = false;
     m_CancelFlag = false;
 }

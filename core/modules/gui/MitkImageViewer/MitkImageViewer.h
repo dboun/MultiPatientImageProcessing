@@ -34,11 +34,14 @@ public slots:
 	virtual void SelectedDataChangedHandler(long iid) override;
 	virtual void DataCheckedStateChangedHandler(long iid, bool checkState) override;
 
-	// Slot, but probably just called.
+	// Slot, but usually just called.
 	void SaveImageToFile(long iid) override;
 
+	// Reference is an nrrd image that shows which labels to use
+	void ConvertToNrrdAndSave(long iid, long referenceIid = -1);
+
 signals:
-	void LoadedNewMask(mitk::DataNode::Pointer dataNode);
+	void MitkLoadedNewMask(mitk::DataNode::Pointer dataNode);
 	void MitkDataNodeAboutToGetRemoved(mitk::DataNode::Pointer dataNode);
 
 protected:

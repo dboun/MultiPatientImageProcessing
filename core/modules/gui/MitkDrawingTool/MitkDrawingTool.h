@@ -24,7 +24,7 @@ public:
 	void SetMitkImageViewer(MitkImageViewer* mitkImageViewer);
 
 public slots:
-	void OnLoadedNewMask(mitk::DataNode::Pointer dataNode);
+	void OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode);
 	void OnMitkDataNodeAboutToGetRemoved(mitk::DataNode::Pointer dataNode);
 
 	void OnCreateNewLabel();
@@ -32,10 +32,14 @@ public slots:
 	void OnManualTool2DSelected(int);
 	// void OnDisableSegmentation();
 
+signals:
+	void MitkDrawingToolSaveImageToFile(long iid);
+
 private:
 	// void CreateNewSegmentation();
 
 	bool m_WaitingOnLabelsImageCreation = false;
+	bool m_MaskLoadedForThisSubject     = false;
 	
 	mitk::DataNode::Pointer m_LoadedMaskNode;
 

@@ -9,6 +9,8 @@
 #include <mitkIOUtil.h>
 #include <mitkLabelSetImage.h>
 
+#include <iostream>
+
 MitkImageViewer::MitkImageViewer(QWidget *parent) : ImageViewerBase(parent)
 {
 	// Create an instance of QmitkStdMultiWidget and show it
@@ -85,37 +87,7 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 
 	for(const long& iid : iids)
 	{
-		QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
-		QString dataPath    = this->GetDataManager()->GetDataPath(iid);
-
-		if ((specialRole == "Mask" /*|| specialRole == "Segmentation"*/) &&
-        	!dataPath.endsWith(".nrrd", Qt::CaseSensitive)
-    	) {
-    		continue;
-		}
-
-		qDebug() << "MitkImageViewer: Adding iid" << iid;
-		QString dataName    = this->GetDataManager()->GetDataName(iid);
-
-		mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(
-			dataPath.toStdString(), *m_DataStorage
-		);
-
-		mitk::DataNode::Pointer dataNode = dataNodes->at(0);
-		dataNode->SetName(QString::number(iid).toStdString().c_str());
-		dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
-		//dataNode->SetVisibility(true);
-
-		dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
-		dataNode->SetProperty("layer", mitk::IntProperty::New(2));
-
-		if (specialRole == QString("Mask"))
-		{
-			dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
-			dataNode->SetProperty("layer", mitk::IntProperty::New(48));
-
-			emit LoadedNewMask(dataNode);
-		}
+		this->AddToDataStorage(iid);
 	}
 
 	m_MitkWidget->ResetCrosshair();
@@ -125,13 +97,18 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 
 void MitkImageViewer::DataAddedForSelectedSubjectHandler(long iid)
 {
-	// TODO: Leave it for now, the gui doesn't support
-	// putting new images to an existing subject yet
+	AddToDataStorage(iid);
 }
 
 void MitkImageViewer::DataRemovedFromSelectedSubjectHandler(long iid)
 {
-	// TODO: Leave for last 
+	auto dataNode = m_DataStorage->GetNamedNode(
+		QString::number(iid).toStdString().c_str()
+	);
+
+	emit MitkDataNodeAboutToGetRemoved(dataNode);
+
+	m_DataStorage->Remove(dataNode);
 }
 
 void MitkImageViewer::SelectedDataChangedHandler(long iid)
@@ -439,7 +416,6 @@ void MitkImageViewer::SaveImageToFile(long iid)
 		dataNode->GetData(), 
 		nifti.toStdString()
 	);
-
 	
 	if (specialRole == "Mask" || specialRole == "Segmentation")
 	{
@@ -458,7 +434,101 @@ void MitkImageViewer::SaveImageToFile(long iid)
 	);
 }
 
+void MitkImageViewer::ConvertToNrrdAndSave(long iid, long referenceIid)
+{
+	qDebug() << "MitkImageViewer::ConvertToNrrdAndSave" << iid << referenceIid;
+
+	// Image info
+	QString imageSpecialRole = this->GetDataManager()->GetDataSpecialRole(iid);
+	QString imagePath = this->GetDataManager()->GetDataPath(iid);
+	long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
+
+	// Reference image info
+	QString referencePath = this->GetDataManager()->GetDataPath(referenceIid);
+
+	// Load the two images
+	mitk::Image::Pointer referenceImage = mitk::IOUtil::Load<mitk::Image>(
+		referencePath.toStdString()
+	);
+	mitk::Image::Pointer image = mitk::IOUtil::Load<mitk::Image>(
+		imagePath.toStdString()
+	);
+
+	// The output image
+	mitk::LabelSetImage::Pointer outputImage = mitk::LabelSetImage::New();
+	
+	// Copy the data from image
+	qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Initializing by labeled image";
+	outputImage->InitializeByLabeledImage(image);
+	
+
+	// // Copy metadata from reference
+	// outputImage->Initialize(referenceImage);
+	
+	//outputImage->Initialize(image);
+	//qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Copying data";
+	// outputImage->SetVolume(image->GetVolumeData());
+	// outputImage->Concatenate(image);
+	//qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Copying data finished";
+	
+	// Where to save the new image
+	QString directoryName = this->GetDataManager()->GetSubjectPath(uid) 
+		+ QString("/") + m_AppNameShort + QString("/")
+		+ m_AppNameShort + "_" + imageSpecialRole;
+
+	if (!QDir(directoryName).exists())
+	{
+		QDir().mkpath(directoryName);
+	}
+
+	// Find the full path to save the output image
+	QFileInfo f(imagePath);
+	QString outputImagePath = directoryName + "/" + f.baseName() + ".nrrd";
+
+	// Save the image to file
+	qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Saving to file";
+	mitk::IOUtil::Save(
+		outputImage, outputImagePath.toStdString()
+	);
+	qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Saving to file finished";
+
+	qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Updating data manager";
+	this->GetDataManager()->AddDataToSubject(
+		uid, outputImagePath, imageSpecialRole
+	);
+}
+
 void MitkImageViewer::AddToDataStorage(long iid)
 {
+	QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
+	QString dataPath    = this->GetDataManager()->GetDataPath(iid);
 
+	if ((specialRole == "Mask" /*|| specialRole == "Segmentation"*/) &&
+		!dataPath.endsWith(".nrrd", Qt::CaseSensitive)
+	) {
+		return;
+	}
+
+	qDebug() << "MitkImageViewer: Adding iid" << iid;
+	QString dataName = this->GetDataManager()->GetDataName(iid);
+
+	mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(
+		dataPath.toStdString(), *m_DataStorage
+	);
+
+	mitk::DataNode::Pointer dataNode = dataNodes->at(0);
+	dataNode->SetName(QString::number(iid).toStdString().c_str());
+	dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
+	//dataNode->SetVisibility(true);
+
+	dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
+	dataNode->SetProperty("layer", mitk::IntProperty::New(2));
+
+	if (specialRole == QString("Mask"))
+	{
+		dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
+		dataNode->SetProperty("layer", mitk::IntProperty::New(48));
+
+		emit MitkLoadedNewMask(dataNode);
+	}
 }

@@ -82,7 +82,7 @@ void GeodesicTrainingModule::Algorithm()
     GeodesicTrainingQt<3>* geodesicTraining = new GeodesicTrainingQt<3>(this);
 
     connect(geodesicTraining, SIGNAL(GeodesicTrainingProgressUpdate(QString, int)),
-        this, SLOT(GeodesicTrainingProgressUpdate(QString, int))
+        this, SLOT(GeodesicTrainingProgressUpdateHandler(QString, int))
     );
 
     QString outputPath = dm->GetSubjectPath(m_Uid) + 

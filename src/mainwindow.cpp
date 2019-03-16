@@ -2,6 +2,7 @@
 
 #include <QDir>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QTextStream>
 #include <QHBoxLayout>
@@ -245,7 +246,10 @@ void MainWindow::OnRunPressed()
     }
   }
 
-  qobject_cast<MitkImageViewer*>(m_ImageViewer)->SaveImageToFile(maskNrrd);
+  if (maskNrrd != -1)
+  {
+    qobject_cast<MitkImageViewer*>(m_ImageViewer)->SaveImageToFile(maskNrrd);
+  }
 #endif
 
 #ifdef BUILD_MODULE_GeodesicTraining
@@ -279,7 +283,56 @@ void MainWindow::OnSchedulerJobFinished(AlgorithmModuleBase* algorithmModuleBase
 
 void MainWindow::OnAlgorithmFinished(AlgorithmModuleBase* algorithmModuleBase)
 {
-  // Nothing needs to be done here
+  if (algorithmModuleBase->GetAlgorithmNameShort() == "GeodesicTraining")
+  {
+#ifdef BUILD_MODULE_MitkImageViewer
+    long uid = algorithmModuleBase->GetUid();
+
+    auto segmentationIids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
+      uid, "Segmentation"
+    );
+
+    auto maskIids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
+      uid, "Mask"
+    );
+
+    // Find the most recent segmentation (Not needed now but that might change)
+    // If the segmentations are saved with 2,3,etc in the end
+
+    long recentSegmentationIid = (segmentationIids.size() > 0) ? segmentationIids[0] : -1;
+    QString recentSegmentationPath = m_DataManager->GetDataPath(recentSegmentationIid);
+
+    for (const long& segmentationIid : segmentationIids)
+    {
+      QString segmentationPath = m_DataManager->GetDataPath(segmentationIid);
+
+      if (segmentationPath.endsWith(".nii.gz") &&
+          segmentationPath > recentSegmentationPath
+      ) {
+        recentSegmentationIid  = segmentationIid;
+        recentSegmentationPath = segmentationPath;
+      }
+    }
+
+    long maskNrrdIid = -1;
+
+    for (const long& maskIid : maskIids)
+    {
+      if (m_DataManager->GetDataPath(maskIid).endsWith(".nrrd"))
+      {
+        maskNrrdIid = maskIid;
+        break;
+      }
+    }
+
+    if (maskNrrdIid != -1 && recentSegmentationIid != -1)
+    {
+      qobject_cast<MitkImageViewer*>(m_ImageViewer)->ConvertToNrrdAndSave(
+        recentSegmentationIid, maskNrrdIid
+      );
+    }
+#endif
+  }
 }
 
 void MainWindow::OnAlgorithmFinishedWithError(AlgorithmModuleBase* algorithmModuleBase, 
