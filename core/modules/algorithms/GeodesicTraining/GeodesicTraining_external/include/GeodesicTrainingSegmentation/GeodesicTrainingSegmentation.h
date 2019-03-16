@@ -168,7 +168,7 @@ namespace GeodesicTrainingSegmentation
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 				
-				if (!validLabels(gtsResult, labelsCountMap, 2)) { return nullptr; }
+				if (!validLabels(gtsResult, labelsCountMap, 2)) { return gtsResult; }
 				
 				addToInputImagesMRI(); // Nothing special happens for the different modalities here
 
@@ -181,7 +181,7 @@ namespace GeodesicTrainingSegmentation
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
-				if (!validLabels(gtsResult, labelsCountMap)) { return nullptr; }
+				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
 
 				addToInputImagesMRI(); // Nothing special happens for the different modalities here
 
@@ -201,7 +201,7 @@ namespace GeodesicTrainingSegmentation
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 				
-				if (!validLabels(gtsResult, labelsCountMap, 1)) { return nullptr; }
+				if (!validLabels(gtsResult, labelsCountMap, 1)) { return gtsResult; }
 
 				addToInputImagesMRI(); // Nothing special happens for the different modalities here
 
@@ -228,7 +228,7 @@ namespace GeodesicTrainingSegmentation
 			{
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
-				if (!validLabels(gtsResult, labelsCountMap, 1)) { return nullptr; }
+				if (!validLabels(gtsResult, labelsCountMap, 1)) { return gtsResult; }
 
 				addToInputImagesMRI(); // Nothing special happens for the different modalities here
 
@@ -246,7 +246,7 @@ namespace GeodesicTrainingSegmentation
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
-				if (!validLabels(gtsResult, labelsCountMap)) { return nullptr; }
+				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
 
 				// Construct agd maps for each input image and input input images and agd maps to a SVM that produces labels
 				std::vector< AgdImagePointer > agdImages;
@@ -299,7 +299,7 @@ namespace GeodesicTrainingSegmentation
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
-				if (!validLabels(gtsResult, labelsCountMap, 2)) { return nullptr; }
+				if (!validLabels(gtsResult, labelsCountMap, 2)) { return gtsResult; }
 
 				addToInputImagesMRI(); // Nothing special happens for the different modalities here
 
@@ -324,7 +324,7 @@ namespace GeodesicTrainingSegmentation
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
-				if (!validLabels(gtsResult, labelsCountMap, 2)) { return nullptr; }
+				if (!validLabels(gtsResult, labelsCountMap, 2)) { return gtsResult; }
 
 				// Construct agd maps for each input image and input input images and agd maps to a SVM that produces labels
 				std::vector< AgdImagePointer > agdImages;
@@ -379,7 +379,7 @@ namespace GeodesicTrainingSegmentation
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
-				if (!validLabels(gtsResult, labelsCountMap)) { return nullptr; }
+				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
 
 				addToInputImagesMRI(); // Nothing special happens for the different modalities here
 
@@ -397,7 +397,7 @@ namespace GeodesicTrainingSegmentation
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
-				if (!validLabels(gtsResult, labelsCountMap)) { return nullptr; }
+				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
 
 				// Construct agd maps for each input image and input input images and agd maps to a SVM that produces labels
 				std::vector< AgdImagePointer > agdImages; //= agd<PixelType>(m_input_images, m_labels_list, false);
@@ -446,7 +446,7 @@ namespace GeodesicTrainingSegmentation
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
-				if (!validLabels(gtsResult, labelsCountMap)) { return nullptr; }
+				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
 
 				addToInputImagesMRI(); // Nothing special happens for the different modalities here
 
@@ -464,7 +464,7 @@ namespace GeodesicTrainingSegmentation
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
-				if (!validLabels(gtsResult, labelsCountMap)) { return nullptr; }
+				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
 
 				// Construct agd maps for each input image and input input images and agd maps to a SVM that produces labels
 				std::vector< AgdImagePointer > agdImages;
@@ -619,6 +619,11 @@ namespace GeodesicTrainingSegmentation
 		void SetSaveAll(bool saveAll) {
 			m_save_all = saveAll;
 		}
+		void SaveOnlyNormalSegmentation(bool saveOnlySeg = true, std::string segName = "labels_res")
+		{
+			m_save_only_seg = saveOnlySeg;
+			m_save_only_seg_name = segName;
+		}
 		void SetTimerEnabled(bool timerEnabled) {
 			m_timer_enabled = timerEnabled;
 		}
@@ -739,9 +744,9 @@ namespace GeodesicTrainingSegmentation
 		float                                                  m_threshold = DEFAULT_THRESHOLD,
                                                                m_image_to_agd_maps_ratio = DEFAULT_INPUT_IMAGES_TO_AGD_MAPS_RATIO;
 		bool            m_save_all = false, m_timer_enabled = false, m_subsample = true, m_balanced_subsample = DEFAULT_BALANCED_SUBSAMPLE,
-                        m_file_extension_set_manually = false, m_verbose = false, m_were_images_shrunk = false,
+                        m_file_extension_set_manually = false, m_verbose = false, m_were_images_shrunk = false, m_save_only_seg = false,
                         m_ground_truth_set = false, m_max_threads = false, m_changed_labels_map_manually_set = false;
-		std::string     m_config_file_path = "", m_rf_config_file_path = "",
+		std::string     m_config_file_path = "", m_rf_config_file_path = "", m_save_only_seg_name = "",
                         m_file_extension = DEFAULT_FILE_EXTENSION, m_output_folder = cbica::getExecutablePath();
 		LabelsPixelType m_label_TC = DEFAULT_LABEL_TC, m_label_ET = DEFAULT_LABEL_ET,
                         m_label_ED = DEFAULT_LABEL_ED, m_label_HT = DEFAULT_LABEL_HT,
@@ -1964,7 +1969,14 @@ namespace GeodesicTrainingSegmentation
 		template<class TImageType>
 		void writeImage(typename TImageType::Pointer image, std::string filename)
 		{
-			if (m_save_all) {
+			bool isOutputSegmentation = (filename == "labels_res" || filename == "labels_res_renamed");
+			
+			if (m_save_only_seg)
+			{
+				filename = m_save_only_seg_name;
+			}
+
+			if (m_save_all || (m_save_only_seg && isOutputSegmentation)) {
 				std::string fileFullPath = m_output_folder + "/" + filename + m_file_extension;
 				
 				//message("Writing image to file...", "Writing to file");

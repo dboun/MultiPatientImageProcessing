@@ -43,6 +43,11 @@ MitkDrawingTool::MitkDrawingTool(mitk::DataStorage *datastorage, QWidget *parent
     connect(ui->ConfirmSegBtn, SIGNAL(clicked()), this, SLOT(OnConfirmSegmentation()));
     connect(ui->toolSelectionBox, SIGNAL(ToolSelected(int)), this, SLOT(OnManualTool2DSelected(int)));
     
+    ui->toolGUIArea->setVisible(false);
+    ui->toolSelectionBox->setVisible(false);
+
+    // Unused
+    ui->ConfirmSegBtn->setVisible(false);
 }
 
 MitkDrawingTool::~MitkDrawingTool()
@@ -90,10 +95,25 @@ void MitkDrawingTool::OnDataAboutToGetRemoved(long iid)
 
     m_MaskLoadedForThisSubject = false;
     
+    ui->toolGUIArea->setVisible(false);
+    ui->toolSelectionBox->setVisible(false);
+
+    mitk::LabelSetImage::Pointer emptyImage = mitk::LabelSetImage::New();
+    emptyImage->Initialize(dynamic_cast<mitk::Image*>(m_LoadedMaskNode->GetData()));
+    mitk::DataNode::Pointer emptyNode = mitk::DataNode::New();
+    emptyNode->SetData(emptyImage);
+    //m_DataStorage->Add(emptyNode);
+
+    m_ToolManager->SetWorkingData(emptyNode);
+    m_ToolManager->SetReferenceData(emptyNode); 
+
+    //ui->labelSetWidget->UpdateAllTableWidgetItems();
+    ui->labelSetWidget->ResetAllTableWidgetItems();
+    
     m_LoadedMaskNode = nullptr;
-    m_ToolManager->SetWorkingData(nullptr);
-    m_ToolManager->SetReferenceData(nullptr);
   }
+
+  qDebug() << "MitkDrawingTool::OnDataAboutToGetRemovedFinished";
 }
 
 void MitkDrawingTool::OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode)
@@ -111,6 +131,9 @@ void MitkDrawingTool::OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode)
     ui->labelSetWidget->show();
   }
   ui->labelSetWidget->ResetAllTableWidgetItems();
+
+  ui->toolGUIArea->setVisible(true);
+  ui->toolSelectionBox->setVisible(true);
 
   mitk::RenderingManager::GetInstance()->InitializeViews(
     m_LoadedMaskNode->GetData()->GetTimeGeometry(), 
@@ -241,17 +264,27 @@ void MitkDrawingTool::OnCreateNewLabel()
     // Find the first node, if there is one
     long referenceIid = -1;
     mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
-      referenceIid = QString(it.Value()->GetName().c_str()).toLong();
-      break;
+    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) 
+    {  
+      QString nodeName = QString(it.Value()->GetName().c_str());
+      if (QRegExp("\\d*").exactMatch(nodeName)) { // a digit (\d), zero or more times (*)
+        referenceIid = nodeName.toLong();
+        break;
+      }
     }
     
     if (referenceIid != -1)
     {
       m_WaitingOnLabelsImageCreation = true;
       emit MitkDrawingToolCreateEmptyMask(referenceIid);
-      return;
     }
+    else {
+      QMessageBox::information(this, 
+        "Drawing Tool", 
+        "Please load a subject before starting some action."
+      );
+    }
+    return;
   }
 
   m_ToolManager->ActivateTool(-1);
@@ -259,8 +292,10 @@ void MitkDrawingTool::OnCreateNewLabel()
   mitk::DataNode* workingNode = m_ToolManager->GetWorkingData(0);
   if (!workingNode)
   {
-    QMessageBox::information(
-      this, "New Segmentation Session", "Please load and select a patient image before starting some action.");
+    QMessageBox::information(this, 
+      "Drawing Tool", 
+      "Please load and select a patient image before starting some action."
+    );
     return;
   }
 
@@ -339,10 +374,14 @@ void MitkDrawingTool::OnConfirmSegmentation()
 
 void MitkDrawingTool::OnManualTool2DSelected(int id)
 {
-  // if (!m_MaskLoadedForThisSubject)
-  // {
-  //   return;
-  // }
+  qDebug() << "MitkDrawingTool::OnManualTool2DSelected";
+
+  if (!m_MaskLoadedForThisSubject)
+  {
+    return;
+  }
+
+  qDebug() << "MitkDrawingTool::OnManualTool2DSelected (mask is loaded)";
 
   if (id >= 0)
   {
@@ -379,7 +418,19 @@ void MitkDrawingTool::OnManualTool2DSelected(int id)
     }
     else
     {
-      //this->OnDisableSegmentation();
+      if (m_LastToolGUI)
+      {
+        ui->toolGUIArea->layout()->removeWidget(m_LastToolGUI);
+        m_LastToolGUI->setParent(nullptr);
+        delete m_LastToolGUI; // will hopefully notify parent and layouts
+        m_LastToolGUI = nullptr;
+
+        QLayout *layout = ui->toolGUIArea->layout();
+        if (layout)
+        {
+          layout->activate();
+        }
+      }
     }
  
   }

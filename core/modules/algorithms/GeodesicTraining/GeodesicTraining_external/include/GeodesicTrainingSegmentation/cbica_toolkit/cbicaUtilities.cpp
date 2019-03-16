@@ -587,7 +587,7 @@ namespace cbica
     {
       if (!fileExists(filename))
       {
-        std::cerr << "Supplied file name wasn't found.\n";
+        std::cerr << "getFilenameBase: Supplied file name wasn't found.\n";
         exit(EXIT_FAILURE);
       }
     }
@@ -603,7 +603,7 @@ namespace cbica
     {
       if (!fileExists(filename))
       {
-        std::cerr << "Supplied file name wasn't found.\n";
+        std::cerr << "getFilenameExtension: Supplied file name wasn't found.\n";
         exit(EXIT_FAILURE);
       }
     }
@@ -625,7 +625,7 @@ namespace cbica
       {
         if (!fileExists(filename))
         {
-          std::cerr << "Supplied file name wasn't found.\n";
+          std::cerr << "getFilenamePath: Supplied file name wasn't found.\n";
           exit(EXIT_FAILURE);
         }
       }
@@ -659,7 +659,11 @@ namespace cbica
         path[0] = '\0';
       }
     }
-    return_string = getFilenameBase(std::string(path));
+    // BOOKIS CHANGE
+    return_string = std::string(path);
+    //return_string = getFilenameBase(std::string(path));
+    // EO BOOKIS CHANGE
+
     path[0] = '\0';
 #endif
 
@@ -1077,7 +1081,7 @@ namespace cbica
   {
     if (!cbica::fileExists(input_fileName))
     {
-      std::cerr << "Supplied file name wasn't found.\n";
+      std::cerr << "makeSymbolicLink: Supplied file name wasn't found.\n";
       exit(EXIT_FAILURE);
     }
 #if defined(_WIN32)

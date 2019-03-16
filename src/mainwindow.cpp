@@ -185,51 +185,6 @@ void MainWindow::OnRunPressed()
 
 	qDebug() << QString("(Run) uid:  ") << QString::number(uid);
 
-	// std::vector<long> iidsOfSubject = m_DataManager->GetAllDataIdsOfSubject(uid);
-
-	// int numberOfImages = 0, numberOfMasks = 0;
-
-	// for (const long& iid : iidsOfSubject)
-	// {
-	// 	QString dataSpecialRole = m_DataManager->GetDataSpecialRole(iid); 
-
-	// 	if (dataSpecialRole == "Mask") {
-	// 		numberOfMasks++;
-	// 	}
-	// 	else if (dataSpecialRole != "Segmentation")
-	// 	{
-	// 		numberOfImages++;
-	// 	}
-	// }
-
-	// if (numberOfMasks == 0)
-	// {
-	// 	QMessageBox::information(
-	// 	  this,
-	// 	  tr("No mask drawn"),
-	// 	  tr("Please create a mask and run again.")
-	// 	);
-	// 	return;
-	// }
-	// if (numberOfMasks > 1)
-	// {
-	// 	QMessageBox::information(
-	// 		this,
-	// 		tr("Multiple masks"),
-	// 		tr("Please remove all but one masks (Right click & Remove won't delete an image from the disk).")
-	// 	);
-	// 	return;
-	// }
-	// if (numberOfImages == 0)
-	// {
-	// 	QMessageBox::information(
-	// 		this,
-	// 		tr("No images"),
-	// 		tr("Please load some images.")
-	// 	);
-	// 	return;
-	// }
-
 #ifdef BUILD_MODULE_MitkImageViewer
   auto iids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
     uid, "Mask"

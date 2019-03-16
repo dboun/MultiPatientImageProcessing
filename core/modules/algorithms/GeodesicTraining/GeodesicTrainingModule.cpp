@@ -96,15 +96,15 @@ void GeodesicTrainingModule::Algorithm()
     geodesicTraining->SetLabels(mask);
     geodesicTraining->SetOutputPath(outputPath.toStdString());
     geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
-    geodesicTraining->SetSaveAll(true);
+    geodesicTraining->SaveOnlyNormalSegmentation(true, "segmentation");
     geodesicTraining->SetVerbose(true);
-    geodesicTraining->SetTimerEnabled(true);
+    //geodesicTraining->SetTimerEnabled(true);
     auto result = geodesicTraining->Execute();
 
     if (result->ok)
     {
         this->GetDataManager()->AddDataToSubject(this->GetUid(), 
-            outputPath + QString("/labels_res.nii.gz"), "Segmentation"
+            outputPath + QString("/segmentation.nii.gz"), "Segmentation"
         );
     }
     else {
