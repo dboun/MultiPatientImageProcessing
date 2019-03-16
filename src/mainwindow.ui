@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>986</width>
+    <height>690</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Multi-Patient Image Processing (MPIP)</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QWidget" name="leftPanel" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>300</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QSlider" name="opacitySlider">
+         <property name="cursor">
+          <cursorShape>ArrowCursor</cursorShape>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QSlider::groove:horizontal{border: 1px solid #9f0000
+;height: 4px;border-radius: 4px;width:200px; background-color:rgb(97,97,97)}
+QSlider::handle:horizontal{border: 1px solid #000000; width: 10px; margin: -12px 0px; background-color:#0d47a1}</string>
+         </property>
+         <property name="value">
+          <number>99</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="invertedAppearance">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="dataViewContainer" native="true"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonConfigure">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton { color:white; background-color:darkGray; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; padding: 3px;}
+QPushButton:checked{ background-color: red; border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
+QPushButton:hover{ background-color: lightGray;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}
+QPushButton:pressed{ background-color: darkGray;border-style: outset; border-style: solid; border-color: black; border-width: 2px; border-radius: 10px;}                 </string>
+         </property>
+         <property name="text">
+          <string>  Configure actions  </string>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter">
+        <widget class="QPushButton" name="pushButtonRun">
+         <property name="styleSheet">
+          <string notr="true">QPushButton { font:21px; height:30px;width:150px;color:black; background-color:rgb(255,61,0); border-style: solid; border-color: #9f0000; border-width: 1px; border-radius: 5px; padding: 3px;}
+QPushButton:checked{ background-color: red; border-style: outset; border-style: solid; border-color: black; border-width: 1px; border-radius: 5px;}
+QPushButton:hover{ background-color: rgb(255,117,57);border-style: outset; border-style: solid; border-color: black; border-width: 1px; border-radius: 5px;}
+QPushButton:pressed{ background-color: rgb(195,0,0);border-style: outset; border-style: solid; border-color: black; border-width: 1px; border-radius: 5px;}                 </string>
+         </property>
+         <property name="text">
+          <string>       Run      &gt;</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="page">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QWidget" name="viewerContainer" native="true">
+          <layout class="QHBoxLayout" name="horizontalLayout_2"/>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="view">
+       <layout class="QGridLayout" name="gridLayout"/>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QWidget" name="rightPanel" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>300</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_3"/>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>986</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:rgb(97,97,97)</string>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="styleSheet">
+     <string notr="true">background-color:gray</string>
+    </property>
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen_single_subject"/>
+    <addaction name="actionAdd_multiple_subjects"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_image_for_selected_subject"/>
+    <addaction name="actionAdd_image_for_new_subject"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <action name="actionOpen_Dicom">
+   <property name="text">
+    <string>Open Dicom</string>
+   </property>
+  </action>
+  <action name="actionDisplay_Metadata">
+   <property name="text">
+    <string>Display Metadata</string>
+   </property>
+  </action>
+  <action name="actionOpen_single_subject">
+   <property name="text">
+    <string>Add single subject</string>
+   </property>
+  </action>
+  <action name="actionAdd_multiple_subjects">
+   <property name="text">
+    <string>Add multiple subjects</string>
+   </property>
+  </action>
+  <action name="actionAdd_image_for_selected_subject">
+   <property name="text">
+    <string>Add image for selected subject</string>
+   </property>
+  </action>
+  <action name="actionAdd_image_for_new_subject">
+   <property name="text">
+    <string>Add image for new subject</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>

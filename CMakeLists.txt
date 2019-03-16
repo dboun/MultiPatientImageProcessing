@@ -1,71 +1,15 @@
 cmake_minimum_required(VERSION 3.1.0)
 
-project( MPIP )
+set( PROJECT_NAME MPIP )
+set( PROJECT_VERSION 0.1.0 )
 
-find_package( VTK )
-include( ${VTK_USE_FILE} )
+project( ${PROJECT_NAME} VERSION ${PROJECT_VERSION} )
 
-find_package( ITK REQUIRED )
-include( ${ITK_USE_FILE} )
+# Handles everything related to the core
+include( core/cmake/master.cmake )
 
-add_subdirectory( Applications )
+# Handles everything related to the application
+add_subdirectory( src )
 
-include_directories( ${APP_INCLUDE_DIRS} )
-
-set( CPP_FILES
-  mainwindow.cpp
-  main.cpp
-  Scheduler.cpp
-  ApplicationBase.cpp
-  ${APP_SOURCES}
-)
-
-set( MOC_H_FILES
-  mainwindow.h
-  Scheduler.h
-  ApplicationBase.h
-  ${APP_HEADERS}
-)
-
-set( UI_FILES
-  mainwindow.ui
-)
-
-set( H_FILES
-  mainwindow.h
-  Scheduler.h
-  ApplicationBase.h
-  ${APP_HEADERS}
-)
- 
-include_directories(
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-set( CMAKE_AUTOMOC ON )
-  
-find_package( Qt5 COMPONENTS Widgets REQUIRED )
-qt5_wrap_ui( UI_Srcs ${UI_FILES} )
-
-add_executable( MPIP ${CPP_FILES} ${H_FILES} ${UI_FILES} ${MOC_H_FILES} )
-qt5_use_modules( MPIP Core Gui Widgets )
-
-if (BUILD_GEODESIC_TRAINING)
-
-message(STATUS "Linking with Geodesic Training")
-
-target_link_libraries( MPIP 
-  ${VTK_LIBRARIES}
-  ${ITK_LIBRARIES}
-  ${OpenCV_LIBRARIES} 
-  ${APP_LIBRARIES})
-
-else(BUILD_GEODESIC_TRAINING)
-
-target_link_libraries( MPIP 
-  ${VTK_LIBRARIES}
-  #${ITK_LIBRARIES}
-  #${OpenCV_LIBRARIES} 
-)
-endif(BUILD_GEODESIC_TRAINING)
+# Installer
+include( cpack.cmake )
