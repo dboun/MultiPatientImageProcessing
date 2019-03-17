@@ -198,6 +198,7 @@ void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 		dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
 	}
 
+    dataNode->SetVisibility(checkState);
 	m_MitkWidget->ResetCrosshair();
 	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 	//mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
@@ -598,8 +599,8 @@ void MitkImageViewer::AddToDataStorage(long iid)
 
 	mitk::DataNode::Pointer dataNode = dataNodes->at(0);
 	dataNode->SetName(QString::number(iid).toStdString().c_str());
-    dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
-	//dataNode->SetVisibility(true);
+    //dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
+    dataNode->SetVisibility(false);
 
 //	dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
 //	dataNode->SetProperty("layer", mitk::IntProperty::New(2));
