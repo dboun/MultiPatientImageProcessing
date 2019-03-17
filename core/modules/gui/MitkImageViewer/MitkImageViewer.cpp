@@ -598,16 +598,16 @@ void MitkImageViewer::AddToDataStorage(long iid)
 
 	mitk::DataNode::Pointer dataNode = dataNodes->at(0);
 	dataNode->SetName(QString::number(iid).toStdString().c_str());
-	dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
+    dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
 	//dataNode->SetVisibility(true);
 
-	dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
-	dataNode->SetProperty("layer", mitk::IntProperty::New(2));
+//	dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
+//	dataNode->SetProperty("layer", mitk::IntProperty::New(2));
 
 	if (specialRole == QString("Mask"))
 	{
-		dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
-		dataNode->SetProperty("layer", mitk::IntProperty::New(48));
+//		dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
+//		dataNode->SetProperty("layer", mitk::IntProperty::New(48));
 
 		emit MitkLoadedNewMask(dataNode);
 	}
