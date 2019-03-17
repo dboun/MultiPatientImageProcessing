@@ -14,3 +14,7 @@ set( UI_FILES
 set( H_FILES
   mainwindow.h
 )
+
+set( RESOURCE_FILE 
+  resource.qrc
+)
