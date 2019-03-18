@@ -72,22 +72,24 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 
 	qDebug() << QString("MitkImageViewer::SelectedSubjectChangedHandler()") << uid;
 
-    //We cannot be removing all nodes. Some of these are MITK specific and need to be there
-    //TODO: datamanager must have a list of all ids for a specific subjects. Based on that
-    // the nodes should be removed.
-
 	// Remove the previous ones
-//	mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-//	for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
-//		qDebug() << "Removing node with name: " << it->Value()->GetName().c_str();
-//		m_DataStorage->Remove(it.Value());
-//	}
+	QRegExp numberRegExp("\\d*");  // a digit (\d), zero or more times (*)
+	
+	mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+	for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
+		qDebug() << "Removing node with name: " << it->Value()->GetName().c_str();
+		
+		QString nodeName = QString(it->Value()->GetName().c_str());
+				
+		// If the node name can be converted to a number 
+		// (all of our node are named with their iid)
+		if (numberRegExp.exactMatch(nodeName))
+		{
+			m_DataStorage->Remove(it.Value());
+		}
+	}
 
-	//m_LoadedImages.clear();
-
-	auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(
-		this->GetDataView()->GetCurrentSubjectID()
-	);
+	auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(uid);
 
 	for(const long& iid : iids)
 	{
