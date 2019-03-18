@@ -46,7 +46,7 @@ void DataTreeView::SubjectAddedHandler(long uid)
 {
 	QTreeWidgetItem* subjectToAdd = new QTreeWidgetItem(m_TreeWidget);
 	subjectToAdd->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-	subjectToAdd->setSelected(true);
+	subjectToAdd->setSelected(false);
 	//subjectToAdd->setText(0, m_DataManager->GetSubjectName(uid));
     subjectToAdd->setData(0, ID, QVariant(static_cast<long long int>(uid) ));
 
@@ -104,6 +104,7 @@ void DataTreeView::SubjectAddedHandler(long uid)
 	if (!currentSubjectIdExists)
 	{
 		m_TreeWidget->setCurrentItem(subjectToAdd);
+		subjectToAdd->setSelected(true);
 		SwitchExpandedView(subjectToAdd);
 		m_CurrentSubjectID = uid;
 		qDebug() << "Emit DataTreeView::SelectedSubjectChanged";
@@ -227,11 +228,6 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 {
 	qDebug() << QString("Clicked tree item.");
 
-    if(item->checkState(column) == Qt::CheckState::Checked)
-        item->setSelected(true);
-    else     if(item->checkState(column) == Qt::CheckState::Unchecked)
-        item->setSelected(false);
-
 	if (!m_TreeWidget->currentItem())
 	{
 		item->setSelected(true);
@@ -243,6 +239,12 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 	if (!isTopLevelItem)
 	{
 		// If it's a data item
+
+		if(item->checkState(0) == Qt::Checked)
+		{
+			item->setSelected(true);
+			m_TreeWidget->setCurrentItem(item);
+		}
 		
 		long iid = item->data(0, ID).toLongLong();
 		long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
