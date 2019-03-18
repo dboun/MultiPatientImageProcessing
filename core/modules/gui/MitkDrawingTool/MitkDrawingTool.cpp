@@ -73,9 +73,7 @@ void MitkDrawingTool::SetMitkImageViewer(MitkImageViewer* mitkImageViewer)
   connect(this, SIGNAL(MitkDrawingToolSaveImageToFile(long, bool)),
     mitkImageViewer, SLOT(SaveImageToFile(long, bool))
   );
-  connect(this, SIGNAL(MitkDrawingToolCreateEmptyMask(long)),
-    mitkImageViewer, SLOT(CreateEmptyMask(long))
-  );
+
 }
 
 void MitkDrawingTool::OnDataAboutToGetRemoved(long iid)
