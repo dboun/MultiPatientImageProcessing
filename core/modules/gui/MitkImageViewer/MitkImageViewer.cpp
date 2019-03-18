@@ -189,13 +189,13 @@ void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 	if (checkState)
 	{
 		//dataNode->SetVisibility(true);
-		dataNode->SetProperty("layer", mitk::IntProperty::New(2));
-		dataNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
+        dataNode->SetProperty("layer", mitk::IntProperty::New(2));
+        dataNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
 	}
 	else {
 		//dataNode->SetVisibility(false);
-		dataNode->SetProperty("layer", mitk::IntProperty::New(1));
-		dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
+        dataNode->SetProperty("layer", mitk::IntProperty::New(1));
+        dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
 	}
 
     dataNode->SetVisibility(checkState);
@@ -509,74 +509,6 @@ void MitkImageViewer::ConvertToNrrdAndSave(long iid, long referenceIid, bool upd
 			uid, outputImagePath, imageSpecialRole
 		);
 	}
-}
-
-long MitkImageViewer::CreateEmptyMask(long referenceIid)
-{
-	mitk::Image::Pointer referenceImage = mitk::IOUtil::Load<mitk::Image>(
-		this->GetDataManager()->GetDataPath(referenceIid).toStdString()
-	);
-
-	mitk::LabelSetImage::Pointer maskImage = mitk::LabelSetImage::New();
-	try
-	{
-		maskImage->Initialize(referenceImage);
-	}
-	catch (mitk::Exception& e)
-	{
-		MITK_ERROR << "Exception caught: " << e.GetDescription();
-		QMessageBox::information(this, "New Segmentation Session", "Could not create a new segmentation session.\n");
-		return -1;
-	}
-
-	long uid = this->GetDataManager()->GetSubjectIdFromDataId(referenceIid);
-
-	// Create the directory to save if it doesn't exist
-	QString directoryName = this->GetDataManager()->GetSubjectPath(uid) 
-		+ QString("/") + m_AppNameShort + QString("/")
-		+ m_AppNameShort + "_" + "Mask";
-
-	if (!QDir(directoryName).exists())
-	{
-		QDir().mkpath(directoryName);
-	}
-
-	QString nifti = directoryName + QString("/mask.nii.gz");
-	QString nrrd  = directoryName + QString("/mask.nrrd");
-
-	// Remove previous masks
-	auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(uid);
-
-	for (const long& tIid : iids)
-	{
-		QString tPath = this->GetDataManager()->GetDataPath(tIid);
-		
-		if (tPath == nifti || tPath == nrrd)
-		{
-			this->GetDataManager()->RemoveData(tIid);
-		}
-	}
-
-	// Save
-	mitk::IOUtil::Save(
-		maskImage, 
-		nifti.toStdString()
-	);
-	
-	
-	mitk::IOUtil::Save(
-		maskImage, 
-		nrrd.toStdString()
-	);
-
-	// Update DataManager
-	this->GetDataManager()->AddDataToSubject(
-		uid, nifti, "Mask"
-	);
-
-	return this->GetDataManager()->AddDataToSubject(
-		uid, nrrd, "Mask"
-	);
 }
 
 void MitkImageViewer::AddToDataStorage(long iid)

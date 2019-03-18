@@ -276,7 +276,8 @@ void MitkDrawingTool::OnCreateNewLabel()
     if (referenceIid != -1)
     {
       m_WaitingOnLabelsImageCreation = true;
-      emit MitkDrawingToolCreateEmptyMask(referenceIid);
+      //emit MitkDrawingToolCreateEmptyMask(referenceIid);
+      this->CreateEmptyMask(referenceIid);
     }
     else {
       QMessageBox::information(this, 
@@ -390,6 +391,7 @@ void MitkDrawingTool::OnManualTool2DSelected(int id)
     if (text == "Paint")
     {
       //this->OnDisableSegmentation();
+        this->RemoveExistingToolGui();
 
       mitk::Tool *tool = m_ToolManager->GetActiveTool();
 
@@ -418,21 +420,95 @@ void MitkDrawingTool::OnManualTool2DSelected(int id)
     }
     else
     {
-      if (m_LastToolGUI)
-      {
-        ui->toolGUIArea->layout()->removeWidget(m_LastToolGUI);
-        m_LastToolGUI->setParent(nullptr);
-        delete m_LastToolGUI; // will hopefully notify parent and layouts
-        m_LastToolGUI = nullptr;
-
-        QLayout *layout = ui->toolGUIArea->layout();
-        if (layout)
-        {
-          layout->activate();
-        }
-      }
+        this->RemoveExistingToolGui();
     }
  
   }
 
+}
+
+
+void MitkDrawingTool::RemoveExistingToolGui()
+{
+  if (m_LastToolGUI)
+  {
+    ui->toolGUIArea->layout()->removeWidget(m_LastToolGUI);
+    m_LastToolGUI->setParent(nullptr);
+    delete m_LastToolGUI; // will hopefully notify parent and layouts
+    m_LastToolGUI = nullptr;
+
+    QLayout *layout = ui->toolGUIArea->layout();
+    if (layout)
+    {
+      layout->activate();
+    }
+  }
+}
+
+long MitkDrawingTool::CreateEmptyMask(long referenceIid)
+{
+    mitk::Image::Pointer referenceImage = mitk::IOUtil::Load<mitk::Image>(
+        this->GetDataManager()->GetDataPath(referenceIid).toStdString()
+    );
+
+    mitk::LabelSetImage::Pointer maskImage = mitk::LabelSetImage::New();
+    try
+    {
+        maskImage->Initialize(referenceImage);
+    }
+    catch (mitk::Exception& e)
+    {
+        MITK_ERROR << "Exception caught: " << e.GetDescription();
+        QMessageBox::information(this, "New Segmentation Session", "Could not create a new segmentation session.\n");
+        return -1;
+    }
+
+    long uid = this->GetDataManager()->GetSubjectIdFromDataId(referenceIid);
+
+    // Create the directory to save if it doesn't exist
+    QString directoryName = this->GetDataManager()->GetSubjectPath(uid)
+        + QString("/") + m_AppNameShort + QString("/")
+        + m_AppNameShort + "_" + "Mask";
+
+    if (!QDir(directoryName).exists())
+    {
+        QDir().mkpath(directoryName);
+    }
+
+    QString nifti = directoryName + QString("/mask.nii.gz");
+    QString nrrd  = directoryName + QString("/mask.nrrd");
+
+    // Remove previous masks
+    auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(uid);
+
+    for (const long& tIid : iids)
+    {
+        QString tPath = this->GetDataManager()->GetDataPath(tIid);
+
+        if (tPath == nifti || tPath == nrrd)
+        {
+            this->GetDataManager()->RemoveData(tIid);
+        }
+    }
+
+    // Save
+    mitk::IOUtil::Save(
+        maskImage,
+        nifti.toStdString()
+    );
+
+
+    mitk::IOUtil::Save(
+        maskImage,
+        nrrd.toStdString()
+    );
+
+    // Update DataManager
+    this->GetDataManager()->AddDataToSubject(
+        uid, nifti, "Mask"
+    );
+
+    return this->GetDataManager()->AddDataToSubject(
+        uid, nrrd, "Mask"
+    );
 }

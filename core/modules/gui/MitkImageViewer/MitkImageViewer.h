@@ -40,7 +40,7 @@ public slots:
 	// Reference is an nrrd image that shows which labels to use
 	void ConvertToNrrdAndSave(long iid, long referenceIid = -1, bool updateDataManager = true);
 
-	long CreateEmptyMask(long referenceIid);
+    //long CreateEmptyMask(long referenceIid);
 
 signals:
 	void MitkLoadedNewMask(mitk::DataNode::Pointer dataNode);

@@ -38,6 +38,7 @@ public slots:
 	void OnCreateNewLabel();
 	void OnConfirmSegmentation();
 	void OnManualTool2DSelected(int);
+    long CreateEmptyMask(long referenceIid);
 	// void OnDisableSegmentation();
 
 signals:
@@ -46,6 +47,8 @@ signals:
 
 private:
 	// void CreateNewSegmentation();
+
+    void RemoveExistingToolGui();
 
 	bool m_WaitingOnLabelsImageCreation = false;
 	bool m_MaskLoadedForThisSubject     = false;
