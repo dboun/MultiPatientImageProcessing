@@ -450,16 +450,16 @@ void MitkImageViewer::ConvertToNrrdAndSave(long iid, long referenceIid, bool upd
 {
 	qDebug() << "MitkImageViewer::ConvertToNrrdAndSave" << iid << referenceIid;
 
+	// Reference image info
+	QString referencePath = this->GetDataManager()->GetDataPath(referenceIid);
+
 	// Image info
 	QString imageSpecialRole = this->GetDataManager()->GetDataSpecialRole(iid);
 	QString imagePath = this->GetDataManager()->GetDataPath(iid);
 	long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
 
-	// Reference image info
-	QString referencePath = this->GetDataManager()->GetDataPath(referenceIid);
-
 	// Load the two images
-	mitk::Image::Pointer referenceImage = mitk::IOUtil::Load<mitk::Image>(
+	mitk::LabelSetImage::Pointer referenceImage = mitk::IOUtil::Load<mitk::LabelSetImage>(
 		referencePath.toStdString()
 	);
 	mitk::Image::Pointer image = mitk::IOUtil::Load<mitk::Image>(
@@ -469,19 +469,31 @@ void MitkImageViewer::ConvertToNrrdAndSave(long iid, long referenceIid, bool upd
 	// The output image
 	mitk::LabelSetImage::Pointer outputImage = mitk::LabelSetImage::New();
 	
-	// Copy the data from image
-	qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Initializing by labeled image";
+	// Copy the data from input image
 	outputImage->InitializeByLabeledImage(image);
 	
+	// Copy the labels from reference image
+	mitk::LabelSet::Pointer referenceLabelSet =	referenceImage->GetActiveLabelSet();
+	mitk::LabelSet::Pointer outputLabelSet    =	outputImage->GetActiveLabelSet();
 
-	// // Copy metadata from reference
-	// outputImage->Initialize(referenceImage);
+	mitk::LabelSet::LabelContainerConstIteratorType itR;
+	mitk::LabelSet::LabelContainerConstIteratorType it;
 	
-	//outputImage->Initialize(image);
-	//qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Copying data";
-	// outputImage->SetVolume(image->GetVolumeData());
-	// outputImage->Concatenate(image);
-	//qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Copying data finished";
+	for (itR =  referenceLabelSet->IteratorConstBegin();
+			 itR != referenceLabelSet->IteratorConstEnd(); 
+			 ++itR) 
+	{
+		for (it = outputLabelSet->IteratorConstBegin(); 
+				 it != outputLabelSet->IteratorConstEnd();
+				 ++it)
+		{
+			if (itR->second->GetValue() == it->second->GetValue())
+			{
+				it->second->SetColor(itR->second->GetColor());
+				it->second->SetName(itR->second->GetName());
+			}
+		}
+	}
 	
 	// Where to save the new image
 	QString directoryName = this->GetDataManager()->GetSubjectPath(uid) 
@@ -518,7 +530,7 @@ void MitkImageViewer::AddToDataStorage(long iid)
 	QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
 	QString dataPath    = this->GetDataManager()->GetDataPath(iid);
 
-	if ((specialRole == "Mask" /*|| specialRole == "Segmentation"*/) &&
+	if ((specialRole == "Mask" || specialRole == "Segmentation") &&
 		!dataPath.endsWith(".nrrd", Qt::CaseSensitive)
 	) {
 		return;
