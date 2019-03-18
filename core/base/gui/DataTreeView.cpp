@@ -227,6 +227,11 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 {
 	qDebug() << QString("Clicked tree item.");
 
+    if(item->checkState(column) == Qt::CheckState::Checked)
+        item->setSelected(true);
+    else     if(item->checkState(column) == Qt::CheckState::Unchecked)
+        item->setSelected(false);
+
 	if (!m_TreeWidget->currentItem())
 	{
 		item->setSelected(true);
