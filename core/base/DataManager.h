@@ -83,12 +83,12 @@ public slots:
 	@param subjectName deduced from the path if not provided 
 	@return the uid of the subject. -1 if adding failed
 	*/
-	long AddSubject(QString subjectPath, QString subjectName = QString());
+	virtual long AddSubject(QString subjectPath, QString subjectName = QString());
 
 	/** Remove a subject(and its data)
 	@param uid the unique id of the subject
 	*/
-	void RemoveSubject(long uid);
+	virtual void RemoveSubject(long uid);
 
 	/** Add data to subject
 	@param uid the subject's id. Use AddSubject for new subject
@@ -98,14 +98,14 @@ public slots:
 	@param name deduced from the path if not provided
 	@return the image's id. -1 if adding failed
 	*/
-	long AddDataToSubject(long uid, QString path, QString specialRole = QString(), 
-		QString type = QString(), QString name = QString());
+	virtual long AddDataToSubject(long uid, QString path = QString(), 
+		QString specialRole = QString(), QString type = QString(), QString name = QString());
 
 	/** Remove image
 	@param iid the data's id.
 	@param silent will not emit a DataAboutToGetRemoved(long) to avoid infinite loops
 	*/
-	void RemoveData(long iid, bool silent = false);
+	virtual void RemoveData(long iid, bool silent = false);
 
 signals:
 	void SubjectAdded(long uid);
@@ -118,8 +118,6 @@ protected:
 	std::map<long, Subject> m_Subjects; 
 	std::map<long, Data>    m_Data;
 	QStringList             m_SpecialRoles;
-	
-private:
 
 	template<class T, class U>
 	std::vector<T> IdsOfMap(std::map<T, U>& map)
@@ -134,6 +132,7 @@ private:
 
 	void FindAllFilesRecursively(QString directoryPath, QStringList& allFiles);
 
+private:
 	long uidNextToGive = 0;
 	long iidNextToGive = 0;
 	std::mutex  m_Mutex;
