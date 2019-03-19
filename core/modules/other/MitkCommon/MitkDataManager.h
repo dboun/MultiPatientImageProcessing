@@ -26,12 +26,10 @@ public:
 
 	typedef struct : Subject {
         bool isLoaded = false;
-		mitk::DataNode::Pointer subjectNode;
 	} MitkSubject;
 
     bool IsSubjectLoadedInStorage(long uid);
 
-    mitk::DataNode::Pointer GetMitkSubjectNode(long uid);
     mitk::DataNode::Pointer GetMitkDataNode(long iid);
 
     // Creates nodes for this subject
