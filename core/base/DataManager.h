@@ -98,8 +98,9 @@ public slots:
 	@param name deduced from the path if not provided
 	@return the image's id. -1 if adding failed
 	*/
-	virtual long AddDataToSubject(long uid, QString path = QString(), 
-		QString specialRole = QString(), QString type = QString(), QString name = QString());
+	virtual long AddDataToSubject(long uid, QString path, QString specialRole = QString(), 
+		QString type = QString(), QString name = QString()
+	);
 
 	/** Remove image
 	@param iid the data's id.
