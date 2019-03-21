@@ -48,38 +48,57 @@ QMenu::item:hover
 }
 
 /*------------------ QPushButton --------------------------*/
-QPushButton
-{
+QPushButton {
     border: 1px solid gray;
     border-radius: 3px;
-	min-width: 4em;
-	min-height: 2em;
+    padding: 3px;
 }
 
-QPushButton:hover
-{
+/* 
+    min-width: 2em;
+	min-height: 1em;    
+    min-width: 4em;
+	min-height: 2em;
+*/
+
+QPushButton:hover {
     background-color: #646464;
 }
-QPushButton:pressed{
-    
+QPushButton:pressed {
     background-color: #5285A6;
 }
 
 RunPushButton { 
-    font:21px; 
-    height:20px;
-    width:150px;
-    color:black; 
-    background-color:rgb(255,61,0); 
-    border-style: solid; 
-    border-color: #9f0000; 
-    border-width: 1px; 
-    border-radius: 5px; 
-    padding: 3px;
+    font-size:18px; 
+    color: white;
+    border-color: #a5d6a7;
+    background-color:#2E7d32; 
+    padding: 5px;
 }
 
+ActionPushButton {
+    font-size:17px; 
+    border-color: #172d44; 
+    background-color: #0d1a26; 
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+/*    
+    border-color: #9f0000;  
+    border-style: solid; 
+    border-width: 1px; 
+    border-radius: 5px;
+    min-width:8em;
+    min-height:4em;
+    padding: 3px;
+*/
+
 /*-------------------- QTreeWidget ------------------------*/
-QTreeWidget {
+/*QTreeWidget {
+    color: white;
     background-color:rgb(50,50,50);
     border:1px solid rgb(255,61,0);
     border-radius:2px
@@ -92,11 +111,29 @@ QHeaderView::section {
     border: 0px solid #000000;
     border-bottom:1px;
     background: #9f0000;
-}
+}*/
 
 /*----------------------- QSlider -------------------------*/
 
-QSlider::groove:horizontal{
+QSlider {
+
+}
+
+/*
+    width:250px;
+    margin-left: 12px;
+    margin-right: 12px;
+*/
+
+QSlider::handle:horizontal{
+    width: 12px;
+}
+
+QSlider::groove:horizontal {
+    width:200px;
+}
+
+/*QSlider::groove:horizontal{
     border: 1px solid #9f0000;
     height: 4px;
     border-radius: 4px;
@@ -108,7 +145,7 @@ QSlider::handle:horizontal{
     width: 10px; 
     margin: -12px 0px; 
     background-color:#0d47a1
-}
+}*/
 
 /*----------------------- QSpinBox ------------------------*/
 QSpinBox {

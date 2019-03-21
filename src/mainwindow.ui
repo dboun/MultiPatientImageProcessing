@@ -23,17 +23,57 @@
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
      <widget class="QWidget" name="leftPanel" native="true">
-      <property name="maximumSize">
+      <property name="minimumSize">
        <size>
         <width>300</width>
-        <height>16777215</height>
+        <height>0</height>
        </size>
       </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
       <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
+       <property name="spacing">
+        <number>15</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item alignment="Qt::AlignHCenter">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Opacity</string>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter">
         <widget class="QSlider" name="opacitySlider">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="cursor">
           <cursorShape>ArrowCursor</cursorShape>
+         </property>
+         <property name="accessibleName">
+          <string/>
          </property>
          <property name="styleSheet">
           <string notr="true"/>
@@ -50,18 +90,18 @@
         </widget>
        </item>
        <item>
-        <widget class="QWidget" name="dataViewContainer" native="true"/>
-       </item>
-       <item alignment="Qt::AlignHCenter">
-        <widget class="RunPushButton" name="pushButtonRun">
+        <widget class="QWidget" name="dataViewContainer" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
          <property name="styleSheet">
           <string notr="true"/>
-         </property>
-         <property name="text">
-          <string>       Run      &gt;</string>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -76,9 +116,7 @@
       <widget class="QWidget" name="page">
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QWidget" name="viewerContainer" native="true">
-          <layout class="QHBoxLayout" name="horizontalLayout_2"/>
-         </widget>
+         <widget class="QWidget" name="viewerContainer" native="true"/>
         </item>
        </layout>
       </widget>
@@ -101,7 +139,18 @@
         <height>16777215</height>
        </size>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_3"/>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QWidget" name="drawingToolContainer" native="true"/>
+       </item>
+       <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+        <widget class="RunPushButton" name="pushButtonRun">
+         <property name="text">
+          <string>       Run        &gt;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
@@ -115,7 +164,7 @@
      <x>0</x>
      <y>0</y>
      <width>986</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="styleSheet">

@@ -14,13 +14,10 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QPushButton" name="newLabelPushBtn">
+   <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+    <widget class="ActionPushButton" name="newLabelPushBtn">
      <property name="styleSheet">
-      <string notr="true">QPushButton { font:21px; height:30px;width:150px;color:black; background-color:rgb(50,130,150); border-style: solid; border-color: #9f0000; border-width: 1px; border-radius: 5px; padding: 3px;}
-QPushButton:checked{ background-color: black; border-style: outset; border-style: solid; border-color: black; border-width: 1px; border-radius: 5px;}
-QPushButton:hover{ background-color: rgb(0,120,197);border-style: outset; border-style: solid; border-color: black; border-width: 1px; border-radius: 5px;}
-QPushButton:pressed{ background-color: rgb(0,120,150);border-style: outset; border-style: solid; border-color: black; border-width: 1px; border-radius: 5px;}                 </string>
+      <string notr="true"/>
      </property>
      <property name="text">
       <string>Add New Label</string>
@@ -83,6 +80,11 @@ QPushButton:pressed{ background-color: rgb(0,100,0);border-style: outset; border
    <extends>QWidget</extends>
    <header location="global">Qmitk/QmitkLabelSetWidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ActionPushButton</class>
+   <extends>QPushButton</extends>
+   <header>ActionPushButton.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

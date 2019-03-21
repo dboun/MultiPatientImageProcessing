@@ -54,7 +54,8 @@ void DataTreeView::SubjectAddedHandler(long uid)
 	label->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
 	QWidget *labelAndProgress = new QWidget();
-	labelAndProgress->setAutoFillBackground(true);
+	//labelAndProgress->setAutoFillBackground(true);
+	labelAndProgress->setStyleSheet("background-color: none;");
 	labelAndProgress->setMaximumHeight(35);
 	QHBoxLayout *hLayout = new QHBoxLayout();
 	hLayout->addWidget(label, Qt::AlignLeft);

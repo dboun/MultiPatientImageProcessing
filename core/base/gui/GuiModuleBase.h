@@ -19,10 +19,11 @@ public:
   void SetAppName(QString appName);
   void SetAppNameShort(QString appNameShort);
   
+  static void PlaceWidgetInWidget(QWidget* top, QWidget* bottom);
+
 protected:
   DataManager* GetDataManager();
   
-  static void PlaceWidgetInWidget(QWidget* top, QWidget* bottom);
 
   DataManager* m_DataManager;
   QString      m_AppName = "Multi-Patient Image Processing";

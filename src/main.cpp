@@ -18,15 +18,9 @@ int main(int argc, char *argv[])
 
 	QApplication a(argc, argv);
 	MainWindow w;
-	
-	// // For darker color
-	// QPalette pal = QPalette();
-	// pal.setColor(QPalette::Background, QColor(33, 33, 33));
-	// w.setAutoFillBackground(true);
-	// w.setPalette(pal);
-    
 	w.show();
 
+	// For global application theme
 	QFile File(":dark.qss");
     if (File.open(QFile::ReadOnly))
     {

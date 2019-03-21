@@ -37,11 +37,10 @@ MainWindow::MainWindow(QWidget *parent) :
   this->setWindowTitle( m_AppName );
 
   // Initialize DataView
-  m_DataView = new DataTreeView(ui->dataViewContainer);
+  m_DataView = new DataTreeView(this);
   m_DataView->AcceptOnlyNrrdMaskAndSegmentations(true);
-  m_DataView->setMinimumWidth(350);
-  QHBoxLayout *layoutDataViewer = new QHBoxLayout(ui->dataViewContainer);
-  layoutDataViewer->addWidget(m_DataView);
+  //m_DataView->setMinimumWidth(400);
+  GuiModuleBase::PlaceWidgetInWidget(m_DataView, ui->dataViewContainer);
   m_DataView->SetDataManager(m_DataManager);
   m_DataView->SetAppName(m_AppName);
   m_DataView->SetAppNameShort(m_AppNameShort);
@@ -56,7 +55,8 @@ MainWindow::MainWindow(QWidget *parent) :
   m_ImageViewer = new ImageViewerBase(ui->viewerContainer);
 #endif
 
-  ui->viewerContainer->layout()->addWidget(m_ImageViewer);
+  //ui->viewerContainer->layout()->addWidget(m_ImageViewer);
+  GuiModuleBase::PlaceWidgetInWidget(m_ImageViewer, ui->viewerContainer);
   m_ImageViewer->SetDataManager(m_DataManager);
   m_ImageViewer->SetDataView(m_DataView);
   m_ImageViewer->SetOpacitySlider(ui->opacitySlider);
@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
   // Initialize MitkDrawingTool
 #ifdef BUILD_MODULE_MitkDrawingTool
   m_MitkDrawingTool = new MitkDrawingTool(
-    qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), this
+    qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), ui->drawingToolContainer
   );
 
   m_MitkDrawingTool->SetMitkImageViewer(
@@ -76,7 +76,8 @@ MainWindow::MainWindow(QWidget *parent) :
   m_MitkDrawingTool->SetDataManager(m_DataManager);
   m_MitkDrawingTool->SetAppName(m_AppName);
   m_MitkDrawingTool->SetAppNameShort(m_AppNameShort);
-  this->ui->rightPanel->layout()->addWidget(this->m_MitkDrawingTool);
+  //this->ui->rightPanel->layout()->addWidget(this->m_MitkDrawingTool);
+  GuiModuleBase::PlaceWidgetInWidget(m_MitkDrawingTool, ui->drawingToolContainer);
   //this->m_SegmentationPanel->hide();
 #endif
 
