@@ -54,7 +54,7 @@ void MitkImageViewer::OpacitySliderHandler(int value)
   mitk::DataNode* node = m_DataStorage->GetNamedNode(
 	  QString::number(iid).toStdString().c_str()
   );
-  node->SetProperty("layer", mitk::IntProperty::New(1));
+  //node->SetProperty("layer", mitk::IntProperty::New(1));
   node->SetProperty("opacity", mitk::FloatProperty::New(value/100.0));
   //node->GetData()->Modified();
 
@@ -191,17 +191,33 @@ void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 	if (checkState)
 	{
 		//dataNode->SetVisibility(true);
-        dataNode->SetProperty("layer", mitk::IntProperty::New(2));
-        dataNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
+
+		QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
+		if (specialRole == "Segmentation")
+		{
+			dataNode->SetProperty("layer", mitk::IntProperty::New(3));
+		}
+		else if (specialRole == "Mask")
+		{
+			dataNode->SetProperty("layer", mitk::IntProperty::New(4));
+		}
+		else {
+			dataNode->SetProperty("layer", mitk::IntProperty::New(2));
+		}
+
+		dataNode->SetProperty("opacity", mitk::FloatProperty::New(1.0));
 	}
 	else {
 		//dataNode->SetVisibility(false);
-        dataNode->SetProperty("layer", mitk::IntProperty::New(1));
-        dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
+		dataNode->SetProperty("layer", mitk::IntProperty::New(1));
+		dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
 	}
 
-    dataNode->SetVisibility(checkState);
-	m_MitkWidget->ResetCrosshair();
+  dataNode->SetVisibility(checkState);
+	if (checkState)
+	{
+		m_MitkWidget->ResetCrosshair();
+	}
 	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 	//mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
 
@@ -557,5 +573,11 @@ void MitkImageViewer::AddToDataStorage(long iid)
 //		dataNode->SetProperty("layer", mitk::IntProperty::New(48));
 
 		emit MitkLoadedNewMask(dataNode);
+	}
+
+	if (specialRole == QString("Segmentation"))
+	{
+		auto labelSetImage = dynamic_cast<mitk::LabelSetImage*>(dataNode->GetData());
+		labelSetImage->GetActiveLabelSet()->SetActiveLabel(0);
 	}
 }
