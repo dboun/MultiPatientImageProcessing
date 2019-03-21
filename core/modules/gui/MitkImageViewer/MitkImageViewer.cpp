@@ -216,8 +216,10 @@ void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
   dataNode->SetVisibility(checkState);
 	if (checkState)
 	{
-		m_MitkWidget->ResetCrosshair();
+		//m_MitkWidget->ResetCrosshair();
 	}
+
+	dataNode->GetData()->Modified();
 	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 	//mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
 
