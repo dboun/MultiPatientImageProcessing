@@ -12,4 +12,4 @@ include( core/cmake/master.cmake )
 add_subdirectory( src )
 
 # Installer
-include( cpack.cmake )
+#include( cpack.cmake )

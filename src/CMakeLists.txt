@@ -4,12 +4,15 @@ find_package( Qt5 COMPONENTS Core Gui Widgets REQUIRED )
 include( cmake/files.cmake )
 
 set( CMAKE_AUTOMOC ON )
+set( CMAKE_AUTOUIC ON )
+set( CMAKE_AUTORCC ON )
 
 qt5_wrap_ui( UI_Srcs ${UI_FILES} )
 
 # Create the executable
 add_executable( ${PROJECT_NAME} 
   ${CPP_FILES} ${H_FILES} ${UI_FILES} ${MOC_H_FILES} 
+  ${RESOURCE_FILE}
 )
 
 qt5_use_modules( ${PROJECT_NAME} Core Gui Widgets )

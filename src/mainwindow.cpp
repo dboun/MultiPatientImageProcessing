@@ -84,7 +84,6 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->actionAdd_image_for_selected_subject->setVisible(false);
   ui->actionAdd_image_for_new_subject->setVisible(false);
   ui->actionAdd_multiple_subjects->setVisible(false);
-  ui->pushButtonConfigure->setVisible(false);
 
   // Turn on drag and drop
   setAcceptDrops(true); 
@@ -108,9 +107,6 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(ui->actionOpen_single_subject, SIGNAL(triggered()), 
     this, SLOT(OnOpenSingleSubject())
   );
-  //connect(ui->pushButtonConfigure, SIGNAL(released()), 
-  //  this, SLOT(HandleConfigButton())
-  //);
   connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)),
     this, SLOT(SelectedSubjectChangedHandler(long))
   );

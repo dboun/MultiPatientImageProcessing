@@ -16,6 +16,7 @@ target_include_directories( MpipBase PUBLIC
   ${PROJECT_SOURCE_DIR}
   ${PROJECT_SOURCE_DIR}/algorithm
   ${PROJECT_SOURCE_DIR}/gui
+  ${PROJECT_SOURCE_DIR}/gui/basic_elements
   ${PROJECT_SOURCE_DIR}/other
 )
 

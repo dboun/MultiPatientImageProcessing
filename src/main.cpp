@@ -1,7 +1,7 @@
 #include "mainwindow.h"
-//#include <QSurfaceFormat>
 
 #include <QApplication>
+#include <QFile>
 #include <QColor>
 
 #ifdef BUILD_MODULE_MitkImageViewer
@@ -19,13 +19,20 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 	MainWindow w;
 	
-	// For darker color
-	QPalette pal = QPalette();
-	pal.setColor(QPalette::Background, QColor(33, 33, 33));
-	w.setAutoFillBackground(true);
-	w.setPalette(pal);
+	// // For darker color
+	// QPalette pal = QPalette();
+	// pal.setColor(QPalette::Background, QColor(33, 33, 33));
+	// w.setAutoFillBackground(true);
+	// w.setPalette(pal);
     
 	w.show();
+
+	QFile File(":dark.qss");
+    if (File.open(QFile::ReadOnly))
+    {
+        QString StyleSheet = QLatin1String(File.readAll());
+        a.setStyleSheet(StyleSheet);
+	}
 
 	return a.exec();
 }

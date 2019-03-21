@@ -14,18 +14,6 @@ DataTreeView::DataTreeView(QWidget *parent) : DataViewBase(parent)
 	// Set the QTreeWidget
 	m_TreeWidget = new QTreeWidget(this);
 	GuiModuleBase::PlaceWidgetInWidget(m_TreeWidget, this);
-	
-	m_TreeWidget->setStyleSheet("QTreeWidget {background-color:rgb(97,97,97);border:1px solid rgb(255,61,0);border-radius:2px}"
-		"QHeaderView::section {"                          
-		    "color: black;"                            
-		    "background-color:#000000;"
-		    "padding: 4px;"                              
-		    "height:20px;"                              
-		    "border: 0px solid #000000;"                  
-		    "border-bottom:1px;"                                            
-		    "background: #9f0000;"
-		"}"
-	);
 
 	// TreeWidget columns
 	QStringList columnNames = QStringList() << "  Select subjects";
@@ -60,25 +48,12 @@ void DataTreeView::SubjectAddedHandler(long uid)
 	progressBar->setMinimumWidth(30);
 	progressBar->setMaximumWidth(40);
 	progressBar->setMaximumHeight(20);
-	progressBar->setStyleSheet("QProgressBar {"
-		"background-color: #4f4f4f;"
-		"color: #9a9a9a;"
-		"border-style: outset;"
-		"border-width: 2px;"
-		"border-color: #323232;"
-		"border-radius: 4px;"
-		"text-align: center; }"
-
-		"QProgressBar::chunk {"
-		"background-color: #F5F5F5; }"
-	);
 
 	QLabel *label = new QLabel(m_DataManager->GetSubjectName(uid));
 	label->setMaximumHeight(20);
 	label->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
 	QWidget *labelAndProgress = new QWidget();
-	labelAndProgress->setStyleSheet("background-color: rgba(0,0,0,0)");
 	labelAndProgress->setAutoFillBackground(true);
 	labelAndProgress->setMaximumHeight(35);
 	QHBoxLayout *hLayout = new QHBoxLayout();

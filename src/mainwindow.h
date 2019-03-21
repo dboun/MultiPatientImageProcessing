@@ -37,7 +37,6 @@ public:
 
 public slots:
   void OnOpenSingleSubject();
-  //void HandleConfigButton(); 
   void OnRunPressed();
   
   // Slots for Scheduler
