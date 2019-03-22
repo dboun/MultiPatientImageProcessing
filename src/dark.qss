@@ -96,6 +96,13 @@ ActionPushButton {
     padding: 3px;
 */
 
+/*-------------------- QLabel ------------------------*/
+InfoLabel {
+    border: 1px solid gray;
+    border-radius: 3px;
+    padding: 7px;
+}
+
 /*-------------------- QTreeWidget ------------------------*/
 /*QTreeWidget {
     color: white;

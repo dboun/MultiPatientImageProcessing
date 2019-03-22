@@ -22,7 +22,19 @@ MitkDrawingTool::MitkDrawingTool(mitk::DataStorage *datastorage, QWidget *parent
 {
     ui->setupUi(this);
 
+    ui->infoLabel->setText(
+      QString("<b>1.</b> Create Mask.<br>") +
+      QString("<b>2.</b> Draw with at least two colors.<br>") +
+      QString("<b>3.</b> Click run and wait.<br>") +
+      QString("<b>4.</b> If the output segmentation") +
+      QString(" contains mistakes,") +
+      QString(" draw over them on the mask") +
+      QString(" with the correct color") +
+      QString(" and run again.")
+    );
+
     ui->newLabelPushBtn->hide();
+    ui->labelSetWidget->hide();
     ui->createMaskPushBtn->show();
 
     this->m_ToolManager = mitk::ToolManagerProvider::GetInstance()->GetToolManager();
@@ -33,6 +45,7 @@ MitkDrawingTool::MitkDrawingTool(mitk::DataStorage *datastorage, QWidget *parent
 
     ui->labelSetWidget->SetDataStorage(m_DataStorage);
     ui->labelSetWidget->SetOrganColors(mitk::OrganNamesHandling::GetDefaultOrganColorString());
+    ui->labelSetWidget->findChild<ctkSearchBox*>("m_LabelSearchBox")->hide();
     //ui->labelSetWidget->hide();
 
     ui->toolSelectionBox->SetToolManager(*m_ToolManager);
@@ -94,6 +107,7 @@ void MitkDrawingTool::OnDataAboutToGetRemoved(long iid)
   if (loadedMaskIid == iid)
   {
     ui->newLabelPushBtn->hide();
+    ui->labelSetWidget->hide();
     ui->createMaskPushBtn->show();
 
     emit MitkDrawingToolSaveImageToFile(loadedMaskIid, false);
@@ -124,6 +138,7 @@ void MitkDrawingTool::OnDataAboutToGetRemoved(long iid)
 void MitkDrawingTool::OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode)
 {
   ui->newLabelPushBtn->show();
+  ui->labelSetWidget->show();
   ui->createMaskPushBtn->hide();
 
   qDebug() << "MitkDrawingTool::OnMitkLoadedNewMask";
