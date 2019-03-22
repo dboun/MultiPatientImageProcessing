@@ -116,6 +116,7 @@ void MitkImageViewer::DataRemovedFromSelectedSubjectHandler(long iid)
 	m_DataStorage->Remove(
 		m_DataStorage->GetNamedNode(QString::number(iid).toStdString().c_str())
 	);
+	m_MitkWidget->RequestUpdate();
 }
 
 void MitkImageViewer::SelectedDataChangedHandler(long iid)

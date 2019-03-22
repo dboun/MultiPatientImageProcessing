@@ -104,6 +104,31 @@ InfoLabel {
 }
 
 /*-------------------- QTreeWidget ------------------------*/
+QTreeWidget::item:selected {
+    background-color: rgb(13,26,38);
+    background: rgb(13,26,38);
+}
+QTreeWidget::item{ 
+    selection-background-color: red
+}
+/*QTreeWidget::item:selected:!active {
+  	background: transparent;
+}
+QTreeWidget::item:selected:active {
+ 	background: transparent;
+}
+QTreeWidget::item:hover {
+    border: 1px solid #0d1a26;
+}*/
+QTreeWidget::branch::has-children:selected {
+    background-color: rgb(13,26,38);
+}
+QTreeWidget::branch::!has-children:selected {
+    background-color: rgb(13,26,38);
+}
+
+/*background: transparent;*/
+
 /*QTreeWidget {
     color: white;
     background-color:rgb(50,50,50);
