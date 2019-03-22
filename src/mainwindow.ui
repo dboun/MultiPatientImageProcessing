@@ -145,6 +145,18 @@
        </item>
        <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
         <widget class="RunPushButton" name="pushButtonRun">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>220</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>       Run        &gt;</string>
          </property>

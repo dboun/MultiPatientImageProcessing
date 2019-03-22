@@ -36,6 +36,7 @@ public slots:
 
 	// Internal slots
 	void OnCreateNewLabel();
+	void OnCreateNewMask();
 	void OnConfirmSegmentation();
 	void OnManualTool2DSelected(int);
     long CreateEmptyMask(long referenceIid);

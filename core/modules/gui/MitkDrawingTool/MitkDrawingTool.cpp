@@ -22,6 +22,9 @@ MitkDrawingTool::MitkDrawingTool(mitk::DataStorage *datastorage, QWidget *parent
 {
     ui->setupUi(this);
 
+    ui->newLabelPushBtn->hide();
+    ui->createMaskPushBtn->show();
+
     this->m_ToolManager = mitk::ToolManagerProvider::GetInstance()->GetToolManager();
     assert(m_ToolManager);
 
@@ -40,6 +43,7 @@ MitkDrawingTool::MitkDrawingTool(mitk::DataStorage *datastorage, QWidget *parent
     ui->toolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::AlwaysEnabled);
 
     connect(ui->newLabelPushBtn, SIGNAL(clicked()), this, SLOT(OnCreateNewLabel()));
+    connect(ui->createMaskPushBtn, SIGNAL(clicked()), this, SLOT(OnCreateNewMask()));
     connect(ui->ConfirmSegBtn, SIGNAL(clicked()), this, SLOT(OnConfirmSegmentation()));
     connect(ui->toolSelectionBox, SIGNAL(ToolSelected(int)), this, SLOT(OnManualTool2DSelected(int)));
     
@@ -89,6 +93,9 @@ void MitkDrawingTool::OnDataAboutToGetRemoved(long iid)
 
   if (loadedMaskIid == iid)
   {
+    ui->newLabelPushBtn->hide();
+    ui->createMaskPushBtn->show();
+
     emit MitkDrawingToolSaveImageToFile(loadedMaskIid, false);
 
     m_MaskLoadedForThisSubject = false;
@@ -116,6 +123,9 @@ void MitkDrawingTool::OnDataAboutToGetRemoved(long iid)
 
 void MitkDrawingTool::OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode)
 {
+  ui->newLabelPushBtn->show();
+  ui->createMaskPushBtn->hide();
+
   qDebug() << "MitkDrawingTool::OnMitkLoadedNewMask";
   m_MaskLoadedForThisSubject = true;
 
@@ -257,32 +267,6 @@ void MitkDrawingTool::OnCreateNewLabel()
 {
   if (!m_MaskLoadedForThisSubject)
   {
-    qDebug() << "MitkDrawingTool::OnCreateNewLabel: No mask";
-    
-    // Find the first node, if there is one
-    long referenceIid = -1;
-    mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) 
-    {  
-      QString nodeName = QString(it.Value()->GetName().c_str());
-      if (QRegExp("\\d*").exactMatch(nodeName)) { // a digit (\d), zero or more times (*)
-        referenceIid = nodeName.toLong();
-        break;
-      }
-    }
-    
-    if (referenceIid != -1)
-    {
-      m_WaitingOnLabelsImageCreation = true;
-      //emit MitkDrawingToolCreateEmptyMask(referenceIid);
-      this->CreateEmptyMask(referenceIid);
-    }
-    else {
-      QMessageBox::information(this, 
-        "Drawing Tool", 
-        "Please load a subject before starting some action."
-      );
-    }
     return;
   }
 
@@ -328,6 +312,35 @@ void MitkDrawingTool::OnCreateNewLabel()
   ui->labelSetWidget->ResetAllTableWidgetItems();
 
   mitk::RenderingManager::GetInstance()->InitializeViews(workingNode->GetData()->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true);
+}
+
+void MitkDrawingTool::OnCreateNewMask()
+{
+    // Find the first node, if there is one
+    long referenceIid = -1;
+    mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) 
+    {  
+      QString nodeName = QString(it.Value()->GetName().c_str());
+      if (QRegExp("\\d*").exactMatch(nodeName)) { // a digit (\d), zero or more times (*)
+        referenceIid = nodeName.toLong();
+        break;
+      }
+    }
+    
+    if (referenceIid != -1)
+    {
+      ui->createMaskPushBtn->hide();
+      //m_WaitingOnLabelsImageCreation = true;
+      emit MitkDrawingToolCreateEmptyMask(referenceIid);
+      this->CreateEmptyMask(referenceIid);
+    }
+    else {
+      QMessageBox::information(this, 
+        "Drawing Tool", 
+        "Please load a subject before starting some action."
+      );
+    }
 }
 
 void MitkDrawingTool::OnConfirmSegmentation()
@@ -509,4 +522,6 @@ long MitkDrawingTool::CreateEmptyMask(long referenceIid)
     return this->GetDataManager()->AddDataToSubject(
         uid, nrrd, "Mask"
     );
+
+    ui->newLabelPushBtn->show();
 }

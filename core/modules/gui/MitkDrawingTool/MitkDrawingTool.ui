@@ -14,13 +14,20 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+   <item alignment="Qt::AlignLeft|Qt::AlignVCenter">
     <widget class="ActionPushButton" name="newLabelPushBtn">
      <property name="styleSheet">
       <string notr="true"/>
      </property>
      <property name="text">
       <string>Add New Label</string>
+     </property>
+    </widget>
+   </item>
+   <item alignment="Qt::AlignLeft|Qt::AlignVCenter">
+    <widget class="ActionPushButton" name="createMaskPushBtn">
+     <property name="text">
+      <string>Create mask</string>
      </property>
     </widget>
    </item>
