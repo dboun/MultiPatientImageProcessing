@@ -22,6 +22,15 @@ QStringList DataManager::GetAcceptedFileTypes()
 	return m_AcceptedFileTypes;
 }
 
+std::mutex* DataManager::GetSubjectEditMutexPointer(long uid)
+{
+	if (m_SubjectEditMutex.find(uid) != m_SubjectEditMutex.end())
+	{
+		return m_SubjectEditMutex[uid].get();
+	}
+	return nullptr;
+}
+
 std::vector<long> DataManager::GetAllSubjectIds()
 {
 	return IdsOfMap<long,Subject>(m_Subjects); 
@@ -179,6 +188,8 @@ long DataManager::AddSubject(QString subjectPath, QString subjectName)
 	}
 
 	long uid = uidNextToGive++;
+
+	m_SubjectEditMutex[uid] = std::unique_ptr<std::mutex>( new std::mutex());
 	
 	ul.unlock();
 	qDebug() << "Emit DataManager::SubjectAdded()";
@@ -203,6 +214,7 @@ void DataManager::RemoveSubject(long uid)
 	}
 
 	m_Subjects.erase(uid);
+	m_SubjectEditMutex.erase(uid);
 
 	ul.unlock();
 	emit SubjectRemoved(uid);

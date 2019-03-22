@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <string>
+#include <mutex>
 
 #include "GeodesicTrainingQt.h"
 
@@ -29,6 +30,7 @@ void GeodesicTrainingModule::Algorithm()
     if (m_Uid == -1)
     {
         // Other checks also happen in AlgorithmModuleBase::Run()
+        emit ProgressUpdateUI(m_Uid, "Error", -1);
         emit AlgorithmFinishedWithError(this, "No subject selected");
         return;
     }
@@ -61,11 +63,13 @@ void GeodesicTrainingModule::Algorithm()
 
 	if (numberOfMasks == 0)
 	{
+        emit ProgressUpdateUI(m_Uid, "Error", -1);
 		emit AlgorithmFinishedWithError(this, "No mask drawn");
 		return;
 	}
 	if (numberOfMasks > 1)
 	{
+        emit ProgressUpdateUI(m_Uid, "Error", -1);
         emit AlgorithmFinishedWithError(this, "Multiple masks. " +
             QString("Please remove all but one masks ") +
             QString("Right click & Remove won't delete an image from the disk).")
@@ -74,6 +78,7 @@ void GeodesicTrainingModule::Algorithm()
 	}
 	if (numberOfImages == 0)
 	{
+        emit ProgressUpdateUI(m_Uid, "Error", -1);
         emit AlgorithmFinishedWithError(this, "No images. Please load some images.");
 		return;
 	}
@@ -92,13 +97,23 @@ void GeodesicTrainingModule::Algorithm()
     qDebug() << "GeodesicTraining will use " << m_IdealNumberOfThreads << " threads";
     qDebug() << "GeodesicTraining will use mask " << mask.c_str();
 
-    geodesicTraining->SetInputImages(images);
-    geodesicTraining->SetLabels(mask);
+
+    std::unique_lock<std::mutex> ul(*this->GetDataManager()->GetSubjectEditMutexPointer(m_Uid));
+    std::vector<typename itk::Image<float, 3>::Pointer> inputImagesITK;
+    for (const std::string& image : images)
+    {
+        inputImagesITK.push_back(cbica::ReadImage<itk::Image<float, 3>>(image));
+    }
+
+    geodesicTraining->SetInputImages(inputImagesITK);
+    geodesicTraining->SetLabels(cbica::ReadImage<itk::Image<int, 3>>(mask));
     geodesicTraining->SetOutputPath(outputPath.toStdString());
     geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
     geodesicTraining->SaveOnlyNormalSegmentation(true, "segmentation");
     geodesicTraining->SetVerbose(true);
     //geodesicTraining->SetTimerEnabled(true);
+
+    ul.unlock();
     auto result = geodesicTraining->Execute();
 
     if (result->ok)
@@ -109,6 +124,7 @@ void GeodesicTrainingModule::Algorithm()
     }
     else {
         qDebug() << "GeodesicTraining finished with internal error";
+        emit ProgressUpdateUI(m_Uid, "Error", -1);
         emit AlgorithmFinishedWithError(this, result->errorMessage.c_str());
     }
 

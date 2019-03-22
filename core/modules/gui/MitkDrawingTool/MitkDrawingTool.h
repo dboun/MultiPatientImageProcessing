@@ -2,6 +2,8 @@
 #define MITK_DRAWING_TOOL_H
 
 #include <QString>
+#include <QProgressDialog>
+#include <QFutureWatcher>
 
 #include <mitkToolManagerProvider.h>
 #include <mitkStandaloneDataStorage.h>
@@ -27,6 +29,8 @@ public:
 
 	void SetDataManager(DataManager* dataManager) override;
 
+	void SetDataView(DataViewBase* dataViewBase);
+
 public slots:
 	// Slots for DataManager
 	void OnDataAboutToGetRemoved(long iid);
@@ -39,8 +43,10 @@ public slots:
 	void OnCreateNewMask();
 	void OnConfirmSegmentation();
 	void OnManualTool2DSelected(int);
-    long CreateEmptyMask(long referenceIid);
+    void CreateEmptyMask(long referenceIid);
+	void OnCreateEmptyMaskBackgroundFinished();
 	// void OnDisableSegmentation();
+	void SetMaskFromNiftiData(long);
 
 signals:
 	void MitkDrawingToolSaveImageToFile(long iid, bool updateDataManager);
@@ -57,6 +63,8 @@ private:
 	mitk::DataNode::Pointer m_LoadedMaskNode;
 	
 	Ui::MitkDrawingTool *ui;
+	QProgressDialog      *m_ProgressDialog;
+	QFutureWatcher<void> *m_ProgressDialogWatcher;
 	
 	mitk::ToolManager::Pointer m_ToolManager;
 	mitk::DataStorage *m_DataStorage;

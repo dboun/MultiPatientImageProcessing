@@ -170,6 +170,28 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 		{
 			qDebug() << "Emit DataTreeView::DataAddedForSelectedSubject" << iid;
 			emit DataAddedForSelectedSubject(iid);
+		
+			if (specialRole == "Mask" || specialRole == "Segmentation") 
+			{
+				dataToAdd->setCheckState(0, Qt::Checked);
+				dataToAdd->setData(0, IS_CHECKED, true);
+				emit DataCheckedStateChanged(iid, true);
+			}
+
+			if (specialRole == "Segmentation")
+			{
+				for (const long& dIid : m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Mask"))
+				{
+					if (m_DataManager->GetDataSpecialRole(dIid) == "Mask" && 
+					  m_Data[dIid] && m_Data[dIid]->data(0, IS_CHECKED) == true
+					) {
+						m_Data[dIid]->setCheckState(0, Qt::Unchecked);
+						m_Data[dIid]->setData(0, IS_CHECKED, false);
+						emit DataCheckedStateChanged(dIid, false);
+					}
+				}
+			}
+
 		}
 	}
 	
@@ -193,11 +215,19 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 
 void DataTreeView::UpdateProgressHandler(long uid, QString message, int progress)
 {
-    QProgressBar *progressBar = m_TreeWidget->findChild<QProgressBar*>(
+
+  QProgressBar *progressBar = m_TreeWidget->findChild<QProgressBar*>(
 		QString("ProgressBar") + QString::number(uid)
 	);
-	progressBar->setVisible(true);
-	progressBar->setValue(progress);
+	if (progress == -1)
+	{
+		progressBar->setValue(0);
+		progressBar->setVisible(false);
+	}
+	else {
+		progressBar->setVisible(true);
+		progressBar->setValue(progress);
+	}
 }
 
 void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
@@ -326,19 +356,20 @@ void DataTreeView::OnItemRightClickRemove()
 void DataTreeView::OnItemRightClickSetAsMask()
 {
 	long iid = m_TreeWidget->currentItem()->data(0, ID).toLongLong();
+	emit DataRequestedAsMask(iid);
 
-	QString currentRole = m_DataManager->GetDataSpecialRole(iid);
+	// QString currentRole = m_DataManager->GetDataSpecialRole(iid);
 
-	if (currentRole != QString("Mask"))
-	{
-		QString name = m_DataManager->GetDataName(iid);
-		QString path = m_DataManager->GetDataPath(iid);
-		QString type = m_DataManager->GetDataType(iid);
-		long uid = m_DataManager->GetSubjectIdFromDataId(iid);
+	// if (currentRole != QString("Mask"))
+	// {
+	// 	QString name = m_DataManager->GetDataName(iid);
+	// 	QString path = m_DataManager->GetDataPath(iid);
+	// 	QString type = m_DataManager->GetDataType(iid);
+	// 	long uid = m_DataManager->GetSubjectIdFromDataId(iid);
 
-		m_DataManager->RemoveData(iid);
-		m_DataManager->AddDataToSubject(uid, path, "Mask", type, name);
-	}
+	// 	m_DataManager->RemoveData(iid);
+	// 	m_DataManager->AddDataToSubject(uid, path, "Mask", type, name);
+	// }
 }
 
 void DataTreeView::SwitchExpandedView(QTreeWidgetItem* focusItem)

@@ -85,6 +85,7 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 		// (all of our node are named with their iid)
 		if (numberRegExp.exactMatch(nodeName))
 		{
+			emit MitkNodeAboutToBeDeleted(std::stol(it.Value()->GetName().c_str()));
 			m_DataStorage->Remove(it.Value());
 		}
 	}
@@ -99,6 +100,7 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 	m_MitkWidget->ResetCrosshair();
 	//mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
 	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+	m_FirstTimeForThisSubject = true;
 }
 
 void MitkImageViewer::DataAddedForSelectedSubjectHandler(long iid)
@@ -110,6 +112,7 @@ void MitkImageViewer::DataRemovedFromSelectedSubjectHandler(long iid)
 {
 	qDebug() << "MitkImageViewer::DataRemovedFromSelectedSubjectHandler";
 	
+	emit MitkNodeAboutToBeDeleted(iid);
 	m_DataStorage->Remove(
 		m_DataStorage->GetNamedNode(QString::number(iid).toStdString().c_str())
 	);
@@ -214,9 +217,10 @@ void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 	}
 
   dataNode->SetVisibility(checkState);
-	if (checkState)
+	if (m_FirstTimeForThisSubject)
 	{
-		//m_MitkWidget->ResetCrosshair();
+		m_MitkWidget->ResetCrosshair();
+		m_FirstTimeForThisSubject = false;
 	}
 
 	dataNode->GetData()->Modified();

@@ -73,6 +73,7 @@ MainWindow::MainWindow(QWidget *parent) :
     qobject_cast<MitkImageViewer*>(m_ImageViewer)
   );
 
+  m_MitkDrawingTool->SetDataView(m_DataView);
   m_MitkDrawingTool->SetDataManager(m_DataManager);
   m_MitkDrawingTool->SetAppName(m_AppName);
   m_MitkDrawingTool->SetAppNameShort(m_AppNameShort);
@@ -168,6 +169,7 @@ void MainWindow::OnOpenSingleSubject()
 
 void MainWindow::OnRunPressed()
 {
+  qDebug() << "MainWindow::OnRunPressed";
 	long uid = m_DataView->GetCurrentSubjectID(); // For convenience
 
 	if (uid == -1)
@@ -180,9 +182,21 @@ void MainWindow::OnRunPressed()
 		return;
 	}
 
-	qDebug() << QString("(Run) uid:  ") << QString::number(uid);
+  if (m_SubjectsThatAreRunning.count(uid) != 0)
+  {
+    QMessageBox::warning(this,
+      "Please wait",
+      "Algorithm is already running for this subject"	
+    );
+    return;
+  }
+
+  std::unique_lock<std::mutex> ul(*m_DataManager->GetSubjectEditMutexPointer(uid));
+	
+  qDebug() << QString("(Run) uid:  ") << QString::number(uid);
 
 #ifdef BUILD_MODULE_MitkImageViewer
+
   auto iids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
     uid, "Mask"
   );
@@ -208,6 +222,12 @@ void MainWindow::OnRunPressed()
   {
     m_DataManager->RemoveData(iid);
   }  
+
+  // Remove all previous segmentations (if they exist)
+  for (const long& iid : m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Segmentation"))
+  {
+    m_DataManager->RemoveData(iid);
+  }
 #endif
 
 #ifdef BUILD_MODULE_GeodesicTraining
@@ -215,6 +235,8 @@ void MainWindow::OnRunPressed()
 #else
   AlgorithmModuleBase* algorithm = new AlgorithmModuleBase();
 #endif
+
+  m_SubjectsThatAreRunning.insert(uid);
 
   algorithm->SetDataManager(m_DataManager);
   algorithm->SetUid(uid);
@@ -231,6 +253,7 @@ void MainWindow::OnRunPressed()
     this, SLOT(OnAlgorithmFinishedWithError(AlgorithmModuleBase*, QString))
   );
 
+  ul.unlock();
   m_Scheduler->QueueAlgorithm(algorithm);
 }
 
@@ -290,12 +313,15 @@ void MainWindow::OnAlgorithmFinished(AlgorithmModuleBase* algorithmModuleBase)
       );
     }
 #endif
+
+    m_SubjectsThatAreRunning.erase(algorithmModuleBase->GetUid());
   }
 }
 
 void MainWindow::OnAlgorithmFinishedWithError(AlgorithmModuleBase* algorithmModuleBase, 
   QString errorMessage)
 {
+  m_SubjectsThatAreRunning.erase(algorithmModuleBase->GetUid());
   QMessageBox::warning(
 		this,
 		algorithmModuleBase->GetAlgorithmName(),

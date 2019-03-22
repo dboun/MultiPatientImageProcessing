@@ -33,7 +33,9 @@ signals:
 	void DataAddedForSelectedSubject(long iid);
 	void DataRemovedFromSelectedSubject(long iid);
 	void DataCheckedStateChanged(long iid, bool checkState); // Optional
-	
+
+	void DataRequestedAsMask(long iid);
+
 protected:
 
 	void SetCurrentSubjectID(long uid);

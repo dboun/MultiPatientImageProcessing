@@ -44,11 +44,15 @@ public slots:
 
 signals:
 	void MitkLoadedNewMask(mitk::DataNode::Pointer dataNode);
+	void MitkNodeAboutToBeDeleted(long iid);
 protected:
 	virtual void AddToDataStorage(long iid);
 
 	QmitkStdMultiWidget* m_MitkWidget;
 	mitk::StandaloneDataStorage::Pointer m_DataStorage;
+
+private:
+	bool m_FirstTimeForThisSubject = true;
 };
 
 #endif // ! MITK_IMAGE_VIEWER_H

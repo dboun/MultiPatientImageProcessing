@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <mutex>
+#include <memory>
 
 /** class DataManager
 *     This is a class used to provide basic data
@@ -52,6 +53,8 @@ public:
 	void SetAcceptedFileTypes(QStringList& acceptedFileTypes);
 	void SetAppNameShort(QString appNameShort);
 	QStringList GetAcceptedFileTypes();
+
+	std::mutex* GetSubjectEditMutexPointer(long uid);
 
 	// Subject Getters
 
@@ -137,6 +140,7 @@ private:
 	long uidNextToGive = 0;
 	long iidNextToGive = 0;
 	std::mutex  m_Mutex;
+	std::map< long, std::unique_ptr<std::mutex> >  m_SubjectEditMutex;
 	QStringList m_AcceptedFileTypes = QStringList() << "*";
 	QString     m_AppNameShort      = "MPIP";
 };
