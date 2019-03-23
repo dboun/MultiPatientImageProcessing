@@ -172,12 +172,19 @@ void MitkDrawingTool::OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode)
     mitk::RenderingManager::REQUEST_UPDATE_ALL, true
   );
 
-  // Check if this was triggered by pressing the new label button
-  if (m_WaitingOnLabelsImageCreation)
+  auto workingImage = dynamic_cast<mitk::LabelSetImage*>(m_LoadedMaskNode->GetData());
+  if (workingImage->GetTotalNumberOfLabels() == 1) // 1 means none
   {
-	  this->OnCreateNewLabel();
-    m_WaitingOnLabelsImageCreation = false;
+    this->OnCreateNewLabel();
   }
+  qDebug() << "Number of labels in loaded mask" << workingImage->GetTotalNumberOfLabels();
+
+  // // Check if this was triggered by pressing the new label button
+  // if (m_WaitingOnLabelsImageCreation)
+  // {
+	//   this->OnCreateNewLabel();
+  //   m_WaitingOnLabelsImageCreation = false;
+  // }
 }
 
 void MitkDrawingTool::SetDataManager(DataManager* dataManager)
@@ -324,6 +331,7 @@ void MitkDrawingTool::OnCreateNewLabel()
   QmitkNewSegmentationDialog* dialog = new QmitkNewSegmentationDialog(this);
   dialog->SetSuggestionList(mitk::OrganNamesHandling::GetDefaultOrganColorString());
   dialog->setWindowTitle("New Label");
+  dialog->setPrompt("Choose label color and name (optional).");
 
   int dialogReturnValue = dialog->exec();
   if (dialogReturnValue == QDialog::Rejected)
