@@ -54,6 +54,15 @@ QString DataManager::GetSubjectPath(long uid)
 	return QString();
 }
 
+QString DataManager::GetOriginalSubjectPath(long uid)
+{
+	if (m_Subjects.find(uid) != m_Subjects.end())
+	{
+		return m_Subjects[uid].originalPath;
+	}
+	return QString();
+}
+
 std::vector<long> DataManager::GetAllDataIdsOfSubject(long uid)
 {
 	if (m_Subjects.find(uid) != m_Subjects.end())
@@ -172,7 +181,6 @@ long DataManager::AddSubject(QString subjectPath, QString subjectName)
 	std::unique_lock<std::mutex> ul(m_Mutex);
 
 	m_Subjects[uidNextToGive] = Subject();
-	m_Subjects[uidNextToGive].path = subjectPath;
 
 	if (subjectName != QString())
 	{
@@ -188,8 +196,21 @@ long DataManager::AddSubject(QString subjectPath, QString subjectName)
 	}
 
 	long uid = uidNextToGive++;
+	m_Subjects[uidNextToGive].originalPath = subjectPath;
 
-	m_SubjectEditMutex[uid] = std::unique_ptr<std::mutex>( new std::mutex());
+	// For internal cache subject path
+	// QString directoryName = this->GetDataManager()->GetSubjectPath(uid)
+    //   + QString("/") + m_AppNameShort + QString("/")
+    //   + m_AppNameShort + "_" + "Mask";
+
+	// if (!QDir(directoryName).exists())
+	// {
+	// 	QDir().mkpath(directoryName);
+	// }
+
+	m_Subjects[uidNextToGive].originalPath = subjectPath;
+
+	m_SubjectEditMutex[uid] = std::unique_ptr<std::mutex>(new std::mutex());
 	
 	ul.unlock();
 	qDebug() << "Emit DataManager::SubjectAdded()";

@@ -47,6 +47,7 @@ public:
 		long uid;
 		QString name;
 		QString path;
+		QString originalPath;
 		std::vector<long> dataIds;
 	} Subject;
 
@@ -61,6 +62,7 @@ public:
 	std::vector<long> GetAllSubjectIds();
 	QString GetSubjectName(long uid);
 	QString GetSubjectPath(long uid);
+	QString GetOriginalSubjectPath(long uid);
 	std::vector<long> GetAllDataIdsOfSubject(long uid);
 	std::vector<long> GetAllDataIdsOfSubjectWithSpecialRole(long uid, QString specialRole);
 
