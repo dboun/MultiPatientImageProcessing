@@ -92,18 +92,24 @@ void DataTreeView::SubjectAddedHandler(long uid)
 
 void DataTreeView::SubjectRemovedHandler(long uid)
 {
+	qDebug() << "DataTreeView::SubjectRemovedHandler";
 	QTreeWidgetItem* subjectToRemove = m_Subjects[uid];
+	m_CurrentDataID = -1;
 
 	if (subjectToRemove)
 	{
-		m_Subjects.erase(uid);
 		delete subjectToRemove;
+		auto iter = m_Subjects.find(uid);
+  	m_Subjects.erase(iter);
 	}
 
 	if (m_CurrentSubjectID == uid)
 	{
+		qDebug() << "m_Subjects size" << m_Subjects.size();
+		qDebug() << "m_DataManager->GetAllSubjectIds() size" << m_DataManager->GetAllSubjectIds().size();
 		if (m_Subjects.size() > 0)
 		{
+			qDebug() << "New selected subject will be " << m_DataManager->GetAllSubjectIds()[0]; 
 			QTreeWidgetItem* newSelected = m_Subjects[m_DataManager->GetAllSubjectIds()[0]];
 		
 			m_TreeWidget->setCurrentItem(newSelected);
@@ -111,6 +117,7 @@ void DataTreeView::SubjectRemovedHandler(long uid)
 			m_CurrentSubjectID = m_DataManager->GetAllSubjectIds()[0];
 		}
 		else {
+			qDebug() << "No new selected subject";
 			m_CurrentSubjectID = -1;
 		}
 

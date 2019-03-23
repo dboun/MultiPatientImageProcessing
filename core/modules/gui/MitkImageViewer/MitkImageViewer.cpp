@@ -27,6 +27,14 @@ MitkImageViewer::MitkImageViewer(QWidget *parent) : ImageViewerBase(parent)
 	m_MitkWidget->EnablePositionTracking();
 	auto geo = m_DataStorage->ComputeBoundingGeometry3D(m_DataStorage->GetAll());
 	mitk::RenderingManager::GetInstance()->InitializeViews(geo);
+	mitk::Color color; 
+	//color = 0.57f, 0.57f, 0.57f;
+	//color = 0.05f, 0.10f, 0.15f;
+	color = 0.50f, 0.67f, 0.8f;
+	m_MitkWidget->SetDecorationProperties("Axial", color, 0);
+	m_MitkWidget->SetDecorationProperties("Sagittal", color, 1);
+	m_MitkWidget->SetDecorationProperties("Coronal", color, 2);
+	m_MitkWidget->SetDecorationProperties("3D", color, 3);
 
 	// Initialize bottom-right view as 3D view
 	m_MitkWidget->GetRenderWindow4()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D);
@@ -49,14 +57,18 @@ void MitkImageViewer::OpacitySliderHandler(int value)
 
   if (iid == -1) { return; }
 	
-  //qDebug() << "Changing opacity of " << iid <<" to value " << value;
+  qDebug() << "Changing opacity of " << iid <<" to value " << value;
 
   mitk::DataNode* node = m_DataStorage->GetNamedNode(
 	  QString::number(iid).toStdString().c_str()
   );
-  //node->SetProperty("layer", mitk::IntProperty::New(1));
-  node->SetProperty("opacity", mitk::FloatProperty::New(value/100.0));
-  //node->GetData()->Modified();
+  
+	if (node)
+	{
+		//node->SetProperty("layer", mitk::IntProperty::New(1));
+		node->SetProperty("opacity", mitk::FloatProperty::New(value/100.0));
+		//node->GetData()->Modified();
+	}
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
@@ -90,6 +102,11 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 		}
 	}
 
+	if (uid == -1) 
+	{ 
+		return; 
+	}
+	
 	auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(uid);
 
 	for(const long& iid : iids)
