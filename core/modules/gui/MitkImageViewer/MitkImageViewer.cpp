@@ -49,7 +49,7 @@ void MitkImageViewer::OpacitySliderHandler(int value)
 
   if (iid == -1) { return; }
 	
-  qDebug() << "Changing opacity of " << iid <<" to value " << value;
+  //qDebug() << "Changing opacity of " << iid <<" to value " << value;
 
   mitk::DataNode* node = m_DataStorage->GetNamedNode(
 	  QString::number(iid).toStdString().c_str()

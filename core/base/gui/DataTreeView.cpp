@@ -177,7 +177,14 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 			{
 				dataToAdd->setCheckState(0, Qt::Checked);
 				dataToAdd->setData(0, IS_CHECKED, true);
+
+
 				emit DataCheckedStateChanged(iid, true);
+
+				dataToAdd->setSelected(true);
+				m_CurrentDataID = iid;
+				m_TreeWidget->setCurrentItem(dataToAdd);
+				emit SelectedDataChanged(iid);
 			}
 
 			if (specialRole == "Segmentation")
@@ -193,7 +200,6 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 					}
 				}
 			}
-
 		}
 	}
 	
@@ -208,10 +214,27 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 
 			if (m_CurrentSubjectID == uid)
 			{
+				if (m_TreeWidget->currentItem() && m_TreeWidget->currentItem()->parent())
+				{
+					m_CurrentDataID = m_TreeWidget->currentItem()->data(0, ID).toLongLong();
+				}
+				else {
+					m_CurrentDataID = -1;
+				}
 				qDebug() << "Emit DataTreeView::DataRemovedFromSelectedSubject" << iid;
 				emit DataRemovedFromSelectedSubject(iid);
 			}
 		}
+	}
+
+	// Last resort check
+	QTreeWidgetItem* current = m_TreeWidget->currentItem();
+	if (!current || !current->parent())
+	{
+		m_CurrentDataID = -1;
+	}
+	else {
+		m_CurrentDataID = current->data(0, ID).toLongLong();
 	}
 }
 
@@ -309,6 +332,7 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 			emit SelectedSubjectChanged(uid);
 			SwitchExpandedView(item);
 
+			// TODO: Maybe selected subject?
 			qDebug() << "Emit DataTreeView::SelectedDataChanged" << iid;
 			emit SelectedDataChanged(iid);
 		}
