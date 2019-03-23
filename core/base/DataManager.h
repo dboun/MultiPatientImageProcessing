@@ -23,6 +23,7 @@ class DataManager : public QObject
 
 public:
 	DataManager(QObject *parent = nullptr);
+	~DataManager();
 
 	/** struct Data
 	*   contains information about data for a subject

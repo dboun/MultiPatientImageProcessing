@@ -1,10 +1,40 @@
 #include "DataManager.h"
 
+#include <QDir>
+#include <QStandardPaths>
 #include <QDebug>
 
 DataManager::DataManager(QObject *parent) : QObject(parent)
 {
-	
+	// For internal cache subject path
+	QString appDataDir = QStandardPaths::standardLocations(
+		QStandardPaths::AppDataLocation
+	).at(0);
+	QDir dir(appDataDir);
+	if (dir.exists())
+	{
+		// Delete old one if it exists
+		dir.removeRecursively();
+	}
+	qDebug() << "(DataManager) AppData dir: " << appDataDir;
+	if (!QDir(appDataDir).exists())
+	{
+		QDir().mkpath(appDataDir);
+	}
+}
+
+DataManager::~DataManager()
+{
+	// For internal cache subject path
+	QString appDataDir = QStandardPaths::standardLocations(
+		QStandardPaths::AppDataLocation
+	).at(0);
+	QDir dir(appDataDir);
+	if (dir.exists())
+	{
+		qDebug() << "Deleting" << m_AppNameShort << "AppData directory";
+		dir.removeRecursively();
+	}
 }
 
 void DataManager::SetAcceptedFileTypes(QStringList& acceptedFileTypes)
@@ -180,11 +210,12 @@ long DataManager::AddSubject(QString subjectPath, QString subjectName)
 {
 	std::unique_lock<std::mutex> ul(m_Mutex);
 
-	m_Subjects[uidNextToGive] = Subject();
+	long uid = uidNextToGive++;
+	m_Subjects[uid] = Subject();
 
 	if (subjectName != QString())
 	{
-		m_Subjects[uidNextToGive].name = subjectName;
+		m_Subjects[uid].name = subjectName;
 	}
 	else {
 		QString name = QString::fromStdString(
@@ -192,23 +223,20 @@ long DataManager::AddSubject(QString subjectPath, QString subjectName)
 				subjectPath.toStdString().find_last_of("/\\") + 1
 				)
 			);
-		m_Subjects[uidNextToGive].name = name;
+		m_Subjects[uid].name = name;
 	}
 
-	long uid = uidNextToGive++;
-	m_Subjects[uidNextToGive].originalPath = subjectPath;
+	m_Subjects[uid].originalPath = subjectPath;
 
 	// For internal cache subject path
-	// QString directoryName = this->GetDataManager()->GetSubjectPath(uid)
-    //   + QString("/") + m_AppNameShort + QString("/")
-    //   + m_AppNameShort + "_" + "Mask";
-
-	// if (!QDir(directoryName).exists())
-	// {
-	// 	QDir().mkpath(directoryName);
-	// }
-
-	m_Subjects[uidNextToGive].originalPath = subjectPath;
+	m_Subjects[uid].path = QStandardPaths::standardLocations(
+		QStandardPaths::AppDataLocation
+	).at(0) + QString("/") + QString::number(uid);
+	if (!QDir(m_Subjects[uid].path).exists())
+	{
+		QDir().mkpath(m_Subjects[uid].path);
+	}
+	qDebug() << "DataManager::AddSubject intenal path" << m_Subjects[uid].path;
 
 	m_SubjectEditMutex[uid] = std::unique_ptr<std::mutex>(new std::mutex());
 	
