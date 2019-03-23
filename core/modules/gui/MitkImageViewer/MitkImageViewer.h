@@ -33,6 +33,7 @@ public slots:
 	virtual void DataRemovedFromSelectedSubjectHandler(long iid) override;
 	virtual void SelectedDataChangedHandler(long iid) override;
 	virtual void DataCheckedStateChangedHandler(long iid, bool checkState) override;
+	virtual void OnExportData(long iid, QString fileName);
 
 	// Slot, but usually just called.
 	void SaveImageToFile(long iid, bool updateDataManager = true);

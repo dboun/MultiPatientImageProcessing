@@ -6,6 +6,8 @@
 #include <QMenu>
 #include <QLabel>
 #include <QVariant>
+#include <QFileDialog>
+#include <QMessageBox>
 
 #include <algorithm>
 
@@ -317,27 +319,40 @@ void DataTreeView::OnItemRightClick(const QPoint& pos)
 {
 	qDebug() << QString("Show context menu pressed");
 
-	if (m_TreeWidget->itemAt(pos))
+	if (!m_TreeWidget->itemAt(pos))
 	{
-		QMenu *contextMenu = new QMenu(m_TreeWidget);
-
-		QAction action1("Remove", this);
-		//action1.setShortcutContext(Qt::ApplicationShortcut);
-		//action1.setShortcut(QKeySequence::Delete);
-		connect(&action1, SIGNAL(triggered()), this, SLOT(OnItemRightClickRemove()));
-		contextMenu->addAction(&action1);
-
-		QAction action2("Set as mask", this);
-		connect(&action2, SIGNAL(triggered()), this, SLOT(OnItemRightClickSetAsMask()));
-
-		if (m_TreeWidget->itemAt(pos)->parent()) 
-		{
-		  // The item is an image
-		  contextMenu->addAction(&action2);
-		}
-
-		contextMenu->exec(m_TreeWidget->viewport()->mapToGlobal(pos));
+		return;
 	}
+
+	QMenu contextMenu(m_TreeWidget);
+
+	QAction action1("Remove", &contextMenu);
+	connect(&action1, SIGNAL(triggered()), this, SLOT(OnItemRightClickRemove()));
+	contextMenu.addAction(&action1);
+
+	if (m_TreeWidget->itemAt(pos)->parent()) 
+	{
+		// The item is an image
+		long iid = m_TreeWidget->itemAt(pos)->data(0, ID).toLongLong();
+		qDebug() << "iid right clicked:" << iid;
+
+		QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
+		if (specialRole != "Mask")
+		{
+			QAction* action2 = new QAction("Set as mask", &contextMenu);
+			connect(action2, SIGNAL(triggered()), this, SLOT(OnItemRightClickSetAsMask()));
+			contextMenu.addAction(action2);
+		}
+		
+		if (specialRole == "Mask" || specialRole == "Segmentation")
+		{
+			QAction* action3 = new QAction("Export", &contextMenu);
+			connect(action3, SIGNAL(triggered()), this, SLOT(OnItemRightClickExport()));
+			contextMenu.addAction(action3);
+		}
+	}
+
+	contextMenu.exec(m_TreeWidget->viewport()->mapToGlobal(pos));
 }
 
 void DataTreeView::OnItemRightClickRemove()
@@ -370,6 +385,38 @@ void DataTreeView::OnItemRightClickSetAsMask()
 	// 	m_DataManager->RemoveData(iid);
 	// 	m_DataManager->AddDataToSubject(uid, path, "Mask", type, name);
 	// }
+}
+
+void DataTreeView::OnItemRightClickExport()
+{
+	qDebug("DataTreeView::OnItemRightClickExport");
+	long iid = m_TreeWidget->currentItem()->data(0, ID).toLongLong();
+	QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
+	long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
+	QString originalSubjectPath = this->GetDataManager()->GetOriginalSubjectPath(uid);
+	
+	QFileInfo f(this->GetDataManager()->GetDataPath(iid));
+	QString baseName = f.baseName();
+
+	// Show Dialog to get desired name
+	QString fileName = QFileDialog::getSaveFileName(this, 
+		QString("Save ") + specialRole.toLower(),
+		originalSubjectPath.replace("\\", "/", Qt::CaseSensitive) + QString("/") + baseName + QString(".nii.gz"), 
+		tr("Images (*.nii.gz)")
+	);
+	
+	if (fileName.isEmpty())
+	{
+		// Basically canceled
+		return;
+	}
+  
+  if (!fileName.endsWith(".nii.gz"))
+  {
+	  fileName = fileName + ".nii.gz";
+	}
+
+	emit ExportData(iid, fileName);
 }
 
 void DataTreeView::SwitchExpandedView(QTreeWidgetItem* focusItem)

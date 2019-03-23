@@ -50,6 +50,10 @@ MainWindow::MainWindow(QWidget *parent) :
   m_ImageViewer = new MitkImageViewer(ui->viewerContainer);
   m_ImageViewer->setMinimumWidth(600);
   m_ImageViewer->setMinimumHeight(500);
+
+  connect(m_DataView, SIGNAL(ExportData(long, QString)), 
+    qobject_cast<MitkImageViewer*>(m_ImageViewer), SLOT(OnExportData(long, QString))
+  );
 #else
   qDebug() << "Using abstract image viewer";
   m_ImageViewer = new ImageViewerBase(ui->viewerContainer);

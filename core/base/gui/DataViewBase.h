@@ -35,6 +35,7 @@ signals:
 	void DataCheckedStateChanged(long iid, bool checkState); // Optional
 
 	void DataRequestedAsMask(long iid);
+	void ExportData(long iid, QString fileName);
 
 protected:
 

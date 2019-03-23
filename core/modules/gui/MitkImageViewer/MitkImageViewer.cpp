@@ -77,7 +77,6 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 	
 	mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
 	for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
-		qDebug() << "Removing node with name: " << it->Value()->GetName().c_str();
 		
 		QString nodeName = QString(it->Value()->GetName().c_str());
 				
@@ -85,6 +84,7 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 		// (all of our node are named with their iid)
 		if (numberRegExp.exactMatch(nodeName))
 		{
+			qDebug() << "Removing node with name: " << it->Value()->GetName().c_str();
 			emit MitkNodeAboutToBeDeleted(std::stol(it.Value()->GetName().c_str()));
 			m_DataStorage->Remove(it.Value());
 		}
@@ -373,6 +373,60 @@ void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
     // mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
     // mitk::RenderingManager::GetInstance()->RequestUpdateAll();
   //}
+}
+
+void MitkImageViewer::OnExportData(long iid, QString fileName)
+{
+	// Find the node
+	mitk::DataNode::Pointer dataNode;
+
+	mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+	for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
+		if (QString::number(iid).toStdString() == it->Value()->GetName())
+		{
+			dataNode = it->Value();
+			break;
+		}
+	}
+
+	if (!m_DataStorage->Exists(dataNode))
+	{
+		qDebug() << "Can't find dataNode to save image " << iid;
+		return;
+	}
+
+	long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
+	
+	// Parent dir of file
+	QString filePathTemp = fileName;
+	filePathTemp.replace("\\", "/", Qt::CaseSensitive);
+	QStringList filePathSplit = filePathTemp.split("/");
+	QString parentDirOfFile = filePathSplit.value(filePathSplit.length() - 2);
+	
+	qDebug() << "Parent dir of file" << parentDirOfFile;
+
+	// The name of the file
+	QFileInfo f(fileName);
+	QString baseName = f.baseName();
+
+	// Create output directory if it doesn't exist
+	if (!QDir(parentDirOfFile).exists())
+	{
+		if (!QDir().mkpath(parentDirOfFile)) { 
+			QMessageBox::warning(this, 
+				"Problem exporting",
+				"No permission to write in this directory"
+			);
+			return; 
+		}
+	}
+
+	qDebug() << "Will save image to:" << fileName;
+
+	mitk::IOUtil::Save(
+		dataNode->GetData(), 
+		fileName.toStdString()
+	);
 }
 
 void MitkImageViewer::SaveImageToFile(long iid, bool updateDataManager)
