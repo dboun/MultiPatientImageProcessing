@@ -34,6 +34,7 @@ target_link_libraries( ${MODULE_NAME}
   MitkCore 
   MitkQtWidgets 
   MitkQtWidgetsExt
+  MitkSegmentation
 )
 
 target_include_directories( ${MODULE_NAME} PUBLIC
