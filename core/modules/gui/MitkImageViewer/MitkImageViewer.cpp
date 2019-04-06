@@ -571,23 +571,6 @@ void MitkImageViewer::ConvertToNrrdAndSave(long iid, long referenceIid, bool upd
 		convertFilter->SetInput(inputImage);
 		convertFilter->Update();
 		image = convertFilter->GetOutput();
-
-		qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Saving 3D image as a test";
-		mitk::IOUtil::Save(
-			image, 
-			(
-				this->GetDataManager()->GetSubjectPath(uid) + 
-				QString("/") + m_AppNameShort + QString("/") + "test.nrrd"
-			).toStdString()
-		);
-		mitk::IOUtil::Save(
-			image, 
-			(
-				this->GetDataManager()->GetSubjectPath(uid) + 
-				QString("/") + m_AppNameShort + QString("/") + "test.nii.gz"
-			).toStdString()
-		);
-		qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Saving 3D image as a test finished";
 	}
 
 	// The output image
