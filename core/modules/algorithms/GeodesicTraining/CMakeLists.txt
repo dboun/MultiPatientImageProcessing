@@ -1,6 +1,8 @@
 # Note: Project name is set by options.cmake
 project( ${MODULE_NAME} )
 
+find_package( MITK REQUIRED )
+
 find_package(Qt5 COMPONENTS Core)
 set(CMAKE_AUTOMOC ON)
 

@@ -10,6 +10,3 @@ include( core/cmake/master.cmake )
 
 # Handles everything related to the application
 add_subdirectory( src )
-
-# Installer
-#include( cpack.cmake )
