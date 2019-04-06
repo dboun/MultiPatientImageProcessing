@@ -4,6 +4,8 @@ project( ${MODULE_NAME} )
 find_package(Qt5 COMPONENTS Core)
 set(CMAKE_AUTOMOC ON)
 
+find_package( MITK REQUIRED )
+
 add_subdirectory( 
   GeodesicTraining_external
 )
@@ -37,6 +39,10 @@ target_link_libraries( ${MODULE_NAME}
   MpipBase
   GeodesicTrainingSegmentation
   Qt5::Core
+
+  MitkCore 
+  MitkMultilabel
+  MitkSegmentation
 )
 
 target_include_directories( ${MODULE_NAME} PUBLIC

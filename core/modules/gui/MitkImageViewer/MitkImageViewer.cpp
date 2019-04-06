@@ -8,6 +8,7 @@
 #include <mitkImage.h>
 #include <mitkIOUtil.h>
 #include <mitkLabelSetImage.h>
+#include <mitkConvert2Dto3DImageFilter.h>
 
 #include <iostream>
 
@@ -556,15 +557,51 @@ void MitkImageViewer::ConvertToNrrdAndSave(long iid, long referenceIid, bool upd
 	mitk::LabelSetImage::Pointer referenceImage = mitk::IOUtil::Load<mitk::LabelSetImage>(
 		referencePath.toStdString()
 	);
-	mitk::Image::Pointer image = mitk::IOUtil::Load<mitk::Image>(
+	mitk::Image::Pointer inputImage = mitk::IOUtil::Load<mitk::Image>(
 		imagePath.toStdString()
 	);
+
+	mitk::Image::Pointer image;
+	if (inputImage->GetDimension() == 3)
+	{
+		image = inputImage;
+	}
+	else {
+		mitk::Convert2Dto3DImageFilter::Pointer convertFilter = mitk::Convert2Dto3DImageFilter::New();
+		convertFilter->SetInput(inputImage);
+		convertFilter->Update();
+		image = convertFilter->GetOutput();
+
+		qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Saving 3D image as a test";
+		mitk::IOUtil::Save(
+			image, 
+			(
+				this->GetDataManager()->GetSubjectPath(uid) + 
+				QString("/") + m_AppNameShort + QString("/") + "test.nrrd"
+			).toStdString()
+		);
+		mitk::IOUtil::Save(
+			image, 
+			(
+				this->GetDataManager()->GetSubjectPath(uid) + 
+				QString("/") + m_AppNameShort + QString("/") + "test.nii.gz"
+			).toStdString()
+		);
+		qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Saving 3D image as a test finished";
+	}
 
 	// The output image
 	mitk::LabelSetImage::Pointer outputImage = mitk::LabelSetImage::New();
 	
 	// Copy the data from input image
-	outputImage->InitializeByLabeledImage(image);
+	try {
+		outputImage->InitializeByLabeledImage(image);
+	}
+	catch (mitk::Exception e)
+	{
+		qDebug() << "Initializing didn't work";
+		qDebug() << e.GetDescription();
+	}
 	
 	// Copy the labels from reference image
 	mitk::LabelSet::Pointer referenceLabelSet =	referenceImage->GetActiveLabelSet();

@@ -2,6 +2,9 @@
 
 #include <QDebug>
 
+#include <mitkImage.h>
+#include <mitkIOUtil.h>
+
 #include <vector>
 #include <string>
 #include <mutex>
@@ -83,13 +86,6 @@ void GeodesicTrainingModule::Algorithm()
 		return;
 	}
 
-	// TODO: 2D
-    GeodesicTrainingQt<3>* geodesicTraining = new GeodesicTrainingQt<3>(this);
-
-    connect(geodesicTraining, SIGNAL(GeodesicTrainingProgressUpdate(QString, int)),
-        this, SLOT(GeodesicTrainingProgressUpdateHandler(QString, int))
-    );
-
     QString outputPath = dm->GetSubjectPath(m_Uid) + 
         "/" + this->GetAppNameShort() +
         "/" + this->GetAppNameShort() + "_Segmentation";
@@ -97,36 +93,90 @@ void GeodesicTrainingModule::Algorithm()
     qDebug() << "GeodesicTraining will use " << m_IdealNumberOfThreads << " threads";
     qDebug() << "GeodesicTraining will use mask " << mask.c_str();
 
+    // To find the image dimensions
+    const unsigned int dimensions = mitk::IOUtil::Load<mitk::Image>(images[0])->GetDimension();
+    qDebug() << "Dimensions are" << dimensions;
 
-    std::unique_lock<std::mutex> ul(*this->GetDataManager()->GetSubjectEditMutexPointer(m_Uid));
-    std::vector<typename itk::Image<float, 3>::Pointer> inputImagesITK;
-    for (const std::string& image : images)
+    // This necessary because of templates (and maybe because there is not a base class)
+    if (dimensions == 2)
     {
-        inputImagesITK.push_back(cbica::ReadImage<itk::Image<float, 3>>(image));
-    }
+        // 2D
+        GeodesicTrainingQt<2>* geodesicTraining = new GeodesicTrainingQt<2>(this);
 
-    geodesicTraining->SetInputImages(inputImagesITK);
-    geodesicTraining->SetLabels(cbica::ReadImage<itk::Image<int, 3>>(mask));
-    geodesicTraining->SetOutputPath(outputPath.toStdString());
-    geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
-    geodesicTraining->SaveOnlyNormalSegmentation(true, "segmentation");
-    geodesicTraining->SetVerbose(true);
-    //geodesicTraining->SetTimerEnabled(true);
-
-    ul.unlock();
-    auto result = geodesicTraining->Execute();
-
-    if (result->ok)
-    {
-        this->GetDataManager()->AddDataToSubject(this->GetUid(), 
-            outputPath + QString("/segmentation.nii.gz"), "Segmentation"
+        connect(geodesicTraining, SIGNAL(GeodesicTrainingProgressUpdate(QString, int)),
+            this, SLOT(GeodesicTrainingProgressUpdateHandler(QString, int))
         );
+
+        std::unique_lock<std::mutex> ul(*this->GetDataManager()->GetSubjectEditMutexPointer(m_Uid));
+        std::vector<typename itk::Image<float, 3>::Pointer> inputImagesITK;
+        // for (const std::string& image : images)
+        // {
+        //     inputImagesITK.push_back(cbica::ReadImage<itk::Image<float, 3>>(image));
+        // }
+
+        geodesicTraining->SetInputImages(images);
+        geodesicTraining->SetLabels(mask);
+        geodesicTraining->SetOutputPath(outputPath.toStdString());
+        geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
+        geodesicTraining->SaveOnlyNormalSegmentation(true, "segmentation");
+        geodesicTraining->SetVerbose(true);
+        //geodesicTraining->SetTimerEnabled(true);
+
+        ul.unlock();
+        auto result = geodesicTraining->Execute();
+
+        if (result->ok)
+        {
+            this->GetDataManager()->AddDataToSubject(this->GetUid(), 
+                outputPath + QString("/segmentation.nii.gz"), "Segmentation"
+            );
+        }
+        else {
+            qDebug() << "GeodesicTraining finished with internal error";
+            emit ProgressUpdateUI(m_Uid, "Error", -1);
+            emit AlgorithmFinishedWithError(this, result->errorMessage.c_str());
+        }
+
+        delete geodesicTraining;
     }
     else {
-        qDebug() << "GeodesicTraining finished with internal error";
-        emit ProgressUpdateUI(m_Uid, "Error", -1);
-        emit AlgorithmFinishedWithError(this, result->errorMessage.c_str());
-    }
+        // 3D
+        GeodesicTrainingQt<3>* geodesicTraining = new GeodesicTrainingQt<3>(this);
 
-    delete geodesicTraining;
+        connect(geodesicTraining, SIGNAL(GeodesicTrainingProgressUpdate(QString, int)),
+            this, SLOT(GeodesicTrainingProgressUpdateHandler(QString, int))
+        );
+
+        std::unique_lock<std::mutex> ul(*this->GetDataManager()->GetSubjectEditMutexPointer(m_Uid));
+        // std::vector<typename itk::Image<float, 3>::Pointer> inputImagesITK;
+        // for (const std::string& image : images)
+        // {
+        //     inputImagesITK.push_back(cbica::ReadImage<itk::Image<float, 3>>(image));
+        // }
+
+        geodesicTraining->SetInputImages(images);
+        geodesicTraining->SetLabels(mask);
+        geodesicTraining->SetOutputPath(outputPath.toStdString());
+        geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
+        geodesicTraining->SaveOnlyNormalSegmentation(true, "segmentation");
+        geodesicTraining->SetVerbose(true);
+        //geodesicTraining->SetTimerEnabled(true);
+
+        ul.unlock();
+        auto result = geodesicTraining->Execute();
+
+        if (result->ok)
+        {
+            this->GetDataManager()->AddDataToSubject(this->GetUid(), 
+                outputPath + QString("/segmentation.nii.gz"), "Segmentation"
+            );
+        }
+        else {
+            qDebug() << "GeodesicTraining finished with internal error";
+            emit ProgressUpdateUI(m_Uid, "Error", -1);
+            emit AlgorithmFinishedWithError(this, result->errorMessage.c_str());
+        }
+
+        delete geodesicTraining;
+    }
 }
