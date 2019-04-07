@@ -308,11 +308,11 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 {
 	qDebug() << QString("Clicked tree item.");
 
-	if (!m_TreeWidget->currentItem())
-	{
-		item->setSelected(true);
-		m_TreeWidget->setCurrentItem(item);
-	}
+	// if (!m_TreeWidget->currentItem())
+	// {
+	// 	item->setSelected(true);
+	// 	m_TreeWidget->setCurrentItem(item);
+	// }
 
 	bool isTopLevelItem = (!item->parent());
 
@@ -329,7 +329,7 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 		long iid = item->data(0, ID).toLongLong();
 		long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
 
-		bool dataChanged    = (iid != m_CurrentDataID);
+		bool dataChanged    = (iid != m_CurrentDataID) && (item->checkState(0) == Qt::Checked);
 		bool subjectChanged = (uid != m_CurrentSubjectID);
 		bool dataCheckStateChanged = (
 			item->checkState(0) != Qt::CheckState(item->data(0, IS_CHECKED).toBool())
