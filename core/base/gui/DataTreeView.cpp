@@ -370,21 +370,19 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 
 		long uid = item->data(0, ID).toLongLong();
 
+
 		if (uid != m_CurrentSubjectID)
 		{
-			long iid = item->child(0)->data(0, ID).toLongLong(); // "Random" selected data
-
-			m_CurrentDataID = iid;
 			m_CurrentSubjectID = uid;
 
 			qDebug() << "Emit DataTreeView::SelectedSubjectChanged";
 			emit SelectedSubjectChanged(uid);
-			SwitchExpandedView(item);
-
-			// TODO: Maybe selected subject?
-			qDebug() << "Emit DataTreeView::SelectedDataChanged" << iid;
-			emit SelectedDataChanged(iid);
+			SwitchExpandedView(item);			
 		}
+
+		m_CurrentDataID = -1;
+		qDebug() << "Emit DataTreeView::SelectedDataChanged" << m_CurrentDataID;
+		emit SelectedDataChanged(m_CurrentDataID);
 	}
 }
 
