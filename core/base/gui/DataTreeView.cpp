@@ -332,7 +332,7 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 		bool dataChanged    = (iid != m_CurrentDataID) && (item->checkState(0) == Qt::Checked);
 		bool subjectChanged = (uid != m_CurrentSubjectID);
 		bool dataCheckStateChanged = (
-			item->checkState(0) != Qt::CheckState(item->data(0, IS_CHECKED).toBool())
+			!item->checkState(0) != !item->data(0, IS_CHECKED).toBool() // XOR
 		);
 
 		// If the active current data item actually changed and it's active
