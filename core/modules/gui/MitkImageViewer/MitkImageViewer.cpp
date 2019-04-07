@@ -103,16 +103,14 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 		}
 	}
 
-	if (uid == -1) 
+	if (uid != -1) 
 	{ 
-		return; 
-	}
-	
-	auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(uid);
+		auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(uid);
 
-	for(const long& iid : iids)
-	{
-		this->AddToDataStorage(iid);
+		for(const long& iid : iids)
+		{
+			this->AddToDataStorage(iid);
+		} 
 	}
 
 	m_MitkWidget->ResetCrosshair();

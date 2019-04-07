@@ -92,16 +92,44 @@ void DataTreeView::SubjectAddedHandler(long uid)
 
 void DataTreeView::SubjectRemovedHandler(long uid)
 {
-	qDebug() << "DataTreeView::SubjectRemovedHandler";
+	qDebug() << "DataTreeView::SubjectRemovedHandler" << QString::number(uid);
 	QTreeWidgetItem* subjectToRemove = m_Subjects[uid];
 	m_CurrentDataID = -1;
 
+	// TEST
+	{
+		std::vector<long> keys;
+		keys.reserve(m_Subjects.size());
+		for (auto const& imap : m_Subjects) {
+			keys.push_back(imap.first);
+		}
+		
+		for (auto key : keys)
+		{
+			qDebug() << "KEY BEFORE" << key;
+		}
+	}		
+
 	if (subjectToRemove)
 	{
+		//auto iter = m_Subjects.find(uid);
+  	m_Subjects.erase(uid);
 		delete subjectToRemove;
-		auto iter = m_Subjects.find(uid);
-  	m_Subjects.erase(iter);
 	}
+
+	// TEST
+	{
+		std::vector<long> keys;
+		keys.reserve(m_Subjects.size());
+		for (auto const& imap : m_Subjects) {
+			keys.push_back(imap.first);
+		}
+		
+		for (auto key : keys)
+		{
+			qDebug() << "KEY AFTER" << key;
+		}
+	}		
 
 	if (m_CurrentSubjectID == uid)
 	{
@@ -121,9 +149,23 @@ void DataTreeView::SubjectRemovedHandler(long uid)
 			m_CurrentSubjectID = -1;
 		}
 
-		qDebug() << "Emit DataTreeView::SelectedSubjectChanged";
+		qDebug() << "Emit DataTreeView::SelectedSubjectChanged" << m_CurrentSubjectID;
 		emit SelectedSubjectChanged(m_CurrentSubjectID);
 	}
+
+	// TEST
+	{
+		std::vector<long> keys;
+		keys.reserve(m_Subjects.size());
+		for (auto const& imap : m_Subjects) {
+			keys.push_back(imap.first);
+		}
+		
+		for (auto key : keys)
+		{
+			qDebug() << "KEY AFTER AFTER" << key;
+		}
+	}		
 }
 
 void DataTreeView::SubjectDataChangedHandler(long uid)
@@ -463,7 +505,7 @@ void DataTreeView::SwitchExpandedView(QTreeWidgetItem* focusItem)
 	}
 
 	// Uncheck everything from last focused subject
-	if (m_CurrentSubjectID != -1 && m_Subjects[m_CurrentSubjectID])
+	if (m_CurrentSubjectID != -1 && m_Subjects.find(m_CurrentSubjectID) != m_Subjects.end())
 	{
 		for (int i = 0; i < m_Subjects[m_CurrentSubjectID]->childCount(); i++)
 		{

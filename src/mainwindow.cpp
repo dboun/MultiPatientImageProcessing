@@ -337,6 +337,11 @@ void MainWindow::SelectedSubjectChangedHandler(long uid)
 {
 	qDebug() << "Selected Subject Changed for MainWindow";
 
+  if (uid == -1)
+  {
+    return;
+  }
+
   // Checking if there is a mask already
   auto iids = m_DataManager->GetAllDataIdsOfSubject(uid);
 
