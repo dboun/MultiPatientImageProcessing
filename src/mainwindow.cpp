@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QInputDialog>
 #include <QTextStream>
 #include <QHBoxLayout>
 #include <QGridLayout>
@@ -139,11 +140,93 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *e)
 
 void MainWindow::dropEvent(QDropEvent *e)
 {
+  QStringList filesOrDirs;
+  bool foundFile = false, foundDir = false;
+
   foreach(const QUrl &url, e->mimeData()->urls()) {
     QString fileName = url.toLocalFile();
-    qDebug() << "Dropped file:" + fileName;
+    filesOrDirs.push_back(fileName);
 
-    m_DataManager->AddSubjectAndDataByDirectoryPath(fileName);
+    QFileInfo fileCheck(fileName);
+
+    if (fileCheck.isDir())
+    {
+      foundDir = true;
+
+      if (foundFile) { break; }
+    }
+    else {
+      foundFile = true;
+
+      if (foundDir) { break; }
+    }
+
+    qDebug() << "Dropped file:" + fileName;
+  }
+
+  if (foundFile && foundDir)
+  {
+    QMessageBox::information(
+      this,
+      m_AppNameShort,
+      tr("Please drag and drop either folders where each one is a subject, or multiple images of one subject.")
+    );    
+    return;
+  }
+
+  if (foundDir)
+  {
+    foreach(const QString dir, filesOrDirs)
+    {
+      m_DataManager->AddSubjectAndDataByDirectoryPath(dir);
+    }
+  }
+  else {
+    QString firstFileBaseName = QFileInfo(filesOrDirs.at(0)).baseName();
+    QStringList firstFileSplit = firstFileBaseName.split("_");
+    QString divider = "_";
+    
+    // If the name is not using '_', assume '-'
+    if (firstFileSplit.size() == 1) { 
+      firstFileSplit = firstFileBaseName.split("-"); 
+      divider = "-";
+    }
+
+    QString suggestedSubjectName = firstFileSplit.at(0);
+    for (int i=1; i < firstFileSplit.size()-1; i++)
+    {
+      suggestedSubjectName = suggestedSubjectName + divider + firstFileSplit.at(i);
+    }
+
+
+    // Get Subject Name
+    QString subjectName;
+    bool ok;
+    do {
+      subjectName = QInputDialog::getText(this, 
+        m_AppNameShort,
+        tr("Subject name:"), 
+        QLineEdit::Normal,
+        suggestedSubjectName, 
+        &ok
+      );
+    } while(ok && subjectName.isEmpty());
+    
+    if (!ok)
+    {
+      // The user pressed cancel
+      return;
+    }
+
+    // Add the data to a new subject
+    long uid = m_DataManager->AddSubject(
+      QFileInfo(filesOrDirs.at(0)).absoluteDir().path(), subjectName
+    );
+
+    foreach(const QString file, filesOrDirs)
+    {
+      m_DataManager->AddDataToSubject(uid, file);
+    }
   }
 
   //// Not implemented yet message
