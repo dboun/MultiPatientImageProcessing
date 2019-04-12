@@ -8,6 +8,19 @@ DefaultScheduler::DefaultScheduler(QObject *parent) : SchedulerBase(parent)
 	qDebug() << "DefaultScheduler::DefaultScheduler()";
 }
 
+DefaultScheduler::~DefaultScheduler()
+{
+	// Clean up
+	while (!m_ThreadsToJoin.empty())
+	{
+		m_Threads[m_ThreadsToJoin.head()].join();
+		m_ThreadsToJoin.dequeue();
+	}
+
+	// Clean up coordinator
+	if (m_BackgroundCoordinator.joinable()) { m_BackgroundCoordinator.join(); }
+}
+
 void DefaultScheduler::QueueAlgorithm(AlgorithmModuleBase* algorithmModule)
 {
 	std::lock_guard<std::mutex> lg(m_Mutex);
