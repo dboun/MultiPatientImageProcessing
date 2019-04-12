@@ -214,20 +214,19 @@
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color:rgb(97,97,97)</string>
+    <string notr="true"/>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="styleSheet">
-     <string notr="true">background-color:gray</string>
+     <string notr="true"/>
     </property>
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen_single_subject"/>
-    <addaction name="actionAdd_multiple_subjects"/>
+    <addaction name="actionOpen_Subjects"/>
     <addaction name="separator"/>
-    <addaction name="actionAdd_image_for_selected_subject"/>
     <addaction name="actionAdd_image_for_new_subject"/>
+    <addaction name="actionAdd_image_for_selected_subject"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -241,24 +240,24 @@
     <string>Display Metadata</string>
    </property>
   </action>
-  <action name="actionOpen_single_subject">
+  <action name="actionOpen_Subjects">
    <property name="text">
-    <string>Add single subject</string>
+    <string>Add new subjects using directories</string>
    </property>
   </action>
   <action name="actionAdd_multiple_subjects">
    <property name="text">
-    <string>Add multiple subjects</string>
+    <string>Add multiple subjects by directory</string>
    </property>
   </action>
   <action name="actionAdd_image_for_selected_subject">
    <property name="text">
-    <string>Add image for selected subject</string>
+    <string>Add images for selected subject</string>
    </property>
   </action>
   <action name="actionAdd_image_for_new_subject">
    <property name="text">
-    <string>Add image for new subject</string>
+    <string>Add images for new subject</string>
    </property>
   </action>
  </widget>

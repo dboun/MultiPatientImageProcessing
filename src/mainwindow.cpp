@@ -4,7 +4,9 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QInputDialog>
 #include <QTextStream>
+#include <QListView>
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QGraphicsDropShadowEffect>
@@ -87,9 +89,9 @@ MainWindow::MainWindow(QWidget *parent) :
 #endif
 
   // Disable unused buttons
-  ui->actionAdd_image_for_selected_subject->setVisible(false);
-  ui->actionAdd_image_for_new_subject->setVisible(false);
-  ui->actionAdd_multiple_subjects->setVisible(false);
+  // ui->actionAdd_image_for_selected_subject->setVisible(false);
+  // ui->actionAdd_image_for_new_subject->setVisible(false);
+  // ui->actionAdd_multiple_subjects->setVisible(false);
 
   // Turn on drag and drop
   setAcceptDrops(true); 
@@ -110,8 +112,14 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(m_Scheduler, SIGNAL(JobFinished(AlgorithmModuleBase*)), 
     this, SLOT(OnSchedulerJobFinished(AlgorithmModuleBase*))
   );
-  connect(ui->actionOpen_single_subject, SIGNAL(triggered()), 
-    this, SLOT(OnOpenSingleSubject())
+  connect(ui->actionOpen_Subjects, SIGNAL(triggered()), 
+    this, SLOT(OnOpenSubjects())
+  );
+  connect(ui->actionAdd_image_for_new_subject, SIGNAL(triggered()), 
+    this, SLOT(OnOpenImagesForNewSubject())
+  );
+  connect(ui->actionAdd_image_for_selected_subject, SIGNAL(triggered()), 
+    this, SLOT(OnOpenImagesForSelectedSubject())
   );
   connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)),
     this, SLOT(SelectedSubjectChangedHandler(long))
@@ -139,11 +147,93 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *e)
 
 void MainWindow::dropEvent(QDropEvent *e)
 {
+  QStringList filesOrDirs;
+  bool foundFile = false, foundDir = false;
+
   foreach(const QUrl &url, e->mimeData()->urls()) {
     QString fileName = url.toLocalFile();
-    qDebug() << "Dropped file:" + fileName;
+    filesOrDirs.push_back(fileName);
 
-    m_DataManager->AddSubjectAndDataByDirectoryPath(fileName);
+    QFileInfo fileCheck(fileName);
+
+    if (fileCheck.isDir())
+    {
+      foundDir = true;
+
+      if (foundFile) { break; }
+    }
+    else {
+      foundFile = true;
+
+      if (foundDir) { break; }
+    }
+
+    qDebug() << "Dropped file:" + fileName;
+  }
+
+  if (foundFile && foundDir)
+  {
+    QMessageBox::information(
+      this,
+      m_AppNameShort,
+      tr("Please drag and drop either folders where each one is a subject, or multiple images of one subject.")
+    );    
+    return;
+  }
+
+  if (foundDir)
+  {
+    foreach(const QString dir, filesOrDirs)
+    {
+      m_DataManager->AddSubjectAndDataByDirectoryPath(dir);
+    }
+  }
+  else {
+    QString firstFileBaseName = QFileInfo(filesOrDirs.at(0)).baseName();
+    QStringList firstFileSplit = firstFileBaseName.split("_");
+    QString divider = "_";
+    
+    // If the name is not using '_', assume '-'
+    if (firstFileSplit.size() == 1) { 
+      firstFileSplit = firstFileBaseName.split("-"); 
+      divider = "-";
+    }
+
+    QString suggestedSubjectName = firstFileSplit.at(0);
+    for (int i=1; i < firstFileSplit.size()-1; i++)
+    {
+      suggestedSubjectName = suggestedSubjectName + divider + firstFileSplit.at(i);
+    }
+
+
+    // Get Subject Name
+    QString subjectName;
+    bool ok;
+    do {
+      subjectName = QInputDialog::getText(this, 
+        m_AppNameShort,
+        tr("Subject name:"), 
+        QLineEdit::Normal,
+        suggestedSubjectName, 
+        &ok
+      );
+    } while(ok && subjectName.isEmpty());
+    
+    if (!ok)
+    {
+      // The user pressed cancel
+      return;
+    }
+
+    // Add the data to a new subject
+    long uid = m_DataManager->AddSubject(
+      QFileInfo(filesOrDirs.at(0)).absoluteDir().path(), subjectName
+    );
+
+    foreach(const QString file, filesOrDirs)
+    {
+      m_DataManager->AddDataToSubject(uid, file);
+    }
   }
 
   //// Not implemented yet message
@@ -154,20 +244,135 @@ void MainWindow::dropEvent(QDropEvent *e)
   //);
 }
 
-void MainWindow::OnOpenSingleSubject()
+void MainWindow::OnOpenSubjects()
 {
-  QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
+  // Dialog to get the directories
+  QFileDialog dialog(this);
+  dialog.setDirectory(m_MostRecentDir);
+  dialog.setFileMode(QFileDialog::DirectoryOnly);
+  dialog.setOptions(QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+  dialog.setWindowTitle("Choose one or more directories (subjects)");
+
+  // The following things make the dialog be able to
+  // select multiple subjects because Qt doesn't support it as an option
+  dialog.setOption(QFileDialog::DontUseNativeDialog, true);
+  QListView *l = dialog.findChild<QListView*>("listView");
+  if (l) {
+    l->setSelectionMode(QAbstractItemView::MultiSelection);
+  }
+  QTreeView *t = dialog.findChild<QTreeView*>();
+  if (t) {
+    t->setSelectionMode(QAbstractItemView::MultiSelection);
+  }
+
+  // Show the dialog
+  if (dialog.exec())
+  {
+    QStringList dirNames = dialog.selectedFiles();
+
+    foreach (QString dir, dirNames)
+    {
+      if (!dir.isEmpty())
+      {
+        // DataManager will notify everything that there was a change
+        m_DataManager->AddSubjectAndDataByDirectoryPath(dir);
+        m_MostRecentDir = dir;
+      }
+    }
+  }
+
+  // QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
+  //   m_MostRecentDir,
+  //   QFileDialog::ShowDirsOnly |
+  //   QFileDialog::DontResolveSymlinks
+  // );
+
+  // m_MostRecentDir = dir;
+}
+
+void MainWindow::OnOpenImagesForNewSubject()
+{
+  QStringList filenames = QFileDialog::getOpenFileNames(this,
+    tr("Select images"),
     m_MostRecentDir,
-    QFileDialog::ShowDirsOnly |
-    QFileDialog::DontResolveSymlinks
+    tr("Nifti images (*.nii.gz)") 
   );
 
-  m_MostRecentDir = dir;
-
-  if (!dir.isEmpty())
+  if (filenames.isEmpty())
   {
-    // DataManager will notify everything that there was a change
-    m_DataManager->AddSubjectAndDataByDirectoryPath(dir);
+    return;
+  }
+
+  // Find suggested subject name
+
+  QString firstFileBaseName = QFileInfo(filenames.at(0)).baseName();
+  QStringList firstFileSplit = firstFileBaseName.split("_");
+  QString divider = "_";
+    
+  // If the name is not using '_', assume '-'
+  if (firstFileSplit.size() == 1) { 
+    firstFileSplit = firstFileBaseName.split("-"); 
+    divider = "-";
+  }
+
+  QString suggestedSubjectName = firstFileSplit.at(0);
+  for (int i=1; i < firstFileSplit.size()-1; i++)
+  {
+    suggestedSubjectName = suggestedSubjectName + divider + firstFileSplit.at(i);
+  }
+
+  // Get Subject Name
+  QString subjectName;
+  bool ok;
+  do {
+    subjectName = QInputDialog::getText(this, 
+      m_AppNameShort,
+      tr("Subject name:"), 
+      QLineEdit::Normal,
+      suggestedSubjectName, 
+      &ok
+    );
+  } while(ok && subjectName.isEmpty());
+  
+  if (!ok)
+  {
+    // The user pressed cancel
+    return;
+  }
+
+  // Add the data to a new subject
+  long uid = m_DataManager->AddSubject(
+    QFileInfo(filenames.at(0)).absoluteDir().path(), subjectName
+  );
+
+  foreach(QString file, filenames)
+  {
+    m_DataManager->AddDataToSubject(uid, file);
+  }
+}
+
+void MainWindow::OnOpenImagesForSelectedSubject()
+{
+  long uid = m_DataView->GetCurrentSubjectID(); 
+  if (uid == -1)
+  {
+		QMessageBox::information(
+			this,
+			tr("No selected subject"),
+			tr("Please load a subject by directory or images for new subject.")
+		);
+    return;
+  }
+
+  QStringList filenames = QFileDialog::getOpenFileNames(this,
+    tr("Select images"),
+    m_DataManager->GetOriginalSubjectPath(uid),
+    tr("Nifti images (*.nii.gz)") 
+  );
+
+  foreach(QString file, filenames)
+  {
+    m_DataManager->AddDataToSubject(uid, file);
   }
 }
 
