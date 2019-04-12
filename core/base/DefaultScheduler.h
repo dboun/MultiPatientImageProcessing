@@ -18,7 +18,7 @@ class DefaultScheduler : public SchedulerBase
 
 public:
 	DefaultScheduler(QObject *parent = nullptr);
-	~DefaultScheduler() {}
+	~DefaultScheduler();
 
     void QueueAlgorithm(AlgorithmModuleBase* algorithmModule) override;
     void ClearQueuedAlgorithms() override;
