@@ -113,7 +113,13 @@ MainWindow::MainWindow(QWidget *parent) :
     this, SLOT(OnSchedulerJobFinished(AlgorithmModuleBase*))
   );
   connect(ui->actionOpen_Subjects, SIGNAL(triggered()), 
-    this, SLOT(OnOpenSingleSubject())
+    this, SLOT(OnOpenSubjects())
+  );
+  connect(ui->actionAdd_image_for_new_subject, SIGNAL(triggered()), 
+    this, SLOT(OnOpenImagesForNewSubject())
+  );
+  connect(ui->actionAdd_image_for_selected_subject, SIGNAL(triggered()), 
+    this, SLOT(OnOpenImagesForSelectedSubject())
   );
   connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)),
     this, SLOT(SelectedSubjectChangedHandler(long))
@@ -238,7 +244,7 @@ void MainWindow::dropEvent(QDropEvent *e)
   //);
 }
 
-void MainWindow::OnOpenSingleSubject()
+void MainWindow::OnOpenSubjects()
 {
   // Dialog to get the directories
   QFileDialog dialog(this);
@@ -282,6 +288,92 @@ void MainWindow::OnOpenSingleSubject()
   // );
 
   // m_MostRecentDir = dir;
+}
+
+void MainWindow::OnOpenImagesForNewSubject()
+{
+  QStringList filenames = QFileDialog::getOpenFileNames(this,
+    tr("Select images"),
+    m_MostRecentDir,
+    tr("Nifti images (*.nii.gz)") 
+  );
+
+  if (filenames.isEmpty())
+  {
+    return;
+  }
+
+  // Find suggested subject name
+
+  QString firstFileBaseName = QFileInfo(filenames.at(0)).baseName();
+  QStringList firstFileSplit = firstFileBaseName.split("_");
+  QString divider = "_";
+    
+  // If the name is not using '_', assume '-'
+  if (firstFileSplit.size() == 1) { 
+    firstFileSplit = firstFileBaseName.split("-"); 
+    divider = "-";
+  }
+
+  QString suggestedSubjectName = firstFileSplit.at(0);
+  for (int i=1; i < firstFileSplit.size()-1; i++)
+  {
+    suggestedSubjectName = suggestedSubjectName + divider + firstFileSplit.at(i);
+  }
+
+  // Get Subject Name
+  QString subjectName;
+  bool ok;
+  do {
+    subjectName = QInputDialog::getText(this, 
+      m_AppNameShort,
+      tr("Subject name:"), 
+      QLineEdit::Normal,
+      suggestedSubjectName, 
+      &ok
+    );
+  } while(ok && subjectName.isEmpty());
+  
+  if (!ok)
+  {
+    // The user pressed cancel
+    return;
+  }
+
+  // Add the data to a new subject
+  long uid = m_DataManager->AddSubject(
+    QFileInfo(filenames.at(0)).absoluteDir().path(), subjectName
+  );
+
+  foreach(QString file, filenames)
+  {
+    m_DataManager->AddDataToSubject(uid, file);
+  }
+}
+
+void MainWindow::OnOpenImagesForSelectedSubject()
+{
+  long uid = m_DataView->GetCurrentSubjectID(); 
+  if (uid == -1)
+  {
+		QMessageBox::information(
+			this,
+			tr("No selected subject"),
+			tr("Please load a subject by directory or images for new subject.")
+		);
+    return;
+  }
+
+  QStringList filenames = QFileDialog::getOpenFileNames(this,
+    tr("Select images"),
+    m_DataManager->GetOriginalSubjectPath(uid),
+    tr("Nifti images (*.nii.gz)") 
+  );
+
+  foreach(QString file, filenames)
+  {
+    m_DataManager->AddDataToSubject(uid, file);
+  }
 }
 
 void MainWindow::OnRunPressed()

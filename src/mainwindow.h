@@ -36,7 +36,9 @@ public:
   void dropEvent(QDropEvent *e) override;
 
 public slots:
-  void OnOpenSingleSubject();
+  void OnOpenSubjects();
+  void OnOpenImagesForNewSubject();
+  void OnOpenImagesForSelectedSubject();
   void OnRunPressed();
   
   // Slots for Scheduler
