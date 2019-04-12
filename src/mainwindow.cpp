@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QTextStream>
+#include <QListView>
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QGraphicsDropShadowEffect>
@@ -88,9 +89,9 @@ MainWindow::MainWindow(QWidget *parent) :
 #endif
 
   // Disable unused buttons
-  ui->actionAdd_image_for_selected_subject->setVisible(false);
-  ui->actionAdd_image_for_new_subject->setVisible(false);
-  ui->actionAdd_multiple_subjects->setVisible(false);
+  // ui->actionAdd_image_for_selected_subject->setVisible(false);
+  // ui->actionAdd_image_for_new_subject->setVisible(false);
+  // ui->actionAdd_multiple_subjects->setVisible(false);
 
   // Turn on drag and drop
   setAcceptDrops(true); 
@@ -111,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(m_Scheduler, SIGNAL(JobFinished(AlgorithmModuleBase*)), 
     this, SLOT(OnSchedulerJobFinished(AlgorithmModuleBase*))
   );
-  connect(ui->actionOpen_single_subject, SIGNAL(triggered()), 
+  connect(ui->actionOpen_Subjects, SIGNAL(triggered()), 
     this, SLOT(OnOpenSingleSubject())
   );
   connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)),
@@ -239,19 +240,48 @@ void MainWindow::dropEvent(QDropEvent *e)
 
 void MainWindow::OnOpenSingleSubject()
 {
-  QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
-    m_MostRecentDir,
-    QFileDialog::ShowDirsOnly |
-    QFileDialog::DontResolveSymlinks
-  );
+  // Dialog to get the directories
+  QFileDialog dialog(this);
+  dialog.setDirectory(m_MostRecentDir);
+  dialog.setFileMode(QFileDialog::DirectoryOnly);
+  dialog.setOptions(QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+  dialog.setWindowTitle("Choose one or more directories (subjects)");
 
-  m_MostRecentDir = dir;
-
-  if (!dir.isEmpty())
-  {
-    // DataManager will notify everything that there was a change
-    m_DataManager->AddSubjectAndDataByDirectoryPath(dir);
+  // The following things make the dialog be able to
+  // select multiple subjects because Qt doesn't support it as an option
+  dialog.setOption(QFileDialog::DontUseNativeDialog, true);
+  QListView *l = dialog.findChild<QListView*>("listView");
+  if (l) {
+    l->setSelectionMode(QAbstractItemView::MultiSelection);
   }
+  QTreeView *t = dialog.findChild<QTreeView*>();
+  if (t) {
+    t->setSelectionMode(QAbstractItemView::MultiSelection);
+  }
+
+  // Show the dialog
+  if (dialog.exec())
+  {
+    QStringList dirNames = dialog.selectedFiles();
+
+    foreach (QString dir, dirNames)
+    {
+      if (!dir.isEmpty())
+      {
+        // DataManager will notify everything that there was a change
+        m_DataManager->AddSubjectAndDataByDirectoryPath(dir);
+        m_MostRecentDir = dir;
+      }
+    }
+  }
+
+  // QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
+  //   m_MostRecentDir,
+  //   QFileDialog::ShowDirsOnly |
+  //   QFileDialog::DontResolveSymlinks
+  // );
+
+  // m_MostRecentDir = dir;
 }
 
 void MainWindow::OnRunPressed()
