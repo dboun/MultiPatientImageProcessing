@@ -257,6 +257,16 @@ void MainWindow::closeEvent (QCloseEvent *e)
     //     e->accept();
     // }
 
+  if (!m_Scheduler->IsSafeToExit())
+  {
+    QMessageBox::information( this, 
+      m_AppNameShort,
+      tr("Please wait for all operations to finish.")
+    );
+    e->ignore();
+    return;
+  }
+
   // Remove data in reverse order to avoid reloading everything to the viewer
 	auto uids = m_DataManager->GetAllSubjectIds();
 	

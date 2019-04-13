@@ -24,6 +24,7 @@ DefaultScheduler::~DefaultScheduler()
 void DefaultScheduler::QueueAlgorithm(AlgorithmModuleBase* algorithmModule)
 {
 	std::lock_guard<std::mutex> lg(m_Mutex);
+	IncrementRunningAlgorithms();
 	AddToQueue(algorithmModule);
 	StartBackgroundCoordinatorIfNecessary();
 }
@@ -89,6 +90,7 @@ void DefaultScheduler::ThreadJob(long tid, AlgorithmModuleBase* algorithmModule)
 	algorithmModule->Run();
 	emit JobFinished(algorithmModule);
 	AddThreadToJoinQueue(tid);
+	DecrementRunningAlgorithms();
 }
 
 void DefaultScheduler::AddThreadToJoinQueue(long tid)
