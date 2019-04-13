@@ -25,6 +25,16 @@ DataManager::DataManager(QObject *parent) : QObject(parent)
 
 DataManager::~DataManager()
 {
+	// Remove data in reverse order to avoid reloading everything to the viewer
+	auto uids = this->GetAllSubjectIds();
+	long uid;
+
+	for (long i = uids.size()-1; i >= 0; i--)
+	{
+		uid = uids[i];
+		this->RemoveSubject(uid);
+	}
+
 	// For internal cache subject path
 	QString appDataDir = QStandardPaths::standardLocations(
 		QStandardPaths::AppDataLocation

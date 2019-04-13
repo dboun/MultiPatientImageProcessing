@@ -104,7 +104,7 @@ void MitkDrawingTool::SetMitkImageViewer(MitkImageViewer* mitkImageViewer)
 
 void MitkDrawingTool::OnDataAboutToGetRemoved(long iid)
 {
-  qDebug() << "MitkDrawingTool::OnDataAboutToGetRemoved";
+  qDebug() << "MitkDrawingTool::OnDataAboutToGetRemoved" << iid;
 
   if (!m_MaskLoadedForThisSubject || !m_LoadedMaskNode || iid == -1)
   {

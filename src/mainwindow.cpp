@@ -244,6 +244,41 @@ void MainWindow::dropEvent(QDropEvent *e)
   //);
 }
 
+void MainWindow::closeEvent (QCloseEvent *e)
+{
+    // QMessageBox::StandardButton resBtn = QMessageBox::question( this, APP_NAME,
+    //   tr("Are you sure?\n"),
+    //   QMessageBox::Cancel | QMessageBox::No | QMessageBox::Yes,
+    //   QMessageBox::Yes
+    // );
+    // if (resBtn != QMessageBox::Yes) {
+    //     e->ignore();
+    // } else {
+    //     e->accept();
+    // }
+
+  // Remove data in reverse order to avoid reloading everything to the viewer
+	auto uids = m_DataManager->GetAllSubjectIds();
+	
+  // Test
+	{
+		for(auto uid : uids)
+		{
+			qDebug() << "uid" << uid << "was loaded";
+		}
+	}
+  
+  long uid;
+	for (long i = uids.size()-1; i >= 0; i--)
+	{
+		uid = uids[i];
+    qDebug() << "MainWindow::closeEvent Asking uid" << uid << "to be removed - i=" << i;
+		m_DataManager->RemoveSubject(uid);
+	}
+
+  //e->accept();
+}
+
 void MainWindow::OnOpenSubjects()
 {
   // Dialog to get the directories

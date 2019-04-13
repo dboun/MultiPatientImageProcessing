@@ -4,6 +4,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QMimeData>
 #include <QDragEnterEvent>
+#include <QCloseEvent>
 #include <QString>
 
 #include <set>
@@ -34,6 +35,7 @@ public:
 
   void dragEnterEvent(QDragEnterEvent *e) override;
   void dropEvent(QDropEvent *e) override;
+  void closeEvent(QCloseEvent *e) override;
 
 public slots:
   void OnOpenSubjects();
