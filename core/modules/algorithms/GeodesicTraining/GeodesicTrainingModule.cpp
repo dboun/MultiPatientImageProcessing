@@ -4,6 +4,9 @@
 
 #include <mitkImage.h>
 #include <mitkIOUtil.h>
+#include <mitkImageCast.h>
+
+#include <itkExtractImageFilter.h>
 
 #include <vector>
 #include <string>
@@ -93,8 +96,20 @@ void GeodesicTrainingModule::Algorithm()
     qDebug() << "GeodesicTraining will use " << m_IdealNumberOfThreads << " threads";
     qDebug() << "GeodesicTraining will use mask " << mask.c_str();
 
+    // Load all the images as mitk::Image(s)
+    std::vector< mitk::Image::Pointer > inputImagesMITK;
+    for (const std::string& image : images)
+    {
+        inputImagesMITK.push_back(
+            mitk::IOUtil::Load<mitk::Image>(image)
+        );
+    }
+    // Load the mask as mitk::Image
+    mitk::Image::Pointer maskMITK = mitk::IOUtil::Load<mitk::Image>(mask);
+
     // To find the image dimensions
-    const unsigned int dimensions = mitk::IOUtil::Load<mitk::Image>(images[0])->GetDimension();
+    //const unsigned int dimensions = mitk::IOUtil::Load<mitk::Image>(images[0])->GetDimension();
+    const unsigned int dimensions = inputImagesMITK[0]->GetDimension();
     qDebug() << "Dimensions are" << dimensions;
 
     // This necessary because of templates (and maybe because there is not a base class)
@@ -107,21 +122,51 @@ void GeodesicTrainingModule::Algorithm()
             this, SLOT(GeodesicTrainingProgressUpdateHandler(QString, int))
         );
 
+        // Lock the edit mutex
         std::unique_lock<std::mutex> ul(*this->GetDataManager()->GetSubjectEditMutexPointer(m_Uid));
-        std::vector<typename itk::Image<float, 3>::Pointer> inputImagesITK;
-        // for (const std::string& image : images)
-        // {
-        //     inputImagesITK.push_back(cbica::ReadImage<itk::Image<float, 3>>(image));
-        // }
+        
+        // Convert the images to itk::Image
+        std::vector<typename itk::Image<float, 2>::Pointer> inputImagesITK;
 
-        geodesicTraining->SetInputImages(images);
-        geodesicTraining->SetLabels(mask);
+        for (const mitk::Image::Pointer imageMITK : inputImagesMITK)
+        {
+            typename itk::Image<float, 2>::Pointer imageITK;
+            mitk::CastToItkImage(imageMITK, imageITK);
+            inputImagesITK.push_back(imageITK);
+        }
+
+        typename itk::Image<int, 2>::Pointer maskITK;
+        
+        // Convert the mask to 2D itk::Image (because mitk::LabelSetImage is always 3D)
+        {
+            typedef itk::Image<int, 2> LabelsImageType2D;
+            typedef itk::Image<int, 3> LabelsImageType3D;
+            typename LabelsImageType3D::Pointer maskITK3D;
+            mitk::CastToItkImage(maskMITK, maskITK3D);
+            auto regionSize = maskITK3D->GetLargestPossibleRegion().GetSize();
+            regionSize[2] = 0; // Only 2D image is needed
+            LabelsImageType3D::IndexType regionIndex;
+            regionIndex.Fill(0);    
+            LabelsImageType3D::RegionType desiredRegion(regionIndex, regionSize);
+            auto extractor = itk::ExtractImageFilter< LabelsImageType3D, LabelsImageType2D >::New();
+            extractor->SetExtractionRegion(desiredRegion);
+            extractor->SetInput(maskITK3D);
+            extractor->SetDirectionCollapseToIdentity();
+            extractor->Update();
+            maskITK = extractor->GetOutput();
+            maskITK->DisconnectPipeline();
+        }
+
+        // Initialize geodesicTraining
+        geodesicTraining->SetInputImages(inputImagesITK);
+        geodesicTraining->SetLabels(maskITK);
         geodesicTraining->SetOutputPath(outputPath.toStdString());
         geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
         geodesicTraining->SaveOnlyNormalSegmentation(true, "segmentation");
         geodesicTraining->SetVerbose(true);
-        //geodesicTraining->SetTimerEnabled(true);
 
+        // Unlock edit mutex and run
+        // TODO: maybe unlock after run?
         ul.unlock();
         auto result = geodesicTraining->Execute();
 
@@ -148,14 +193,22 @@ void GeodesicTrainingModule::Algorithm()
         );
 
         std::unique_lock<std::mutex> ul(*this->GetDataManager()->GetSubjectEditMutexPointer(m_Uid));
-        // std::vector<typename itk::Image<float, 3>::Pointer> inputImagesITK;
-        // for (const std::string& image : images)
-        // {
-        //     inputImagesITK.push_back(cbica::ReadImage<itk::Image<float, 3>>(image));
-        // }
+        
+        // Convert the images/mask to itk::Image
+        std::vector<typename itk::Image<float, 3>::Pointer> inputImagesITK;
+        typename itk::Image<int, 3>::Pointer maskITK;
 
-        geodesicTraining->SetInputImages(images);
-        geodesicTraining->SetLabels(mask);
+        for (const mitk::Image::Pointer imageMITK : inputImagesMITK)
+        {
+            typename itk::Image<float, 3>::Pointer imageITK;
+            mitk::CastToItkImage(imageMITK, imageITK);
+            inputImagesITK.push_back(imageITK);
+        }
+        mitk::CastToItkImage(maskMITK, maskITK);
+
+        geodesicTraining->SetInputImages(inputImagesITK);
+        geodesicTraining->SetLabels(maskITK);
+
         geodesicTraining->SetOutputPath(outputPath.toStdString());
         geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
         geodesicTraining->SaveOnlyNormalSegmentation(true, "segmentation");
