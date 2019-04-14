@@ -40,7 +40,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Initialize DataView
   m_DataView = new DataTreeView(this);
-  m_DataView->AcceptOnlyNrrdMaskAndSegmentations(true);
   //m_DataView->setMinimumWidth(400);
   GuiModuleBase::PlaceWidgetInWidget(m_DataView, ui->dataViewContainer);
   m_DataView->SetDataManager(m_DataManager);

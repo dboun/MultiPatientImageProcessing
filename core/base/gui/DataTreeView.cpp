@@ -146,14 +146,6 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 		QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
 		QString filePath    = this->GetDataManager()->GetDataPath(iid);
 
-    // More checks
-    if (m_AcceptOnlyNrrdMaskAndSegmentations && 
-        (specialRole == "Mask" || specialRole == "Segmentation") &&
-        !filePath.endsWith(".nrrd", Qt::CaseSensitive)
-    ) {
-    	continue;
-		}
-
 		// Add new data in tree view
 		QTreeWidgetItem* dataToAdd = new QTreeWidgetItem(subject);
 		dataToAdd->setCheckState(0, Qt::Unchecked);

@@ -16,7 +16,6 @@ public:
 
 	long GetCurrentSubjectID();
 	long GetCurrentDataID();
-	void AcceptOnlyNrrdMaskAndSegmentations(bool onlyNrrd);
 
 	void SetDataManager(DataManager* dataManager) override;
 	
@@ -43,7 +42,6 @@ protected:
 	void SetCurrentDataID(long iid);
 
 	QStringList  m_AcceptedFileTypes = QStringList() << "*"; // Controlled by DataManager
-	bool m_AcceptOnlyNrrdMaskAndSegmentations = false;
 	
 	long m_CurrentSubjectID = -1;
 	long m_CurrentDataID    = -1;

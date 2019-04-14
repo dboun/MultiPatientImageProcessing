@@ -38,11 +38,6 @@ long DataViewBase::GetCurrentDataID()
 	return m_CurrentDataID;
 }
 
-void DataViewBase::AcceptOnlyNrrdMaskAndSegmentations(bool onlyNrrd)
-{
-	m_AcceptOnlyNrrdMaskAndSegmentations = onlyNrrd;
-}
-
 void DataViewBase::SubjectAddedHandler(long uid)
 {
 	qDebug() << QString("DataViewBase::SubjectAddedHandler(long)");
