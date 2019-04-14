@@ -50,6 +50,7 @@ namespace GeodesicTrainingSegmentation
 		LABELS_THRESHOLD,
 		SEGMENT,
 		REVERSE_GEOTRAIN,
+		REVERSE_GEOTRAIN_SPORADIC,
 		GEOTRAIN,
 		GEOTRAIN_FULL,
 		RF,
@@ -159,7 +160,7 @@ namespace GeodesicTrainingSegmentation
 			}
 
 			// Normalize input (if applicable). Note: AGD maps are capped at 255
-			//ItkUtilGTS::statisticalImageVectorNormalization<InputImageType>(m_input_images, std::lround(255 * m_image_to_agd_maps_ratio));
+			ItkUtilGTS::statisticalImageVectorNormalization<InputImageType>(m_input_images, std::lround(255 * m_image_to_agd_maps_ratio));
 			//ItkUtilGTS::statisticalImageMapNormalization<MODALITY_MRI, InputImageType>(m_input_images_MRI, std::lround(255 * m_image_to_agd_maps_ratio));
 			
 			switch (m_mode) {
@@ -238,6 +239,64 @@ namespace GeodesicTrainingSegmentation
 				if (std::is_same<PixelType, float>::value) {
 					// In case more pixel types are supported in the future
 					gtsResult->segmentedFloatImage = segmentedImage;
+				}
+
+			} break;
+			case REVERSE_GEOTRAIN_SPORADIC:
+			{
+				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
+				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
+
+				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
+
+				if(m_label_HT == 0 || labelsCountMap.count(m_label_HT) == 0)
+				{
+					gtsResult->ok = false;
+					gtsResult->errorMessage = "Either the healthy tissue label was not set or there weren't any healthy tissue labels drawn";
+					errorOccured(gtsResult->errorMessage);
+					return gtsResult;
+				}
+
+				// Construct agd maps for each input image and input input images and agd maps to a SVM that produces labels
+				std::vector< AgdImagePointer > agdImages;
+
+				addToInputImagesMRI(); // No special operations for MRI images
+				
+				std::vector<LabelsPixelType> htKeyInList;
+				htKeyInList.push_back(m_label_HT);
+
+				if (m_input_images.size() != 0) {
+
+					std::vector< AgdImagePointer > agdImagesAllKeys = agd<PixelType>(m_input_images, htKeyInList, true);
+					agdImages.insert(agdImages.end(), agdImagesAllKeys.begin(), agdImagesAllKeys.end()); // Append
+				}
+
+				message("Converting AGD maps...", "Converting");
+				for (auto agdImage : agdImages) {
+					// Convert output of AGD to InputImageType
+					auto agdImageCast = ItkUtilGTS::castAndRescaleImage< AgdImageType, InputImageType>(agdImage);
+
+					// Apply negative filter so it is 0 outside of the brain (basically where there is no information - that is used to make it faster later)
+					typedef itk::InvertIntensityImageFilter<InputImageType> InvertIntensityImageFilterType;
+					typename InvertIntensityImageFilterType::Pointer invertIntensityFilter = InvertIntensityImageFilterType::New();
+					invertIntensityFilter->SetInput(agdImageCast);
+					invertIntensityFilter->SetMaximum(255);
+					invertIntensityFilter->Update();
+
+					//m_input_images.push_back(ItkUtilGTS::statisticalImageNormalization<InputImageType>(invertIntensityFilter->GetOutput(), VALUE));
+					m_input_images.push_back(invertIntensityFilter->GetOutput());
+					m_agd_maps_count++;
+				}
+				message("Converting AGD maps...", "Converting", 100);
+
+				// SVM_LABELS
+				svm<PixelType>(m_input_images, m_labels_image, gtsResult, labelsCountMap, false);
+
+				// Change labels if necessary
+				changeLabels(gtsResult->labelsImage, m_change_labels_map);
+
+				if (m_ground_truth_set) {
+					checkAccuracyInRelationToGroundTruth(gtsResult->labelsImage, gtsResult);
 				}
 
 			} break;
