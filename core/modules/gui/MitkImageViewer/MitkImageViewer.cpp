@@ -444,10 +444,7 @@ void MitkImageViewer::OnExportData(long iid, QString fileName)
 
 void MitkImageViewer::SaveImageToFile(long iid, bool updateDataManager)
 {
-	// Since the image has an iid, info about it
-	// including the full path to it can be obtained
-	// from the DataManager (already set up by ImageViewerBase).
-	qDebug() << "MitkImageViewer::SaveImageToFile";
+	qDebug() << "MitkImageViewer::SaveImageToFile" << iid;
 
 	// Find the node
 	mitk::DataNode::Pointer dataNode;
@@ -463,76 +460,86 @@ void MitkImageViewer::SaveImageToFile(long iid, bool updateDataManager)
 
 	if (!m_DataStorage->Exists(dataNode))
 	{
-		qDebug() << "Can't find dataNode to save image " << iid;
+		qDebug() << "MitkImageViewer::SaveImageToFile error: Can't find dataNode" << iid;
 		return;
 	}
 
 	long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
 	
-	QFileInfo f(this->GetDataManager()->GetDataPath(iid));
-	QString baseName = f.baseName();
+	// QFileInfo f(this->GetDataManager()->GetDataPath(iid));
+	// QString baseName = f.baseName();
 
-	QString directoryName = this->GetDataManager()->GetSubjectPath(uid) 
-		+ QString("/") + m_AppNameShort + QString("/")
-		+ m_AppNameShort + "_" + "Mask";
+	// QString specialRole   = this->GetDataManager()->GetDataSpecialRole(iid);
+	// QString directoryName = this->GetDataManager()->GetSubjectPath(uid);
 
-	if (!QDir(directoryName).exists())
-	{
-		QDir().mkpath(directoryName);
-	}
+	// if (specialRole != "")
+	// {
+	// 	directoryName += QString("/") + m_AppNameShort + QString("/")
+	// 	               + m_AppNameShort + "_" + specialRole;
+	// }
 
-	QString nifti = directoryName + QString("/") + baseName + QString(".nii.gz");
-	QString nrrd  = directoryName + QString("/") + baseName + QString(".nrrd");
+	// if (!QDir(directoryName).exists())
+	// {
+	// 	QDir().mkpath(directoryName);
+	// }
 
-	qDebug() << "Will save image to: ";
-	qDebug() << "-  " << nifti;
-	qDebug() << "-  " << nrrd;
+	// QString nifti = directoryName + QString("/") + baseName + QString(".nii.gz");
+	// QString nrrd  = directoryName + QString("/") + baseName + QString(".nrrd");
 
-	qDebug() << "MitkImageViewer saving image" << nifti;
-	qDebug() << "MitkImageViewer saving image" << nrrd;
-	qDebug() << "MitkImageViewer where" << this->GetDataManager()->GetDataPath(iid) << "was";
+	// qDebug() << "Will save image to: ";
+	// qDebug() << "-  " << nifti;
+	// qDebug() << "-  " << nrrd;
+
+	// qDebug() << "MitkImageViewer saving image" << nifti;
+	// qDebug() << "MitkImageViewer saving image" << nrrd;
 
 
 	QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
-	
+	QString path = this->GetDataManager()->GetDataPath(iid);
+	qDebug() << "MitkImageViewer where" << path << "was";
+
 	mitk::IOUtil::Save(
 		dataNode->GetData(), 
-		nifti.toStdString()
+		// nifti.toStdString()
+		path.toStdString()
 	);
 	
-	if (specialRole == "Mask" || specialRole == "Segmentation")
-	{
-		mitk::IOUtil::Save(
-			dataNode->GetData(), 
-			nrrd.toStdString()
-		);
-	}
+	// if (specialRole == "Mask" || specialRole == "Segmentation")
+	// {
+	// 	mitk::IOUtil::Save(
+	// 		dataNode->GetData(), 
+	// 		nrrd.toStdString()
+	// 	);
+	// }
 
 	if (updateDataManager)
 	{
-		auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(
-			this->GetDataManager()->GetSubjectIdFromDataId(iid)
-		);
+		// auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(
+		// 	this->GetDataManager()->GetSubjectIdFromDataId(iid)
+		// );
 
-		if (specialRole == "Mask")
-		{
-			for (const long& tIid : iids)
-			{
-				if (this->GetDataManager()->GetDataSpecialRole(tIid) == "Mask")
-				{
-					this->GetDataManager()->RemoveData(tIid, true);
-				}
-			}
-		}
-
-
+		// if (specialRole == "Mask")
+		// {
+		// 	for (const long& tIid : iids)
+		// 	{
+		// 		if (this->GetDataManager()->GetDataSpecialRole(tIid) == "Mask")
+		// 		{
+		// 			this->GetDataManager()->RemoveData(tIid, true);
+		// 		}
+		// 	}
+		// }
+		this->GetDataManager()->RemoveData(iid, true);
 		this->GetDataManager()->AddDataToSubject(
-			uid, nifti, specialRole
+			uid, path, specialRole
 		);
 
-		this->GetDataManager()->AddDataToSubject(
-			uid, nrrd, specialRole
-		);
+		// this->GetDataManager()->AddDataToSubject(
+		// 	uid, nifti, specialRole
+		// );
+
+		// this->GetDataManager()->AddDataToSubject(
+		// 	uid, nrrd, specialRole
+		// );
 	}
 }
 

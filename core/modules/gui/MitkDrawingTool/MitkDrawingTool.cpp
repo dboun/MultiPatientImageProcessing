@@ -367,37 +367,35 @@ void MitkDrawingTool::OnCreateNewMask()
       }
     }
     
-    if (referenceIid != -1)
+    if (referenceIid == -1)
     {
-      ui->createMaskPushBtn->hide();
-      //m_WaitingOnLabelsImageCreation = true;
-      emit MitkDrawingToolCreateEmptyMask(referenceIid);
-      
-      m_ProgressDialog = new QProgressDialog(this);
-      m_ProgressDialog->setWindowFlags(Qt::Window | Qt::WindowTitleHint | 
-        Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint
-      );
-      m_ProgressDialog->setWindowTitle("Please wait");
-      m_ProgressDialog->setCancelButton(nullptr);
-      //Set progress dialog in undeterminate state: 
-      m_ProgressDialog->setMaximum( 0 );
-      m_ProgressDialog->setMinimum( 0 );
-      m_ProgressDialog->show();
-
-
-      QFuture<void> future = QtConcurrent::run(
-        this, &MitkDrawingTool::CreateEmptyMask, 
-        referenceIid
-      );
-      m_ProgressDialogWatcher->setFuture(future);
-
-    }
-    else {
       QMessageBox::information(this, 
         "Drawing Tool", 
         "Please load a subject before starting some action."
       );
+      return;
     }
+
+    ui->createMaskPushBtn->hide();
+    //m_WaitingOnLabelsImageCreation = true;
+    //emit MitkDrawingToolCreateEmptyMask(referenceIid);
+    
+    m_ProgressDialog = new QProgressDialog(this);
+    m_ProgressDialog->setWindowFlags(Qt::Window | Qt::WindowTitleHint | 
+      Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint
+    );
+    m_ProgressDialog->setWindowTitle("Please wait");
+    m_ProgressDialog->setCancelButton(nullptr);
+    //Set progress dialog in undeterminate state: 
+    m_ProgressDialog->setMaximum( 0 );
+    m_ProgressDialog->setMinimum( 0 );
+    m_ProgressDialog->show();
+
+    QFuture<void> future = QtConcurrent::run(
+      this, &MitkDrawingTool::CreateEmptyMask, 
+      referenceIid
+    );
+    m_ProgressDialogWatcher->setFuture(future);
 }
 
 void MitkDrawingTool::SetMaskFromNiftiData(long iid)
@@ -409,7 +407,6 @@ void MitkDrawingTool::SetMaskFromNiftiData(long iid)
 	
 	// Copy the data from input image
 	maskImage->InitializeByLabeledImage(inputImage);
-  
 
   long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
 
@@ -442,20 +439,20 @@ void MitkDrawingTool::SetMaskFromNiftiData(long iid)
   }
 
   // Save
-  mitk::IOUtil::Save(
-      maskImage,
-      nifti.toStdString()
-  );
+  // mitk::IOUtil::Save(
+  //     maskImage,
+  //     nifti.toStdString()
+  // );
 
   mitk::IOUtil::Save(
       maskImage,
       nrrd.toStdString()
   );
 
-  // Update DataManager
-  this->GetDataManager()->AddDataToSubject(
-      uid, nifti, "Mask"
-  );
+  // // Update DataManager
+  // this->GetDataManager()->AddDataToSubject(
+  //     uid, nifti, "Mask"
+  // );
 
   this->GetDataManager()->AddDataToSubject(
       uid, nrrd, "Mask"
@@ -578,19 +575,19 @@ void MitkDrawingTool::RemoveExistingToolGui()
 void MitkDrawingTool::CreateEmptyMask(long referenceIid)
 {
   mitk::Image::Pointer referenceImage = mitk::IOUtil::Load<mitk::Image>(
-      this->GetDataManager()->GetDataPath(referenceIid).toStdString()
+    this->GetDataManager()->GetDataPath(referenceIid).toStdString()
   );
 
   mitk::LabelSetImage::Pointer maskImage = mitk::LabelSetImage::New();
   try
   {
-      maskImage->Initialize(referenceImage);
+    maskImage->Initialize(referenceImage);
   }
   catch (mitk::Exception& e)
   {
-      MITK_ERROR << "Exception caught: " << e.GetDescription();
-      QMessageBox::information(this, "New Segmentation Session", "Could not create a new segmentation session.\n");
-      return;
+    MITK_ERROR << "Exception caught: " << e.GetDescription();
+    QMessageBox::information(this, "New Segmentation Session", "Could not create a new segmentation session.\n");
+    return;
   }
 
   long uid = this->GetDataManager()->GetSubjectIdFromDataId(referenceIid);
@@ -605,7 +602,7 @@ void MitkDrawingTool::CreateEmptyMask(long referenceIid)
       QDir().mkpath(directoryName);
   }
 
-  QString nifti = directoryName + QString("/mask.nii.gz");
+  //QString nifti = directoryName + QString("/mask.nii.gz");
   QString nrrd  = directoryName + QString("/mask.nrrd");
 
   // Remove previous masks
@@ -615,17 +612,17 @@ void MitkDrawingTool::CreateEmptyMask(long referenceIid)
   {
       QString tPath = this->GetDataManager()->GetDataPath(tIid);
 
-      if (tPath == nifti || tPath == nrrd)
+      if (/*tPath == nifti || */tPath == nrrd)
       {
           this->GetDataManager()->RemoveData(tIid);
       }
   }
 
   // Save
-  mitk::IOUtil::Save(
-      maskImage,
-      nifti.toStdString()
-  );
+  // mitk::IOUtil::Save(
+  //     maskImage,
+  //     nifti.toStdString()
+  // );
 
   mitk::IOUtil::Save(
       maskImage,
@@ -633,9 +630,9 @@ void MitkDrawingTool::CreateEmptyMask(long referenceIid)
   );
 
   // Update DataManager
-  this->GetDataManager()->AddDataToSubject(
-      uid, nifti, "Mask"
-  );
+  // this->GetDataManager()->AddDataToSubject(
+  //     uid, nifti, "Mask"
+  // );
 
   this->GetDataManager()->AddDataToSubject(
       uid, nrrd, "Mask"

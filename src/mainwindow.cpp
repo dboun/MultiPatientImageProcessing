@@ -467,13 +467,16 @@ void MainWindow::OnRunPressed()
 
   if (maskNrrd != -1)
   {
-    qobject_cast<MitkImageViewer*>(m_ImageViewer)->SaveImageToFile(maskNrrd);
+    qobject_cast<MitkImageViewer*>(m_ImageViewer)->SaveImageToFile(maskNrrd, false);
   }
 
   // Remove all previous masks (if they exist)
   for (const long& iid : iids)
   {
-    m_DataManager->RemoveData(iid);
+    if (iid != maskNrrd)
+    {
+      m_DataManager->RemoveData(iid);
+    }
   }  
 
   // Remove all previous segmentations (if they exist)
@@ -520,51 +523,51 @@ void MainWindow::OnAlgorithmFinished(AlgorithmModuleBase* algorithmModuleBase)
   if (algorithmModuleBase->GetAlgorithmNameShort() == "GeodesicTraining")
   {
 #ifdef BUILD_MODULE_MitkImageViewer
-    long uid = algorithmModuleBase->GetUid();
+    // long uid = algorithmModuleBase->GetUid();
 
-    auto segmentationIids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
-      uid, "Segmentation"
-    );
+    // auto segmentationIids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
+    //   uid, "Segmentation"
+    // );
 
-    auto maskIids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
-      uid, "Mask"
-    );
+    // auto maskIids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
+    //   uid, "Mask"
+    // );
 
-    // Find the most recent segmentation (Not needed now but that might change)
-    // If the segmentations are saved with 2,3,etc in the end
+    // // Find the most recent segmentation (Not needed now but that might change)
+    // // If the segmentations are saved with 2,3,etc in the end
 
-    long recentSegmentationIid = (segmentationIids.size() > 0) ? segmentationIids[0] : -1;
-    QString recentSegmentationPath = m_DataManager->GetDataPath(recentSegmentationIid);
+    // long recentSegmentationIid = (segmentationIids.size() > 0) ? segmentationIids[0] : -1;
+    // QString recentSegmentationPath = m_DataManager->GetDataPath(recentSegmentationIid);
 
-    for (const long& segmentationIid : segmentationIids)
-    {
-      QString segmentationPath = m_DataManager->GetDataPath(segmentationIid);
+    // for (const long& segmentationIid : segmentationIids)
+    // {
+    //   QString segmentationPath = m_DataManager->GetDataPath(segmentationIid);
 
-      if (segmentationPath.endsWith(".nii.gz") &&
-          segmentationPath > recentSegmentationPath
-      ) {
-        recentSegmentationIid  = segmentationIid;
-        recentSegmentationPath = segmentationPath;
-      }
-    }
+    //   if (segmentationPath.endsWith(".nii.gz") &&
+    //       segmentationPath > recentSegmentationPath
+    //   ) {
+    //     recentSegmentationIid  = segmentationIid;
+    //     recentSegmentationPath = segmentationPath;
+    //   }
+    // }
 
-    long maskNrrdIid = -1;
+    // long maskNrrdIid = -1;
 
-    for (const long& maskIid : maskIids)
-    {
-      if (m_DataManager->GetDataPath(maskIid).endsWith(".nrrd"))
-      {
-        maskNrrdIid = maskIid;
-        break;
-      }
-    }
+    // for (const long& maskIid : maskIids)
+    // {
+    //   if (m_DataManager->GetDataPath(maskIid).endsWith(".nrrd"))
+    //   {
+    //     maskNrrdIid = maskIid;
+    //     break;
+    //   }
+    // }
 
-    if (maskNrrdIid != -1 && recentSegmentationIid != -1)
-    {
-      qobject_cast<MitkImageViewer*>(m_ImageViewer)->ConvertToNrrdAndSave(
-        recentSegmentationIid, maskNrrdIid
-      );
-    }
+    // if (maskNrrdIid != -1 && recentSegmentationIid != -1)
+    // {
+    //   qobject_cast<MitkImageViewer*>(m_ImageViewer)->ConvertToNrrdAndSave(
+    //     recentSegmentationIid, maskNrrdIid
+    //   );
+    // }
 #endif
 
     m_SubjectsThatAreRunning.erase(algorithmModuleBase->GetUid());

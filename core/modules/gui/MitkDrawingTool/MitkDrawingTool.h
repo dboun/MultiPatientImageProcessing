@@ -50,7 +50,7 @@ public slots:
 
 signals:
 	void MitkDrawingToolSaveImageToFile(long iid, bool updateDataManager);
-	void MitkDrawingToolCreateEmptyMask(long referenceIid);
+	//void MitkDrawingToolCreateEmptyMask(long referenceIid);
 
 private:
 	// void CreateNewSegmentation();
