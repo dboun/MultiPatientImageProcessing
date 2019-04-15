@@ -314,6 +314,20 @@ void MainWindow::OnOpenSubjects()
   {
     QStringList dirNames = dialog.selectedFiles();
 
+    // Resolve a bug where sometimes the parent directory gets passed too
+    if (dirNames.size() > 1)
+    {
+      QDir d = QDir(dirNames.at(1)); // The second dir in the list
+      d.cdUp(); // go to parent of the second dir
+
+      if (dirNames.at(0) == d.path())
+      {
+        dirNames.removeAt(0);
+      }
+    }
+
+    // Add the subjects
+    bool foundEmpty = false;
     foreach (QString dir, dirNames)
     {
       if (!dir.isEmpty())
@@ -322,6 +336,16 @@ void MainWindow::OnOpenSubjects()
         m_DataManager->AddSubjectAndDataByDirectoryPath(dir);
         m_MostRecentDir = dir;
       }
+      else {
+        foundEmpty = true;
+      }
+    }
+
+    if (foundEmpty)
+    {
+      QMessageBox::information(this, m_AppName,
+        "One or more of the directories was empty."
+      );
     }
   }
 
