@@ -363,7 +363,7 @@ void MainWindow::OnOpenImagesForNewSubject()
   QStringList filenames = QFileDialog::getOpenFileNames(this,
     tr("Select images"),
     m_MostRecentDir,
-    tr("Nifti images (*.nii.gz)") 
+    tr("Nifti images (*.nii.gz | *.nii)") 
   );
 
   if (filenames.isEmpty())
