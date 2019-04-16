@@ -148,44 +148,56 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
 
   // Recreate RenderWindows 1
   QmitkSliceWidget* mitkWidgetWithSliceNav1 = new QmitkSliceWidget(mitkWidget1Container, ".widget1");
+  mitkWidgetWithSliceNav1->findChild<QmitkLevelWindowWidget*>("levelWindow")->hide();
   mitkWidget1 = mitkWidgetWithSliceNav1->GetRenderWindow();
   //mitkWidget1 = new QmitkRenderWindow(mitkWidget1Container, name + ".widget1", nullptr, m_RenderingManager, renderingMode);
   mitkWidget1->SetLayoutIndex(AXIAL);
   mitkWidgetLayout1->addWidget(mitkWidgetWithSliceNav1);
 
   // Recreate RenderWindows 2
-  mitkWidget2 = new QmitkRenderWindow(mitkWidget2Container, name + ".widget2", nullptr, m_RenderingManager, renderingMode);
+  QmitkSliceWidget* mitkWidgetWithSliceNav2 = new QmitkSliceWidget(mitkWidget2Container, ".widget2");
+  mitkWidgetWithSliceNav2->findChild<QmitkLevelWindowWidget*>("levelWindow")->hide();
+  mitkWidget2 = mitkWidgetWithSliceNav2->GetRenderWindow();
+  //mitkWidget2 = new QmitkRenderWindow(mitkWidget2Container, name + ".widget2", nullptr, m_RenderingManager, renderingMode);
   mitkWidget2->setEnabled(true);
   mitkWidget2->SetLayoutIndex(SAGITTAL);
-  mitkWidgetLayout2->addWidget(mitkWidget2);
+  mitkWidgetLayout2->addWidget(mitkWidgetWithSliceNav2);
 
   // Recreate RenderWindows 3
-  mitkWidget3 = new QmitkRenderWindow(mitkWidget3Container, name + ".widget3", nullptr, m_RenderingManager, renderingMode);
+  QmitkSliceWidget* mitkWidgetWithSliceNav3 = new QmitkSliceWidget(mitkWidget3Container, ".widget3");
+  mitkWidgetWithSliceNav3->findChild<QmitkLevelWindowWidget*>("levelWindow")->hide();
+  mitkWidget3 = mitkWidgetWithSliceNav3->GetRenderWindow();
+  //mitkWidget3 = new QmitkRenderWindow(mitkWidget3Container, name + ".widget3", nullptr, m_RenderingManager, renderingMode);
   mitkWidget3->SetLayoutIndex(CORONAL);
-  mitkWidgetLayout3->addWidget(mitkWidget3);
+  mitkWidgetLayout3->addWidget(mitkWidgetWithSliceNav3);
 
   // Recreate RenderWindows 4
   mitkWidget4 = new QmitkRenderWindow(mitkWidget4Container, name + ".widget4", nullptr, m_RenderingManager, renderingMode);
   mitkWidget4->SetLayoutIndex(THREE_D);
   mitkWidgetLayout4->addWidget(mitkWidget4);
+  mitkWidget4Container->hide(); // TODO: Remove this later
 
   // Recreate SignalSlot Connection
   connect(mitkWidget1, SIGNAL(SignalLayoutDesignChanged(int)), this, SLOT(OnLayoutDesignChanged(int)));
+  connect(mitkWidget1, SIGNAL(SignalLayoutDesignChanged(int)), this, SLOT(CustomOnLayoutDesignChanged(int)));
   connect(mitkWidget1, SIGNAL(ResetView()), this, SLOT(ResetCrosshair()));
   connect(mitkWidget1, SIGNAL(ChangeCrosshairRotationMode(int)), this, SLOT(SetWidgetPlaneMode(int)));
   connect(this, SIGNAL(WidgetNotifyNewCrossHairMode(int)), mitkWidget1, SLOT(OnWidgetPlaneModeChanged(int)));
 
   connect(mitkWidget2, SIGNAL(SignalLayoutDesignChanged(int)), this, SLOT(OnLayoutDesignChanged(int)));
+  connect(mitkWidget2, SIGNAL(SignalLayoutDesignChanged(int)), this, SLOT(CustomOnLayoutDesignChanged(int)));
   connect(mitkWidget2, SIGNAL(ResetView()), this, SLOT(ResetCrosshair()));
   connect(mitkWidget2, SIGNAL(ChangeCrosshairRotationMode(int)), this, SLOT(SetWidgetPlaneMode(int)));
   connect(this, SIGNAL(WidgetNotifyNewCrossHairMode(int)), mitkWidget2, SLOT(OnWidgetPlaneModeChanged(int)));
 
   connect(mitkWidget3, SIGNAL(SignalLayoutDesignChanged(int)), this, SLOT(OnLayoutDesignChanged(int)));
+  connect(mitkWidget3, SIGNAL(SignalLayoutDesignChanged(int)), this, SLOT(CustomOnLayoutDesignChanged(int)));
   connect(mitkWidget3, SIGNAL(ResetView()), this, SLOT(ResetCrosshair()));
   connect(mitkWidget3, SIGNAL(ChangeCrosshairRotationMode(int)), this, SLOT(SetWidgetPlaneMode(int)));
   connect(this, SIGNAL(WidgetNotifyNewCrossHairMode(int)), mitkWidget3, SLOT(OnWidgetPlaneModeChanged(int)));
 
   connect(mitkWidget4, SIGNAL(SignalLayoutDesignChanged(int)), this, SLOT(OnLayoutDesignChanged(int)));
+  connect(mitkWidget4, SIGNAL(SignalLayoutDesignChanged(int)), this, SLOT(CustomOnLayoutDesignChanged(int)));
   connect(mitkWidget4, SIGNAL(ResetView()), this, SLOT(ResetCrosshair()));
   connect(mitkWidget4, SIGNAL(ChangeCrosshairRotationMode(int)), this, SLOT(SetWidgetPlaneMode(int)));
   connect(this, SIGNAL(WidgetNotifyNewCrossHairMode(int)), mitkWidget4, SLOT(OnWidgetPlaneModeChanged(int)));
@@ -198,4 +210,9 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
 
   // Activate Widget Menu
   this->ActivateMenuWidget(true);
+}
+
+void CustomQmitkStdMultiWidget::CustomOnLayoutDesignChanged(int layoutDesignIndex)
+{
+  this->resize(QSize(364, 477).expandedTo(minimumSizeHint()));
 }

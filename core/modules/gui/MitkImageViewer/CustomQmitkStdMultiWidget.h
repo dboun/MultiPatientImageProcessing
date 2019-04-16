@@ -72,5 +72,9 @@ public:
     const QString &name = "stdmulti"
   );
 
+public slots:
+  // This is always called after OnLayoutDesignChanged
+  void CustomOnLayoutDesignChanged(int layoutDesignIndex);
+
 };
 #endif /*CustomQmitkStdMultiWidget_h*/
