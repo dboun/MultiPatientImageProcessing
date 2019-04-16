@@ -153,6 +153,7 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
   //mitkWidget1 = new QmitkRenderWindow(mitkWidget1Container, name + ".widget1", nullptr, m_RenderingManager, renderingMode);
   mitkWidget1->SetLayoutIndex(AXIAL);
   mitkWidgetLayout1->addWidget(mitkWidgetWithSliceNav1);
+  mitkWidgetLayout1->setContentsMargins(QMargins(0,0,0,0));
 
   // Recreate RenderWindows 2
   QmitkSliceWidget* mitkWidgetWithSliceNav2 = new QmitkSliceWidget(mitkWidget2Container, ".widget2");
@@ -162,6 +163,7 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
   mitkWidget2->setEnabled(true);
   mitkWidget2->SetLayoutIndex(SAGITTAL);
   mitkWidgetLayout2->addWidget(mitkWidgetWithSliceNav2);
+  mitkWidgetLayout2->setContentsMargins(QMargins(0,0,0,0));
 
   // Recreate RenderWindows 3
   QmitkSliceWidget* mitkWidgetWithSliceNav3 = new QmitkSliceWidget(mitkWidget3Container, ".widget3");
@@ -170,11 +172,13 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
   //mitkWidget3 = new QmitkRenderWindow(mitkWidget3Container, name + ".widget3", nullptr, m_RenderingManager, renderingMode);
   mitkWidget3->SetLayoutIndex(CORONAL);
   mitkWidgetLayout3->addWidget(mitkWidgetWithSliceNav3);
+  mitkWidgetLayout3->setContentsMargins(QMargins(0,0,0,0));
 
   // Recreate RenderWindows 4
   mitkWidget4 = new QmitkRenderWindow(mitkWidget4Container, name + ".widget4", nullptr, m_RenderingManager, renderingMode);
   mitkWidget4->SetLayoutIndex(THREE_D);
   mitkWidgetLayout4->addWidget(mitkWidget4);
+  mitkWidgetLayout4->setContentsMargins(QMargins(0,0,2,25));
   
   //mitkWidget4Container->hide(); // TODO: Remove this later
 
@@ -207,7 +211,7 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
   this->resize(QSize(364, 477).expandedTo(minimumSizeHint()));
 
   // Reinitialize the widgets.
-  this->InitializeWidget();
+  //this->InitializeWidget();
 
   // Activate Widget Menu
   this->ActivateMenuWidget(true);
