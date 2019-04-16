@@ -215,6 +215,10 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
 
   // Activate Widget Menu
   this->ActivateMenuWidget(true);
+
+  // Fixes 3D view being small the first time
+  this->changeLayoutToDefault();
+  this->CustomOnLayoutDesignChanged(LAYOUT_DEFAULT);
 }
 
 void CustomQmitkStdMultiWidget::CustomOnLayoutDesignChanged(int layoutDesignIndex)
