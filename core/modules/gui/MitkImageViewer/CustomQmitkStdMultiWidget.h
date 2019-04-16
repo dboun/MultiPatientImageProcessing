@@ -1,19 +1,3 @@
-/*===================================================================
-
-The Medical Imaging Interaction Toolkit (MITK)
-
-Copyright (c) German Cancer Research Center,
-Division of Medical and Biological Informatics.
-All rights reserved.
-
-This software is distributed WITHOUT ANY WARRANTY; without
-even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE.
-
-See LICENSE.txt or http://www.mitk.org for details.
-
-===================================================================*/
-
 #ifndef CustomQmitkStdMultiWidget_h
 #define CustomQmitkStdMultiWidget_h
 
@@ -49,8 +33,7 @@ namespace mitk
   class RenderingManager;
 }
 
-/// \ingroup QmitkModule
-class /*MITKQTWIDGETS_EXPORT*/ CustomQmitkStdMultiWidget : public QmitkStdMultiWidget
+class CustomQmitkStdMultiWidget : public QmitkStdMultiWidget
 {
   Q_OBJECT
 
