@@ -6,7 +6,7 @@
 #include <QList>
 #include <mitkDataNode.h>
 #include <mitkStandaloneDataStorage.h>
-#include <QmitkStdMultiWidget.h>
+#include <CustomQmitkStdMultiWidget.h>
 
 #include "ImageViewerBase.h"
 
@@ -49,7 +49,7 @@ signals:
 protected:
 	virtual void AddToDataStorage(long iid);
 
-	QmitkStdMultiWidget* m_MitkWidget;
+	CustomQmitkStdMultiWidget* m_MitkWidget;
 	mitk::StandaloneDataStorage::Pointer m_DataStorage;
 
 private:

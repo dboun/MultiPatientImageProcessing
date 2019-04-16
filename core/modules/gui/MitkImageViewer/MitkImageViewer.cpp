@@ -14,8 +14,9 @@
 
 MitkImageViewer::MitkImageViewer(QWidget *parent) : ImageViewerBase(parent)
 {
-	// Create an instance of QmitkStdMultiWidget and show it
-	m_MitkWidget = new QmitkStdMultiWidget(this);
+	// Create an instance of CustomQmitkStdMultiWidget and show it
+	m_MitkWidget = new CustomQmitkStdMultiWidget(this);
+	m_MitkWidget->AddSlidersToViews();
 	QGridLayout *layout = new QGridLayout(this);
 	layout->addWidget(m_MitkWidget, 0, 0);
 	this->setLayout(layout);
