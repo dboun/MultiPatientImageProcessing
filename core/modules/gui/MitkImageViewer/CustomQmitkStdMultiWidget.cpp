@@ -51,6 +51,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <iomanip>
 
+#include "QmitkSliceWidget.h"
 #include <QDebug>
 
 CustomQmitkStdMultiWidget::CustomQmitkStdMultiWidget(QWidget *parent,
@@ -146,9 +147,11 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
   qDebug() << "CustomQmitkStdMultiwidget: Recreating the important things...";
 
   // Recreate RenderWindows 1
-  mitkWidget1 = new QmitkRenderWindow(mitkWidget1Container, name + ".widget1", nullptr, m_RenderingManager, renderingMode);
+  QmitkSliceWidget* mitkWidgetWithSliceNav1 = new QmitkSliceWidget(mitkWidget1Container, ".widget1");
+  mitkWidget1 = mitkWidgetWithSliceNav1->GetRenderWindow();
+  //mitkWidget1 = new QmitkRenderWindow(mitkWidget1Container, name + ".widget1", nullptr, m_RenderingManager, renderingMode);
   mitkWidget1->SetLayoutIndex(AXIAL);
-  mitkWidgetLayout1->addWidget(mitkWidget1);
+  mitkWidgetLayout1->addWidget(mitkWidgetWithSliceNav1);
 
   // Recreate RenderWindows 2
   mitkWidget2 = new QmitkRenderWindow(mitkWidget2Container, name + ".widget2", nullptr, m_RenderingManager, renderingMode);
