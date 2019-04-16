@@ -175,7 +175,8 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
   mitkWidget4 = new QmitkRenderWindow(mitkWidget4Container, name + ".widget4", nullptr, m_RenderingManager, renderingMode);
   mitkWidget4->SetLayoutIndex(THREE_D);
   mitkWidgetLayout4->addWidget(mitkWidget4);
-  mitkWidget4Container->hide(); // TODO: Remove this later
+  
+  //mitkWidget4Container->hide(); // TODO: Remove this later
 
   // Recreate SignalSlot Connection
   connect(mitkWidget1, SIGNAL(SignalLayoutDesignChanged(int)), this, SLOT(OnLayoutDesignChanged(int)));
