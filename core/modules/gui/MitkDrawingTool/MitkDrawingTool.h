@@ -47,6 +47,7 @@ public slots:
 	void OnCreateEmptyMaskBackgroundFinished();
 	// void OnDisableSegmentation();
 	void SetMaskFromNiftiData(long);
+	void SetSegmentationFromNiftiData(long);
 
 signals:
 	void MitkDrawingToolSaveImageToFile(long iid, bool updateDataManager);

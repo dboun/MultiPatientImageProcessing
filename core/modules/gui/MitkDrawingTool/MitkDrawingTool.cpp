@@ -2,6 +2,7 @@
 #include <QInputDialog>
 #include <QFileDialog>
 #include <QString>
+#include <QFileInfo>
 #include <QRegExp>
 #include <QDebug>
 #include <QtConcurrent>
@@ -200,6 +201,10 @@ void MitkDrawingTool::SetDataView(DataViewBase* dataViewBase)
 {
   connect(dataViewBase, SIGNAL(DataRequestedAsMask(long)),
     this, SLOT(SetMaskFromNiftiData(long))
+  );
+
+  connect(dataViewBase, SIGNAL(DataRequestedAsSegmentation(long)),
+    this, SLOT(SetSegmentationFromNiftiData(long))
   );
 }
 
@@ -420,23 +425,11 @@ void MitkDrawingTool::SetMaskFromNiftiData(long iid)
       QDir().mkpath(directoryName);
   }
 
-  QString nifti = directoryName + QString("/mask.nii.gz");
+  //QString nifti = directoryName + QString("/mask.nii.gz");
   QString nrrd  = directoryName + QString("/mask.nrrd");
-
-  this->GetDataManager()->RemoveData(iid);
   
   // Remove previous masks
   auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(uid);
-
-  for (const long& tIid : iids)
-  {
-      QString tPath = this->GetDataManager()->GetDataPath(tIid);
-
-      if (tPath == nifti || tPath == nrrd)
-      {
-          this->GetDataManager()->RemoveData(tIid);
-      }
-  }
 
   // Save
   // mitk::IOUtil::Save(
@@ -455,8 +448,97 @@ void MitkDrawingTool::SetMaskFromNiftiData(long iid)
   // );
 
   this->GetDataManager()->AddDataToSubject(
-      uid, nrrd, "Mask"
+      uid, nrrd, "Mask", "Image", "<Mask>"
   );
+
+  this->GetDataManager()->RemoveData(iid);
+
+  for (const long& tIid : iids)
+  {
+    if (tIid == iid) { continue; }
+
+    QString tPath = this->GetDataManager()->GetDataPath(tIid);
+
+    if (/*tPath == nifti || */tPath == nrrd)
+    {
+      this->GetDataManager()->RemoveData(tIid);
+    }
+  }
+}
+
+void MitkDrawingTool::SetSegmentationFromNiftiData(long iid)
+{
+  mitk::Image::Pointer inputImage = mitk::IOUtil::Load<mitk::Image>(
+      this->GetDataManager()->GetDataPath(iid).toStdString()
+  );
+  mitk::LabelSetImage::Pointer segImage = mitk::LabelSetImage::New();
+	
+	// Copy the data from input image
+	segImage->InitializeByLabeledImage(inputImage);
+
+  long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
+
+  // Create the directory to save if it doesn't exist
+  QString directoryName = this->GetDataManager()->GetSubjectPath(uid)
+      + QString("/") + m_AppNameShort + QString("/")
+      + m_AppNameShort + "_" + "Segmentation";
+
+  if (!QDir(directoryName).exists())
+  {
+      QDir().mkpath(directoryName);
+  }
+
+  QString nrrd, name;
+  QFileInfo f(this->GetDataManager()->GetDataPath(iid));
+
+  if (this->GetDataManager()->GetDataSpecialRole(iid) != "Segmentation")
+  {
+    name = "<Segmentation> (" + f.baseName() + ")";
+    nrrd = directoryName + QString("/") + f.baseName() + QString("_segmentation.nrrd");
+  }
+  else {
+    name = this->GetDataManager()->GetDataName(iid);
+    nrrd = directoryName + QString("/") + f.baseName() + ".nrrd";
+  }
+
+  // Copy the labels from reference image
+  if (m_LoadedMaskNode)
+	{
+    mitk::LabelSet::Pointer referenceLabelSet =	dynamic_cast<mitk::LabelSetImage*>(
+      m_LoadedMaskNode->GetData()
+    )->GetActiveLabelSet();
+    mitk::LabelSet::Pointer outputLabelSet    =	segImage->GetActiveLabelSet();
+
+    mitk::LabelSet::LabelContainerConstIteratorType itR;
+    mitk::LabelSet::LabelContainerConstIteratorType it;
+    
+    for (itR =  referenceLabelSet->IteratorConstBegin();
+        itR != referenceLabelSet->IteratorConstEnd(); 
+        ++itR) 
+    {
+      for (it = outputLabelSet->IteratorConstBegin(); 
+          it != outputLabelSet->IteratorConstEnd();
+          ++it)
+      {
+        if (itR->second->GetValue() == it->second->GetValue())
+        {
+          it->second->SetColor(itR->second->GetColor());
+          it->second->SetName(itR->second->GetName());
+        }
+      }
+    }
+  }
+  
+  mitk::IOUtil::Save(
+      segImage,
+      nrrd.toStdString()
+  );
+
+  this->GetDataManager()->AddDataToSubject(
+      uid, nrrd, "Segmentation", "Image", name
+  );
+
+  this->GetDataManager()->RemoveData(iid);
 }
 
 void MitkDrawingTool::OnConfirmSegmentation()
@@ -635,7 +717,7 @@ void MitkDrawingTool::CreateEmptyMask(long referenceIid)
   // );
 
   this->GetDataManager()->AddDataToSubject(
-      uid, nrrd, "Mask"
+      uid, nrrd, "Mask", "Image", "<Mask>"
   );
 }
 

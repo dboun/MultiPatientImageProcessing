@@ -32,6 +32,7 @@ public slots:
 	void OnItemRightClick(const QPoint& pos);
 	void OnItemRightClickRemove();
 	void OnItemRightClickSetAsMask();
+	void OnItemRightClickSetAsSegmentation();
 	void OnItemRightClickExport();
 
 private:

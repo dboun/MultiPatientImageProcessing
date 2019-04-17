@@ -144,6 +144,7 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 		}
 
 		QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
+		QString name        = this->GetDataManager()->GetDataName(iid);
 		QString filePath    = this->GetDataManager()->GetDataPath(iid);
 
 		// Add new data in tree view
@@ -152,7 +153,7 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 		dataToAdd->setData(0, ID, QVariant(static_cast<long long int>(iid)));
 		dataToAdd->setData(0, IS_CHECKED, false);
 
-		if (specialRole != QString())
+		if (specialRole != "" && name == "")
 		{
 			// Data has a special role
 			dataToAdd->setText(0, 
@@ -176,7 +177,6 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 			{
 				dataToAdd->setCheckState(0, Qt::Checked);
 				dataToAdd->setData(0, IS_CHECKED, true);
-
 
 				emit DataCheckedStateChanged(iid, true);
 
@@ -365,6 +365,21 @@ void DataTreeView::OnItemRightClick(const QPoint& pos)
 			contextMenu.addAction(action2);
 		}
 		
+		if (specialRole != "Mask" && specialRole != "Segmentation")
+		{
+			QAction* action22 = new QAction("Convert to segmentation", &contextMenu);
+			connect(action22, SIGNAL(triggered()), this, SLOT(OnItemRightClickSetAsSegmentation()));
+			contextMenu.addAction(action22);
+		}
+		else if (specialRole == "Segmentation" && 
+			this->GetDataManager()->GetAllDataIdsOfSubjectWithSpecialRole(
+				m_CurrentSubjectID, "Mask").size() > 0)
+		{
+			QAction* action22 = new QAction("Sync colors from mask", &contextMenu);
+			connect(action22, SIGNAL(triggered()), this, SLOT(OnItemRightClickSetAsSegmentation()));
+			contextMenu.addAction(action22);
+		}
+		
 		if (specialRole == "Mask" || specialRole == "Segmentation")
 		{
 			QAction* action3 = new QAction("Export", &contextMenu);
@@ -406,6 +421,12 @@ void DataTreeView::OnItemRightClickSetAsMask()
 	// 	m_DataManager->RemoveData(iid);
 	// 	m_DataManager->AddDataToSubject(uid, path, "Mask", type, name);
 	// }
+}
+
+void DataTreeView::OnItemRightClickSetAsSegmentation()
+{
+	long iid = m_TreeWidget->currentItem()->data(0, ID).toLongLong();
+	emit DataRequestedAsSegmentation(iid);
 }
 
 void DataTreeView::OnItemRightClickExport()

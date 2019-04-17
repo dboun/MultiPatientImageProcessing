@@ -291,16 +291,16 @@ long DataManager::AddDataToSubject(long uid, QString path, QString specialRole,
 
 	if (name != QString())
 	{
-		m_Data[iidNextToGive].specialRole = specialRole;
+		m_Data[iidNextToGive].name = name;
 	}
 	else {
-		QString name = QString::fromStdString(
+		QString nameAuto = QString::fromStdString(
 			path.toStdString().substr(
 				path.toStdString().find_last_of("/\\") + 1
 				)
 			);
 
-		m_Data[iidNextToGive].name = name;
+		m_Data[iidNextToGive].name = nameAuto;
 	}
 
 	m_Data[iidNextToGive].subjectId = uid;
