@@ -227,6 +227,8 @@
     <addaction name="separator"/>
     <addaction name="actionAdd_image_for_new_subject"/>
     <addaction name="actionAdd_image_for_selected_subject"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose_all_subjects"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -258,6 +260,11 @@
   <action name="actionAdd_image_for_new_subject">
    <property name="text">
     <string>Add images for new subject</string>
+   </property>
+  </action>
+  <action name="actionClose_all_subjects">
+   <property name="text">
+    <string>Close all subjects</string>
    </property>
   </action>
  </widget>

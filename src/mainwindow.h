@@ -41,6 +41,7 @@ public slots:
   void OnOpenSubjects();
   void OnOpenImagesForNewSubject();
   void OnOpenImagesForSelectedSubject();
+  void OnCloseAllSubjects();
   void OnRunPressed();
   
   // Slots for Scheduler

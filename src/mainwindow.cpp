@@ -120,6 +120,9 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(ui->actionAdd_image_for_selected_subject, SIGNAL(triggered()), 
     this, SLOT(OnOpenImagesForSelectedSubject())
   );
+  connect(ui->actionClose_all_subjects, SIGNAL(triggered()),
+    this, SLOT(OnCloseAllSubjects())
+  );
   connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)),
     this, SLOT(SelectedSubjectChangedHandler(long))
   );
@@ -442,6 +445,20 @@ void MainWindow::OnOpenImagesForSelectedSubject()
   {
     m_DataManager->AddDataToSubject(uid, file);
   }
+}
+
+void MainWindow::OnCloseAllSubjects()
+{
+  // Remove data in reverse order to avoid reloading everything to the viewer
+	auto uids = m_DataManager->GetAllSubjectIds();
+
+  long uid;
+	for (long i = uids.size()-1; i >= 0; i--)
+	{
+		uid = uids[i];
+    qDebug() << "MainWindow::OnCloseAllSubjects Asking uid" << uid << "to be removed - i=" << i;
+		m_DataManager->RemoveSubject(uid);
+	}
 }
 
 void MainWindow::OnRunPressed()
