@@ -234,7 +234,8 @@ void GeodesicTrainingModule::Algorithm()
             qDebug() << "GeodesicTraining: Saved segmentation";
 
             this->GetDataManager()->AddDataToSubject(this->GetUid(), 
-                outputPath + QString("/segmentation.nrrd"), "Segmentation"
+                outputPath + QString("/segmentation.nrrd"), "Segmentation", 
+                "Image", "<Segmentation>"
             );
         }
         else {
@@ -331,7 +332,8 @@ void GeodesicTrainingModule::Algorithm()
             qDebug() << "GeodesicTraining: Saved segmentation";
 
             this->GetDataManager()->AddDataToSubject(this->GetUid(), 
-                outputPath + QString("/segmentation.nrrd"), "Segmentation", "<Segmentation>"
+                outputPath + QString("/segmentation.nrrd"), "Segmentation", 
+                "Image", "<Segmentation>"
             );
         }
         else {
