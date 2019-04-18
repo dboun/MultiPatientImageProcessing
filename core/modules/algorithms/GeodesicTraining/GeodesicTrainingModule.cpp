@@ -140,6 +140,7 @@ void GeodesicTrainingModule::Algorithm()
             mitk::CastToItkImage(imageMITK, imageITK);
             inputImagesITK.push_back(imageITK);
         }
+        inputImagesMITK.clear();
 
         typename itk::Image<int, 2>::Pointer maskITK;
         
@@ -330,7 +331,7 @@ void GeodesicTrainingModule::Algorithm()
             qDebug() << "GeodesicTraining: Saved segmentation";
 
             this->GetDataManager()->AddDataToSubject(this->GetUid(), 
-                outputPath + QString("/segmentation.nrrd"), "Segmentation"
+                outputPath + QString("/segmentation.nrrd"), "Segmentation", "<Segmentation>"
             );
         }
         else {
