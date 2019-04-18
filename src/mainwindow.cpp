@@ -191,6 +191,23 @@ void MainWindow::dropEvent(QDropEvent *e)
     }
   }
   else {
+    // Create filter for accepted file types
+    QString filter = "^.*\.("; 
+    bool first = true;
+    foreach(QString fileType, m_AcceptedFileTypes) {
+      QString trimmed = fileType.mid(2); // To remove '*.'
+      if (!first) {
+        filter += "|";
+      }
+      else {
+        first = false;
+      }
+      filter += trimmed;
+    }
+    filter += ")$";
+    qDebug() << "Filter: " << filter;
+    filesOrDirs = filesOrDirs.filter(QRegExp(filter, Qt::CaseInsensitive));
+
     QString firstFileBaseName = QFileInfo(filesOrDirs.at(0)).baseName();
     QStringList firstFileSplit = firstFileBaseName.split("_");
     QString divider = "_";
@@ -206,7 +223,6 @@ void MainWindow::dropEvent(QDropEvent *e)
     {
       suggestedSubjectName = suggestedSubjectName + divider + firstFileSplit.at(i);
     }
-
 
     // Get Subject Name
     QString subjectName;
@@ -234,7 +250,7 @@ void MainWindow::dropEvent(QDropEvent *e)
 
     foreach(const QString file, filesOrDirs)
     {
-      m_DataManager->AddDataToSubject(uid, file);
+      m_DataManager->AddDataToSubject(uid, file, "", "Image");
     }
   }
 
@@ -363,10 +379,29 @@ void MainWindow::OnOpenSubjects()
 
 void MainWindow::OnOpenImagesForNewSubject()
 {
+  // Create the name filter
+  QString nameFilter = "All images ("; 
+  bool first = true;
+  foreach(QString fileType, m_AcceptedFileTypes)
+  {
+    if (!first) {
+      nameFilter+= " | ";
+    }
+    else { 
+      first = false; 
+    }
+
+    nameFilter += fileType;
+  }
+  nameFilter += ")";
+  qDebug () << "Name filter:" << nameFilter;
+
+  // Open dialog
   QStringList filenames = QFileDialog::getOpenFileNames(this,
     tr("Select images"),
     m_MostRecentDir,
-    tr("Nifti images (*.nii.gz | *.nii)") 
+      nameFilter
+    //tr("Nifti images (*.nii.gz | *.nii)") 
   );
 
   if (filenames.isEmpty())
@@ -418,7 +453,7 @@ void MainWindow::OnOpenImagesForNewSubject()
 
   foreach(QString file, filenames)
   {
-    m_DataManager->AddDataToSubject(uid, file);
+    m_DataManager->AddDataToSubject(uid, file, "", "Image");
   }
 }
 
@@ -443,7 +478,7 @@ void MainWindow::OnOpenImagesForSelectedSubject()
 
   foreach(QString file, filenames)
   {
-    m_DataManager->AddDataToSubject(uid, file);
+    m_DataManager->AddDataToSubject(uid, file, "", "Image");
   }
 }
 

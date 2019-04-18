@@ -531,7 +531,7 @@ void MitkImageViewer::SaveImageToFile(long iid, bool updateDataManager)
 		// }
 		this->GetDataManager()->RemoveData(iid, true);
 		this->GetDataManager()->AddDataToSubject(
-			uid, path, specialRole
+			uid, path, specialRole, "Image"
 		);
 
 		// this->GetDataManager()->AddDataToSubject(
@@ -637,13 +637,15 @@ void MitkImageViewer::ConvertToNrrdAndSave(long iid, long referenceIid, bool upd
 	{
 		qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Updating data manager";
 		this->GetDataManager()->AddDataToSubject(
-			uid, outputImagePath, imageSpecialRole
+			uid, outputImagePath, imageSpecialRole, "Image"
 		);
 	}
 }
 
 void MitkImageViewer::AddToDataStorage(long iid)
 {
+	if (this->GetDataManager()->GetDataType(iid) != "Image") { return; }
+	
 	QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
 	QString dataPath    = this->GetDataManager()->GetDataPath(iid);
 
@@ -662,8 +664,8 @@ void MitkImageViewer::AddToDataStorage(long iid)
 
 	mitk::DataNode::Pointer dataNode = dataNodes->at(0);
 	dataNode->SetName(QString::number(iid).toStdString().c_str());
-    //dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
-    dataNode->SetVisibility(false);
+  //dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
+	dataNode->SetVisibility(false);
 
 //	dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
 //	dataNode->SetProperty("layer", mitk::IntProperty::New(2));

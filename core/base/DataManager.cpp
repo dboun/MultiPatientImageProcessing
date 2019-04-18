@@ -210,7 +210,7 @@ long DataManager::AddSubjectAndDataByDirectoryPath(QString dirPath, QString subj
 		}
 
 		// Actually add the data if necessary
-		AddDataToSubject(uid, filePath, specialRole);
+		AddDataToSubject(uid, filePath, specialRole, "Image");
 	}
 
 	return uid;

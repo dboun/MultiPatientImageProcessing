@@ -63,8 +63,9 @@ private:
 
   QString       m_AppName           = QString("MLL Semi-Automatic Segmentation");
   QString       m_AppNameShort      = QString("MLL");
-  QStringList   m_AcceptedFileTypes = QStringList() << "*.nii.gz" << "*.nrrd" 
-                                                    << "*.mhd" << "*.dcm" << "*.dicom";
+  QStringList   m_AcceptedFileTypes = QStringList() << "*.nii.gz" << "*.nii" 
+                                                    << "*.nrrd"   << "*.mhd"   << "*.png" 
+                                                    << "*.dcm"    << "*.dicom";
   
   QString       m_MostRecentDir     = QString("/home");
 
