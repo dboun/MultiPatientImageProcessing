@@ -4,6 +4,7 @@
 
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QList>
 #include <QMouseEvent>
 #include <QTimer>
@@ -90,7 +91,7 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
   QHBoxLayout *mitkWidgetLayout1 = new QHBoxLayout(mitkWidget1Container);
   QHBoxLayout *mitkWidgetLayout2 = new QHBoxLayout(mitkWidget2Container);
   QHBoxLayout *mitkWidgetLayout3 = new QHBoxLayout(mitkWidget3Container);
-  QHBoxLayout *mitkWidgetLayout4 = new QHBoxLayout(mitkWidget4Container);
+  QVBoxLayout *mitkWidgetLayout4 = new QVBoxLayout(mitkWidget4Container);
   mitkWidget1Container->setLayout(mitkWidgetLayout1);
   mitkWidget1Container->setLayout(mitkWidgetLayout2);
   mitkWidget1Container->setLayout(mitkWidgetLayout3);
@@ -131,7 +132,17 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
   mitkWidget4 = new QmitkRenderWindow(mitkWidget4Container, name + ".widget4", nullptr, m_RenderingManager, renderingMode);
   mitkWidget4->SetLayoutIndex(THREE_D);
   mitkWidgetLayout4->addWidget(mitkWidget4);
-  mitkWidgetLayout4->setContentsMargins(QMargins(0,0,2,25));
+  mitkWidgetLayout4->setContentsMargins(QMargins(0,0,2,/*25*/0));
+  
+  // Reset button under RenderWindow 4
+  QPushButton* reset = new QPushButton(this);
+  reset->setText("Reset level/window");
+  QFont font = reset->font();
+  font.setPointSize(7);
+  reset->setFont(font);
+  reset->resize(reset->width(), 20);
+  connect(reset, SIGNAL(triggered()), this, SLOT(OnResetButtonPressed()));
+  mitkWidgetLayout4->addWidget(reset, 0, Qt::AlignRight);
   
   // ------ Reconnect Signals and Slots ------
   connect(mitkWidget1, SIGNAL(SignalLayoutDesignChanged(int)), this, SLOT(OnLayoutDesignChanged(int)));
@@ -177,4 +188,9 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
 void CustomQmitkStdMultiWidget::CustomOnLayoutDesignChanged(int layoutDesignIndex)
 {
   this->resize(QSize(364, 477).expandedTo(minimumSizeHint()));
+}
+
+void CustomQmitkStdMultiWidget::OnResetButtonPressed()
+{
+  qDebug() << "CustomQmitkStdMultiWidget::OnResetButtonPressed";
 }

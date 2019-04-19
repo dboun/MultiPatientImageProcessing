@@ -58,6 +58,7 @@ public:
 public slots:
   // This is always called after OnLayoutDesignChanged
   void CustomOnLayoutDesignChanged(int layoutDesignIndex);
+  void OnResetButtonPressed();
 
 };
 #endif /*CustomQmitkStdMultiWidget_h*/
