@@ -188,11 +188,23 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 
 			if (specialRole == "Segmentation")
 			{
-				for (const long& dIid : m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Mask"))
+				for (const long& dIid : m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
+					uid, "Mask"))
 				{
-					if (m_DataManager->GetDataSpecialRole(dIid) == "Mask" && 
-					  m_Data[dIid] && m_Data[dIid]->data(0, IS_CHECKED) == true
-					) {
+					if (m_Data[dIid] && m_Data[dIid]->data(0, IS_CHECKED) == true) 
+					{
+						m_Data[dIid]->setCheckState(0, Qt::Unchecked);
+						m_Data[dIid]->setData(0, IS_CHECKED, false);
+						emit DataCheckedStateChanged(dIid, false);
+					}
+				}
+
+				for (const long& dIid : m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
+					uid, "Segmentation"))
+				{
+					if (dIid == iid) { continue; }
+
+					if (m_Data[dIid] && m_Data[dIid]->data(0, IS_CHECKED) == true) {
 						m_Data[dIid]->setCheckState(0, Qt::Unchecked);
 						m_Data[dIid]->setData(0, IS_CHECKED, false);
 						emit DataCheckedStateChanged(dIid, false);

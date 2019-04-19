@@ -558,7 +558,10 @@ void MainWindow::OnRunPressed()
   // Remove all previous segmentations (if they exist)
   for (const long& iid : m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Segmentation"))
   {
-    m_DataManager->RemoveData(iid);
+    if (m_DataManager->GetDataName(iid) == "<Segmentation>")
+    {
+      m_DataManager->RemoveData(iid);
+    }
   }
 #endif
 
