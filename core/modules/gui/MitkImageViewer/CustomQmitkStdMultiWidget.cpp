@@ -8,6 +8,7 @@
 #include <QList>
 #include <QMouseEvent>
 #include <QTimer>
+#include <QMessageBox>
 #include <QVBoxLayout>
 #include <qsplitter.h>
 
@@ -141,7 +142,7 @@ void CustomQmitkStdMultiWidget::AddSlidersToViews(
   font.setPointSize(7);
   reset->setFont(font);
   reset->resize(reset->width(), 20);
-  connect(reset, SIGNAL(triggered()), this, SLOT(OnResetButtonPressed()));
+  connect(reset, SIGNAL(clicked()), this, SLOT(OnResetButtonPressed()));
   mitkWidgetLayout4->addWidget(reset, 0, Qt::AlignRight);
   
   // ------ Reconnect Signals and Slots ------
@@ -193,4 +194,21 @@ void CustomQmitkStdMultiWidget::CustomOnLayoutDesignChanged(int layoutDesignInde
 void CustomQmitkStdMultiWidget::OnResetButtonPressed()
 {
   qDebug() << "CustomQmitkStdMultiWidget::OnResetButtonPressed";
+  mitk::LevelWindow lw;
+  try {
+    lw = levelWindowWidget->GetManager()->GetLevelWindow();
+  } catch (itk::ExceptionObject e) {
+    return; // There is no level window
+  }
+  
+  bool isFixed = lw.IsFixed();
+  lw.SetFixed(false);
+  lw.ResetDefaultRangeMinMax();
+  lw.ResetDefaultLevelWindow();
+  //lw.SetWindowBounds(lw.GetDefaultLowerBound(), lw.GetDefaultUpperBound());
+  //lw.SetLevelWindow(lw.GetDefaultLevel(), lw.GetDefaultWindow());
+  //lw.SetAuto();
+  lw.SetFixed(isFixed);
+  levelWindowWidget->GetManager()->SetLevelWindow(lw);
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
