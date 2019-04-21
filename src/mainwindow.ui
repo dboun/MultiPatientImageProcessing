@@ -175,24 +175,18 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QWidget" name="drawingToolContainer" native="true"/>
-       </item>
-       <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-        <widget class="RunPushButton" name="pushButtonRun">
+        <widget class="QWidget" name="rightSideContainer" native="true">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
          <property name="minimumSize">
           <size>
-           <width>220</width>
+           <width>300</width>
            <height>0</height>
           </size>
-         </property>
-         <property name="text">
-          <string>       Run        &gt;</string>
          </property>
         </widget>
        </item>
@@ -269,13 +263,6 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>RunPushButton</class>
-   <extends>QPushButton</extends>
-   <header>RunPushButton.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

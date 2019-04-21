@@ -22,13 +22,14 @@
 GeodesicTrainingGUI::GeodesicTrainingGUI(mitk::DataStorage *datastorage, QWidget *parent) :
   GuiModuleBase(parent),
   ui(new Ui::GeodesicTrainingGUI),
-  m_DataStorage(datastorage),
-  m_MitkDrawingTool(new MitkDrawingTool(datastorage, this))
+  m_DataStorage(datastorage)//,
+  //m_MitkDrawingTool(new MitkDrawingTool(datastorage, this))
 {
   ui->setupUi(this);
-  GuiModuleBase::PlaceWidgetInWidget(m_MitkDrawingTool, ui->mitkDrawingToolContainer);
+  m_MitkDrawingTool = new MitkDrawingTool(datastorage, ui->mitkDrawingToolContainer);
+  //GuiModuleBase::PlaceWidgetInWidget(m_MitkDrawingTool, ui->mitkDrawingToolContainer);
 
-  connect(ui->pushButtonRun, SIGNAL(clicked), this, SLOT(OnRunClicked()));
+  connect(ui->pushButtonRun, SIGNAL(clicked()), this, SLOT(OnRunClicked()));
 }
 
 GeodesicTrainingGUI::~GeodesicTrainingGUI()

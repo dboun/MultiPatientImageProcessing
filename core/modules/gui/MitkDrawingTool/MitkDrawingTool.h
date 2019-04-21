@@ -41,11 +41,9 @@ public slots:
 	// Internal slots
 	void OnCreateNewLabel();
 	void OnCreateNewMask();
-	void OnConfirmSegmentation();
 	void OnManualTool2DSelected(int);
     void CreateEmptyMask(long referenceIid);
 	void OnCreateEmptyMaskBackgroundFinished();
-	// void OnDisableSegmentation();
 	void SetMaskFromNiftiData(long);
 	void SetSegmentationFromNiftiData(long);
 

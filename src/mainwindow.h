@@ -7,23 +7,19 @@
 #include <QCloseEvent>
 #include <QString>
 
-#include <set>
-
-#include "DataManager.h"
-#include "DefaultScheduler.h"
-#include "ImageViewerBase.h"
-#include "DataViewBase.h"
-
-#ifdef BUILD_MODULE_MitkDrawingTool
-#include "MitkDrawingTool.h"
-#endif 
-
-#include "DataTreeView.h"
-#include "ui_mainwindow.h"
+#include <set> 
 
 namespace Ui {
   class MainWindow;
 }
+
+class DataManager;
+class SchedulerBase;
+class DataViewBase;
+class ImageViewerBase;
+class AlgorithmModuleBase;
+class GuiModuleBase;
+class GeodesicTrainingGUI;
 
 class MainWindow : public QMainWindow
 {
@@ -73,10 +69,7 @@ private:
   SchedulerBase*   m_Scheduler; 
   ImageViewerBase* m_ImageViewer;
   DataViewBase*    m_DataView;
-  
-#ifdef BUILD_MODULE_MitkDrawingTool
-  MitkDrawingTool *m_MitkDrawingTool;
-#endif
+  GuiModuleBase*   m_GeodesicTrainingGUI;
 
   bool m_IsSegmentationPanelOpen = false;
   std::set<long> m_SubjectsThatAreRunning;

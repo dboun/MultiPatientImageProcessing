@@ -59,14 +59,10 @@ MitkDrawingTool::MitkDrawingTool(mitk::DataStorage *datastorage, QWidget *parent
 
     connect(ui->newLabelPushBtn, SIGNAL(clicked()), this, SLOT(OnCreateNewLabel()));
     connect(ui->createMaskPushBtn, SIGNAL(clicked()), this, SLOT(OnCreateNewMask()));
-    connect(ui->ConfirmSegBtn, SIGNAL(clicked()), this, SLOT(OnConfirmSegmentation()));
     connect(ui->toolSelectionBox, SIGNAL(ToolSelected(int)), this, SLOT(OnManualTool2DSelected(int)));
     
     ui->toolGUIArea->setVisible(false);
     ui->toolSelectionBox->setVisible(false);
-
-    // Unused
-    ui->ConfirmSegBtn->setVisible(false);
 
     m_ProgressDialogWatcher = new QFutureWatcher<void>(this);
     connect(m_ProgressDialogWatcher, SIGNAL(finished()),
@@ -541,47 +537,6 @@ void MitkDrawingTool::SetSegmentationFromNiftiData(long iid)
   this->GetDataManager()->RemoveData(iid);
 }
 
-void MitkDrawingTool::OnConfirmSegmentation()
-{
-  // QString pathToSave = QDir::currentPath();
-  // if (m_DataManager->GetSubjectIdFromDataId(m_CurrentData) != -1)
-  // {
-  //   pathToSave = m_DataManager->GetSubjectPath(m_DataManager->GetSubjectIdFromDataId(m_CurrentData));
-  // }
-
-  // QString filename = QFileDialog::getSaveFileName(this, tr("Save Segmentation Mask"),
-  //   pathToSave, tr("Images (*.nrrd)"));
-  
-  // // if (!filename.endsWith(".nii.gz"))
-  // // {
-	//  //  filename = filename + ".nii.gz";
-  // // }
-
-  // if (!filename.isEmpty())
-  // {
-  //   mitk::DataNode::Pointer segData = this->m_DataStorage->GetNamedNode(m_LabelsImageName.toStdString());
-  //   mitk::IOUtil::Save(segData->GetData(), filename.toStdString());
-
-  //   //remove after saving
-  //   m_DataStorage->Remove(m_DataStorage->GetNamedNode(m_LabelsImageName.toStdString()));
-    
-  //   if (m_DataManager->GetSubjectIdFromDataId(m_CurrentData) != -1)
-  //   {
-	// 	m_DataManager->AddDataToSubject(
-	// 		m_DataManager->GetSubjectIdFromDataId(m_CurrentData),
-	// 		filename,
-	// 		"Mask"
-	// 	);
-  //   }
-  // }
-
-  // //re-render here
-  // mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-
-  // //hide ourself
-  // this->hide();
-}
-
 void MitkDrawingTool::OnManualTool2DSelected(int id)
 {
   qDebug() << "MitkDrawingTool::OnManualTool2DSelected";
@@ -599,7 +554,6 @@ void MitkDrawingTool::OnManualTool2DSelected(int id)
     
     if (text == "Paint")
     {
-      //this->OnDisableSegmentation();
         this->RemoveExistingToolGui();
 
       mitk::Tool *tool = m_ToolManager->GetActiveTool();

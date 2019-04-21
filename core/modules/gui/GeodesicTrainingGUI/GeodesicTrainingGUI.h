@@ -31,10 +31,10 @@ public:
 
 	void SetDataView(DataViewBase* dataViewBase);
 
-private:
-
+public slots:
 	void OnRunClicked();
 
+private:
 	MitkDrawingTool* m_MitkDrawingTool;
 	MitkImageViewer* m_MitkImageViewer;
 	DataViewBase*    m_DataView;

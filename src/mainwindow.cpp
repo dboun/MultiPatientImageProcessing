@@ -14,13 +14,28 @@
 
 #include <vector>
 
-#ifdef BUILD_MODULE_GeodesicTraining
-#include "GeodesicTrainingModule.h"
+#include "DataManager.h"
+#include "SchedulerBase.h"
+#include "DefaultScheduler.h"
+#include "GuiModuleBase.h"
+#include "DataViewBase.h"
+#include "DataTreeView.h"
+#include "ImageViewerBase.h"
+#include "AlgorithmModuleBase.h"
+
+#ifdef BUILD_MODULE_GeodesicTrainingGUI
+#include "GeodesicTrainingGUI.h"
 #endif
 
 #ifdef BUILD_MODULE_MitkImageViewer
 #include "MitkImageViewer.h"
 #endif
+
+#ifdef BUILD_MODULE_MitkDrawingTool
+#include "MitkDrawingTool.h"
+#endif
+
+#include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -64,19 +79,37 @@ MainWindow::MainWindow(QWidget *parent) :
   m_ImageViewer->SetAppNameShort(m_AppNameShort);
   GuiModuleBase::PlaceWidgetInWidget(m_ImageViewer, ui->viewerContainer);
 
-  // Initialize MitkDrawingTool
-#ifdef BUILD_MODULE_MitkDrawingTool
-  m_MitkDrawingTool = new MitkDrawingTool(
-    qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), ui->drawingToolContainer
+//   // Initialize MitkDrawingTool
+// #ifdef BUILD_MODULE_MitkDrawingTool
+//   m_MitkDrawingTool = new MitkDrawingTool(
+//     qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), ui->drawingToolContainer
+//   );
+//   m_MitkDrawingTool->SetMitkImageViewer(
+//     qobject_cast<MitkImageViewer*>(m_ImageViewer)
+//   );
+//   m_MitkDrawingTool->SetDataView(m_DataView);
+//   m_MitkDrawingTool->SetDataManager(m_DataManager);
+//   m_MitkDrawingTool->SetAppName(m_AppName);
+//   m_MitkDrawingTool->SetAppNameShort(m_AppNameShort);
+
+//   // Experiment
+//   //GuiModuleBase::PlaceWidgetInWidget(m_MitkDrawingTool, ui->drawingToolContainer);
+  
+// #endif
+
+#ifdef BUILD_MODULE_GeodesicTrainingGUI
+  m_GeodesicTrainingGUI = new GeodesicTrainingGUI(
+    qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), ui->rightSideContainer
   );
-  m_MitkDrawingTool->SetMitkImageViewer(
+  auto gtGUI = qobject_cast<GeodesicTrainingGUI*>(m_GeodesicTrainingGUI);
+  gtGUI->SetMitkImageViewer(
     qobject_cast<MitkImageViewer*>(m_ImageViewer)
   );
-  m_MitkDrawingTool->SetDataView(m_DataView);
-  m_MitkDrawingTool->SetDataManager(m_DataManager);
-  m_MitkDrawingTool->SetAppName(m_AppName);
-  m_MitkDrawingTool->SetAppNameShort(m_AppNameShort);
-  GuiModuleBase::PlaceWidgetInWidget(m_MitkDrawingTool, ui->drawingToolContainer);
+  gtGUI->SetDataView(m_DataView);
+  gtGUI->SetDataManager(m_DataManager);
+  gtGUI->SetAppName(m_AppName);
+  gtGUI->SetAppNameShort(m_AppNameShort);
+  //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
 #endif
 
   // Turn on drag and drop
@@ -88,13 +121,13 @@ MainWindow::MainWindow(QWidget *parent) :
   effect->setXOffset(1);
   effect->setYOffset(1);
   effect->setColor(Qt::black);
-  ui->pushButtonRun->setGraphicsEffect(effect);
+  //ui->pushButtonRun->setGraphicsEffect(effect);
   ui->dataViewContainer->setGraphicsEffect(effect);
 
   // Signals and Slots
-  connect(ui->pushButtonRun, SIGNAL(released()), 
-    this, SLOT(OnRunPressed())
-  );
+  // connect(ui->pushButtonRun, SIGNAL(released()), 
+  //   this, SLOT(OnRunPressed())
+  // );
   connect(m_Scheduler, SIGNAL(JobFinished(AlgorithmModuleBase*)), 
     this, SLOT(OnSchedulerJobFinished(AlgorithmModuleBase*))
   );
@@ -172,7 +205,7 @@ void MainWindow::dropEvent(QDropEvent *e)
   }
   else {
     // Create filter for accepted file types
-    QString filter = "^.*\.("; 
+    QString filter = "^.*\\.("; 
     bool first = true;
     foreach(QString fileType, m_AcceptedFileTypes) {
       QString trimmed = fileType.mid(2); // To remove '*.'
@@ -489,98 +522,98 @@ void MainWindow::OnCloseAllSubjects()
 
 void MainWindow::OnRunPressed()
 {
-  qDebug() << "MainWindow::OnRunPressed";
-	long uid = m_DataView->GetCurrentSubjectID(); // For convenience
+//   qDebug() << "MainWindow::OnRunPressed";
+// 	long uid = m_DataView->GetCurrentSubjectID(); // For convenience
 
-	if (uid == -1)
-	{
-		QMessageBox::information(
-			this,
-			tr("No subject selected"),
-			tr("Please select a subject.")
-		);
-		return;
-	}
+// 	if (uid == -1)
+// 	{
+// 		QMessageBox::information(
+// 			this,
+// 			tr("No subject selected"),
+// 			tr("Please select a subject.")
+// 		);
+// 		return;
+// 	}
 
-  if (m_SubjectsThatAreRunning.count(uid) != 0)
-  {
-    QMessageBox::warning(this,
-      "Please wait",
-      "Algorithm is already running for this subject"	
-    );
-    return;
-  }
+//   if (m_SubjectsThatAreRunning.count(uid) != 0)
+//   {
+//     QMessageBox::warning(this,
+//       "Please wait",
+//       "Algorithm is already running for this subject"	
+//     );
+//     return;
+//   }
 
-  std::unique_lock<std::mutex> ul(*m_DataManager->GetSubjectEditMutexPointer(uid));
+//   std::unique_lock<std::mutex> ul(*m_DataManager->GetSubjectEditMutexPointer(uid));
 	
-  qDebug() << QString("(Run) uid:  ") << QString::number(uid);
+//   qDebug() << QString("(Run) uid:  ") << QString::number(uid);
 
-#ifdef BUILD_MODULE_MitkImageViewer
+// #ifdef BUILD_MODULE_MitkImageViewer
 
-  auto iids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
-    uid, "Mask"
-  );
+//   auto iids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
+//     uid, "Mask"
+//   );
 
-  long maskNrrd = -1;
+//   long maskNrrd = -1;
 
-  for (const long& iid : iids)
-  {
-    if (m_DataManager->GetDataPath(iid).endsWith(".nrrd", Qt::CaseSensitive))
-    {
-      maskNrrd = iid;
-      break;
-    }
-  }
+//   for (const long& iid : iids)
+//   {
+//     if (m_DataManager->GetDataPath(iid).endsWith(".nrrd", Qt::CaseSensitive))
+//     {
+//       maskNrrd = iid;
+//       break;
+//     }
+//   }
 
-  if (maskNrrd != -1)
-  {
-    qobject_cast<MitkImageViewer*>(m_ImageViewer)->SaveImageToFile(maskNrrd, false);
-  }
+//   if (maskNrrd != -1)
+//   {
+//     qobject_cast<MitkImageViewer*>(m_ImageViewer)->SaveImageToFile(maskNrrd, false);
+//   }
 
-  // Remove all previous masks (if they exist)
-  for (const long& iid : iids)
-  {
-    if (iid != maskNrrd)
-    {
-      m_DataManager->RemoveData(iid);
-    }
-  }  
+//   // Remove all previous masks (if they exist)
+//   for (const long& iid : iids)
+//   {
+//     if (iid != maskNrrd)
+//     {
+//       m_DataManager->RemoveData(iid);
+//     }
+//   }  
 
-  // Remove all previous segmentations (if they exist)
-  for (const long& iid : m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Segmentation"))
-  {
-    if (m_DataManager->GetDataName(iid) == "<Segmentation>")
-    {
-      m_DataManager->RemoveData(iid);
-    }
-  }
-#endif
+//   // Remove all previous segmentations (if they exist)
+//   for (const long& iid : m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Segmentation"))
+//   {
+//     if (m_DataManager->GetDataName(iid) == "<Segmentation>")
+//     {
+//       m_DataManager->RemoveData(iid);
+//     }
+//   }
+// #endif
 
-#ifdef BUILD_MODULE_GeodesicTraining
-	AlgorithmModuleBase* algorithm = new GeodesicTrainingModule();
-#else
-  AlgorithmModuleBase* algorithm = new AlgorithmModuleBase();
-#endif
+// #ifdef BUILD_MODULE_GeodesicTraining
+// 	AlgorithmModuleBase* algorithm = new GeodesicTrainingModule();
+// #else
+//   AlgorithmModuleBase* algorithm = new AlgorithmModuleBase();
+// #endif
 
-  m_SubjectsThatAreRunning.insert(uid);
+//   m_SubjectsThatAreRunning.insert(uid);
 
-  algorithm->SetDataManager(m_DataManager);
-  algorithm->SetUid(uid);
-  algorithm->SetAppName(m_AppName);
-  algorithm->SetAppNameShort(m_AppNameShort);
+//   algorithm->SetDataManager(m_DataManager);
+//   algorithm->SetUid(uid);
+//   algorithm->SetAppName(m_AppName);
+//   algorithm->SetAppNameShort(m_AppNameShort);
 
-  connect(algorithm, SIGNAL(ProgressUpdateUI(long, QString, int)), 
-    m_DataView, SLOT(UpdateProgressHandler(long, QString, int))
-  );
-  connect(algorithm, SIGNAL(AlgorithmFinished(AlgorithmModuleBase*)),
-    this, SLOT(OnAlgorithmFinished(AlgorithmModuleBase*))
-  );
-  connect(algorithm, SIGNAL(AlgorithmFinishedWithError(AlgorithmModuleBase*, QString)),
-    this, SLOT(OnAlgorithmFinishedWithError(AlgorithmModuleBase*, QString))
-  );
+//   connect(algorithm, SIGNAL(ProgressUpdateUI(long, QString, int)), 
+//     m_DataView, SLOT(UpdateProgressHandler(long, QString, int))
+//   );
+//   connect(algorithm, SIGNAL(AlgorithmFinished(AlgorithmModuleBase*)),
+//     this, SLOT(OnAlgorithmFinished(AlgorithmModuleBase*))
+//   );
+//   connect(algorithm, SIGNAL(AlgorithmFinishedWithError(AlgorithmModuleBase*, QString)),
+//     this, SLOT(OnAlgorithmFinishedWithError(AlgorithmModuleBase*, QString))
+//   );
 
-  ul.unlock();
-  m_Scheduler->QueueAlgorithm(algorithm);
+//   ul.unlock();
+//   m_Scheduler->QueueAlgorithm(algorithm);
 }
 
 void MainWindow::OnSchedulerJobFinished(AlgorithmModuleBase* algorithmModuleBase)
