@@ -38,6 +38,8 @@ public:
 		QString type;
 		QString specialRole;
 		long    subjectId;
+		bool    external;
+		bool    visibleInDataView;
 	} Data;
 
 	/** struct Subject
@@ -73,7 +75,9 @@ public:
 	QString GetDataPath(long iid);
 	QString GetDataType(long iid);
 	QString GetDataSpecialRole(long iid);
-	long GetSubjectIdFromDataId(long iid);
+	bool    GetDataIsExternal(long iid);
+	bool    GetDataIsVisibleInDataView(long iid);
+	long    GetSubjectIdFromDataId(long iid);
 
 public slots:
 	
@@ -105,7 +109,9 @@ public slots:
 	@return the image's id. -1 if adding failed
 	*/
 	long AddDataToSubject(long uid, QString path, QString specialRole = QString(), 
-		QString type = QString(), QString name = QString());
+		QString type = QString(), QString name = QString(), 
+		bool external = false, bool visibleInDataView = true
+	);
 
 	/** Remove image
 	@param iid the data's id.

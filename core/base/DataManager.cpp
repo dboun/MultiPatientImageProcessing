@@ -158,12 +158,29 @@ QString DataManager::GetDataType(long iid)
 
 QString DataManager::GetDataSpecialRole(long iid)
 {
-	// TODO
 	if (m_Data.find(iid) != m_Data.end())
 	{
 		return m_Data[iid].specialRole;
 	}
 	return QString();
+}
+
+bool DataManager::GetDataIsExternal(long iid)
+{
+	if (m_Data.find(iid) != m_Data.end())
+	{
+		return m_Data[iid].external;
+	}
+	return false;
+}
+
+bool DataManager::GetDataIsVisibleInDataView(long iid)
+{
+	if (m_Data.find(iid) != m_Data.end())
+	{
+		return m_Data[iid].visibleInDataView;
+	}
+	return false;
 }
 
 long DataManager::GetSubjectIdFromDataId(long iid)
@@ -280,7 +297,7 @@ void DataManager::RemoveSubject(long uid)
 }
 
 long DataManager::AddDataToSubject(long uid, QString path, QString specialRole, 
-	QString type, QString name)
+	QString type, QString name, bool external, bool visibleInDataView)
 {
 	std::unique_lock<std::mutex> ul(m_Mutex);
 	
@@ -288,6 +305,8 @@ long DataManager::AddDataToSubject(long uid, QString path, QString specialRole,
 	m_Data[iidNextToGive].path = path;
 	m_Data[iidNextToGive].specialRole = specialRole;
 	m_Data[iidNextToGive].type = type;
+	m_Data[iidNextToGive].external = external;
+	m_Data[iidNextToGive].visibleInDataView = visibleInDataView;
 
 	if (name != QString())
 	{

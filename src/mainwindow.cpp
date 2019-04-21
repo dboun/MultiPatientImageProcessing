@@ -35,6 +35,10 @@
 #include "MitkDrawingTool.h"
 #endif
 
+#ifdef BUILD_MODULE_MitkSegmentationTool
+#include "MitkSegmentationTool.h"
+#endif
+
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -109,7 +113,15 @@ MainWindow::MainWindow(QWidget *parent) :
   gtGUI->SetDataManager(m_DataManager);
   gtGUI->SetAppName(m_AppName);
   gtGUI->SetAppNameShort(m_AppNameShort);
-  GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
+  ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, "MLL");
+  //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
+#endif
+
+#ifdef BUILD_MODULE_MitkSegmentationTool
+  auto st = new MitkSegmentationTool(
+    qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), this
+  );
+  ui->rightSideContainer->addTab(st, "Segmentation");
 #endif
 
   // Turn on drag and drop
@@ -263,7 +275,7 @@ void MainWindow::dropEvent(QDropEvent *e)
 
     foreach(const QString file, filesOrDirs)
     {
-      m_DataManager->AddDataToSubject(uid, file, "", "Image");
+      m_DataManager->AddDataToSubject(uid, file, "", "Image", QString(), true);
     }
   }
 }
@@ -464,7 +476,7 @@ void MainWindow::OnOpenImagesForNewSubject()
 
   foreach(QString file, filenames)
   {
-    m_DataManager->AddDataToSubject(uid, file, "", "Image");
+    m_DataManager->AddDataToSubject(uid, file, "", "Image", QString(), true);
   }
 }
 
@@ -489,7 +501,7 @@ void MainWindow::OnOpenImagesForSelectedSubject()
 
   foreach(QString file, filenames)
   {
-    m_DataManager->AddDataToSubject(uid, file, "", "Image");
+    m_DataManager->AddDataToSubject(uid, file, "", "Image", QString(), true);
   }
 }
 
