@@ -32,26 +32,24 @@ MainWindow::MainWindow(QWidget *parent) :
   m_DataManager->SetAppNameShort(m_AppNameShort);
 
   // Initialize Scheduler
-  m_Scheduler = new DefaultScheduler(this);
+  m_Scheduler = &DefaultScheduler::GetInstance();
   
   // Initialize UI
   ui->setupUi(this);
-  this->setWindowTitle( m_AppName );
+  this->setWindowTitle(m_AppName);
 
   // Initialize DataView
   m_DataView = new DataTreeView(this);
-  //m_DataView->setMinimumWidth(400);
-  GuiModuleBase::PlaceWidgetInWidget(m_DataView, ui->dataViewContainer);
   m_DataView->SetDataManager(m_DataManager);
   m_DataView->SetAppName(m_AppName);
   m_DataView->SetAppNameShort(m_AppNameShort);
+  GuiModuleBase::PlaceWidgetInWidget(m_DataView, ui->dataViewContainer);
 
   // Initialize ImageViewer
 #ifdef BUILD_MODULE_MitkImageViewer
   m_ImageViewer = new MitkImageViewer(ui->viewerContainer);
   m_ImageViewer->setMinimumWidth(600);
   m_ImageViewer->setMinimumHeight(500);
-
   connect(m_DataView, SIGNAL(ExportData(long, QString)), 
     qobject_cast<MitkImageViewer*>(m_ImageViewer), SLOT(OnExportData(long, QString))
   );
@@ -59,38 +57,27 @@ MainWindow::MainWindow(QWidget *parent) :
   qDebug() << "Using abstract image viewer";
   m_ImageViewer = new ImageViewerBase(ui->viewerContainer);
 #endif
-
-  //ui->viewerContainer->layout()->addWidget(m_ImageViewer);
-  GuiModuleBase::PlaceWidgetInWidget(m_ImageViewer, ui->viewerContainer);
   m_ImageViewer->SetDataManager(m_DataManager);
   m_ImageViewer->SetDataView(m_DataView);
   m_ImageViewer->SetOpacitySlider(ui->opacitySlider);
   m_ImageViewer->SetAppName(m_AppName);
   m_ImageViewer->SetAppNameShort(m_AppNameShort);
+  GuiModuleBase::PlaceWidgetInWidget(m_ImageViewer, ui->viewerContainer);
 
   // Initialize MitkDrawingTool
 #ifdef BUILD_MODULE_MitkDrawingTool
   m_MitkDrawingTool = new MitkDrawingTool(
     qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), ui->drawingToolContainer
   );
-
   m_MitkDrawingTool->SetMitkImageViewer(
     qobject_cast<MitkImageViewer*>(m_ImageViewer)
   );
-
   m_MitkDrawingTool->SetDataView(m_DataView);
   m_MitkDrawingTool->SetDataManager(m_DataManager);
   m_MitkDrawingTool->SetAppName(m_AppName);
   m_MitkDrawingTool->SetAppNameShort(m_AppNameShort);
-  //this->ui->rightPanel->layout()->addWidget(this->m_MitkDrawingTool);
   GuiModuleBase::PlaceWidgetInWidget(m_MitkDrawingTool, ui->drawingToolContainer);
-  //this->m_SegmentationPanel->hide();
 #endif
-
-  // Disable unused buttons
-  // ui->actionAdd_image_for_selected_subject->setVisible(false);
-  // ui->actionAdd_image_for_new_subject->setVisible(false);
-  // ui->actionAdd_multiple_subjects->setVisible(false);
 
   // Turn on drag and drop
   setAcceptDrops(true); 
@@ -126,13 +113,6 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)),
     this, SLOT(SelectedSubjectChangedHandler(long))
   );
-
-#ifdef BUILD_MODULE_MitkDrawingTool
-  //connect(ui->SegmentationBtn, SIGNAL(clicked()), this, SLOT(OnSegmentationButtonClicked()));
-  //connect(this, SIGNAL(EnableSegmentation()), m_SegmentationPanel, SLOT(OnEnableSegmentation()));
-  //connect(this, SIGNAL(DisableSegmentation()), m_SegmentationPanel, SLOT(OnDisableSegmentation()));
-  //connect(m_ImageViewer, SIGNAL(DisplayedDataName(long)), m_SegmentationPanel, SLOT(SetDisplayDataName(long)));
-#endif
 }
 
 MainWindow::~MainWindow()
@@ -253,28 +233,10 @@ void MainWindow::dropEvent(QDropEvent *e)
       m_DataManager->AddDataToSubject(uid, file, "", "Image");
     }
   }
-
-  //// Not implemented yet message
-  //QMessageBox::information(
-  //  this,
-  //  tr("MPIP"),
-  //  tr("Drag and drop is not fully implemented yet.")
-  //);
 }
 
 void MainWindow::closeEvent (QCloseEvent *e)
 {
-    // QMessageBox::StandardButton resBtn = QMessageBox::question( this, APP_NAME,
-    //   tr("Are you sure?\n"),
-    //   QMessageBox::Cancel | QMessageBox::No | QMessageBox::Yes,
-    //   QMessageBox::Yes
-    // );
-    // if (resBtn != QMessageBox::Yes) {
-    //     e->ignore();
-    // } else {
-    //     e->accept();
-    // }
-
   if (!m_Scheduler->IsSafeToExit())
   {
     QMessageBox::information( this, 
@@ -283,6 +245,22 @@ void MainWindow::closeEvent (QCloseEvent *e)
     );
     e->ignore();
     return;
+  }
+
+  if (m_DataManager->GetAllSubjectIds().size() > 0)
+  {
+    QMessageBox::StandardButton resBtn = QMessageBox::question( this, 
+      tr("Quit"),
+      tr("Close application?\n"),
+      QMessageBox::No | QMessageBox::Yes,
+      QMessageBox::Yes
+    );
+    if (resBtn != QMessageBox::Yes) {
+        e->ignore();
+        return;
+    } else {
+        //e->accept();
+    }
   }
 
   // Remove data in reverse order to avoid reloading everything to the viewer
@@ -486,6 +464,19 @@ void MainWindow::OnCloseAllSubjects()
 {
   // Remove data in reverse order to avoid reloading everything to the viewer
 	auto uids = m_DataManager->GetAllSubjectIds();
+
+  if (uids.size() > 0)
+  {
+    QMessageBox::StandardButton resBtn = QMessageBox::question( this, 
+      tr("Close all"),
+      tr("Are you sure?\n"),
+      QMessageBox::No | QMessageBox::Yes,
+      QMessageBox::Yes
+    );
+    if (resBtn != QMessageBox::Yes) {
+        return;
+    }
+  }
 
   long uid;
 	for (long i = uids.size()-1; i >= 0; i--)

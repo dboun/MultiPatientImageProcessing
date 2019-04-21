@@ -16,7 +16,8 @@ class SchedulerBase : public QObject
 	Q_OBJECT
 
 public:
-	SchedulerBase(QObject *parent = nullptr);
+    static SchedulerBase& GetInstance();
+
 	~SchedulerBase();
 
     /** Override these methods to provide functionality */
@@ -42,6 +43,8 @@ protected:
 	QQueue< AlgorithmModuleBase* > m_Queue;
 
     std::atomic<int> m_RunningAlgorithms {0};
+
+    SchedulerBase() : QObject(nullptr) {}
 };
 
 #endif // ! SCHEDULER_BASE_H

@@ -8,7 +8,3 @@
 set( MODULE_NAME GeodesicTraining )
 set( ON_OR_OFF_BY_DEFAULT OFF )
 set( NEEDS_MODULES  )
-
-# CREATE_MODULE is a macro in core/cmake.
-# It creates a cmake option and adds the subdirectory if necessary
-CREATE_MODULE( ${MODULE_NAME} ${ON_OR_OFF_BY_DEFAULT} ${NEEDS_MODULES} )

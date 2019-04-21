@@ -17,11 +17,14 @@ class DefaultScheduler : public SchedulerBase
     Q_OBJECT
 
 public:
-	DefaultScheduler(QObject *parent = nullptr);
+    static DefaultScheduler& GetInstance();
 	~DefaultScheduler();
 
     void QueueAlgorithm(AlgorithmModuleBase* algorithmModule) override;
     void ClearQueuedAlgorithms() override;
+
+protected:
+    DefaultScheduler() : SchedulerBase() {}
 
 private:
     void StartBackgroundCoordinatorIfNecessary();

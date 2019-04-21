@@ -1,4 +1,4 @@
-macro( CREATE_MODULE MODULE_NAME ON_OR_OFF_BY_DEFAULT )
+macro( CREATE_MODULE MODULE_NAME MODULE_PATH ON_OR_OFF_BY_DEFAULT )
     set ( NEEDS_MODULES ${ARGN} ) # This is not a required argument
 
     set( OPTION_NAME BUILD_MODULE_${MODULE_NAME} )
@@ -25,7 +25,7 @@ macro( CREATE_MODULE MODULE_NAME ON_OR_OFF_BY_DEFAULT )
         )
       endforeach()
 
-      add_subdirectory( ${CMAKE_CURRENT_LIST_DIR} )
+      add_subdirectory( ${MODULE_PATH} )
 
       target_link_libraries( ${MODULES_LIBRARY}  
         INTERFACE ${MODULE_NAME}

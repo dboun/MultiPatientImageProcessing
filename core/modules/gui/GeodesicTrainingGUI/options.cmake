@@ -5,6 +5,6 @@
 #   The default cmake option value
 # NEEDS_MODULES:
 #   A list of other modules to turn on if this module needs them
-set( MODULE_NAME MitkImageViewer )
+set( MODULE_NAME GeodesicTrainingGUI )
 set( ON_OR_OFF_BY_DEFAULT OFF )
-set( NEEDS_MODULES  )
+set( NEEDS_MODULES GeodesicTraining MitkDrawingTool MitkImageViewer )

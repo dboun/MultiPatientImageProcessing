@@ -2,9 +2,10 @@
 
 #include <QDebug>
 
-SchedulerBase::SchedulerBase(QObject *parent) : QObject(parent)
+SchedulerBase& SchedulerBase::GetInstance()
 {
-	qDebug() << "SchedulerBase::SchedulerBase()";
+    static SchedulerBase instance; // static is initialized only once
+    return instance;
 }
 
 SchedulerBase::~SchedulerBase()

@@ -48,4 +48,7 @@ add_library( ${MODULES_LIBRARY} INTERFACE )
 # add all enabled subproject module libraries to the library
 foreach( MODULE_PATH ${MODULES_PATHS} )
   include( ${MODULE_PATH}/options.cmake )
+  # CREATE_MODULE is a macro in core/cmake.
+  # It creates a cmake option and adds the subdirectory if necessary
+  CREATE_MODULE( ${MODULE_NAME} ${MODULE_PATH} ${ON_OR_OFF_BY_DEFAULT} ${NEEDS_MODULES} )
 endforeach()

@@ -3,9 +3,10 @@
 #include <QDebug>
 #include <QThread>
 
-DefaultScheduler::DefaultScheduler(QObject *parent) : SchedulerBase(parent)
+DefaultScheduler& DefaultScheduler::GetInstance()
 {
-	qDebug() << "DefaultScheduler::DefaultScheduler()";
+    static DefaultScheduler instance; // static is initialized only once
+    return instance;
 }
 
 DefaultScheduler::~DefaultScheduler()
