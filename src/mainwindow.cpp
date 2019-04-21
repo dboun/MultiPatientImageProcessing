@@ -99,7 +99,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 #ifdef BUILD_MODULE_GeodesicTrainingGUI
   m_GeodesicTrainingGUI = new GeodesicTrainingGUI(
-    qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), ui->rightSideContainer
+    qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), this
   );
   auto gtGUI = qobject_cast<GeodesicTrainingGUI*>(m_GeodesicTrainingGUI);
   gtGUI->SetMitkImageViewer(
@@ -109,7 +109,7 @@ MainWindow::MainWindow(QWidget *parent) :
   gtGUI->SetDataManager(m_DataManager);
   gtGUI->SetAppName(m_AppName);
   gtGUI->SetAppNameShort(m_AppNameShort);
-  //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
+  GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
 #endif
 
   // Turn on drag and drop

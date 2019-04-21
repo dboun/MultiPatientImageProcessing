@@ -26,8 +26,8 @@ GeodesicTrainingGUI::GeodesicTrainingGUI(mitk::DataStorage *datastorage, QWidget
   //m_MitkDrawingTool(new MitkDrawingTool(datastorage, this))
 {
   ui->setupUi(this);
-  m_MitkDrawingTool = new MitkDrawingTool(datastorage, ui->mitkDrawingToolContainer);
-  //GuiModuleBase::PlaceWidgetInWidget(m_MitkDrawingTool, ui->mitkDrawingToolContainer);
+  m_MitkDrawingTool = new MitkDrawingTool(datastorage, nullptr);
+  GuiModuleBase::PlaceWidgetInWidget(m_MitkDrawingTool, ui->mitkDrawingToolContainer);
 
   connect(ui->pushButtonRun, SIGNAL(clicked()), this, SLOT(OnRunClicked()));
 }

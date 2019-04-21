@@ -11,14 +11,14 @@
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+   <sizepolicy hsizetype="Preferred" vsizetype="Ignored">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>250</width>
+    <width>0</width>
     <height>0</height>
    </size>
   </property>
@@ -26,7 +26,13 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item alignment="Qt::AlignLeft|Qt::AlignVCenter">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <item alignment="Qt::AlignLeft|Qt::AlignTop">
     <widget class="ActionPushButton" name="newLabelPushBtn">
      <property name="styleSheet">
       <string notr="true"/>
@@ -36,18 +42,24 @@
      </property>
     </widget>
    </item>
-   <item alignment="Qt::AlignLeft|Qt::AlignVCenter">
+   <item alignment="Qt::AlignLeft|Qt::AlignTop">
     <widget class="ActionPushButton" name="createMaskPushBtn">
      <property name="text">
       <string>Create mask</string>
      </property>
     </widget>
    </item>
-   <item alignment="Qt::AlignHCenter">
+   <item>
     <widget class="InfoLabel" name="infoLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="minimumSize">
       <size>
-       <width>240</width>
+       <width>170</width>
        <height>0</height>
       </size>
      </property>
@@ -63,7 +75,20 @@
     </widget>
    </item>
    <item>
-    <widget class="QmitkLabelSetWidget" name="labelSetWidget" native="true"/>
+    <widget class="QmitkLabelSetWidget" name="labelSetWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>90</height>
+      </size>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QWidget" name="toolGUIArea" native="true">
