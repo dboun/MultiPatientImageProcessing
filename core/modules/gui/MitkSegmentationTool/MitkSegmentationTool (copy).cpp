@@ -15,14 +15,12 @@
 #include "QmitkToolGUI.h"
 
 #include "DataManager.h"
-#include "MitkSegmentationToolController.h"
 
 MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
     GuiModuleBase(parent),
     ui(new Ui::MitkSegmentationTool),
     m_DataStorage(&CustomMitkDataStorage::GetInstance()),
-    m_LastToolGUI(nullptr),
-    m_Controller(this)
+    m_LastToolGUI(nullptr)
 {
     ui->setupUi(this);
 
@@ -181,11 +179,6 @@ void MitkSegmentationTool::SetDataManager(DataManager* dataManager)
 void MitkSegmentationTool::SetSpecialRoleOfInterest(QString specialRoleOfInterest)
 {
   m_SpecialRoleOfInterest = specialRoleOfInterest;
-}
-
-QString MitkSegmentationTool::GetSpecialRoleOfInterest()
-{
-  return m_SpecialRoleOfInterest;
 }
 
 // void MitkSegmentationTool::OnEnableSegmentation()
@@ -500,7 +493,7 @@ void MitkSegmentationTool::OnManualTool2DSelected(int id)
     
     if (text == "Paint")
     {
-      this->RemoveExistingToolGui();
+        this->RemoveExistingToolGui();
 
       mitk::Tool *tool = m_ToolManager->GetActiveTool();
 
@@ -529,9 +522,11 @@ void MitkSegmentationTool::OnManualTool2DSelected(int id)
     }
     else
     {
-      this->RemoveExistingToolGui();
+        this->RemoveExistingToolGui();
     }
+ 
   }
+
 }
 
 

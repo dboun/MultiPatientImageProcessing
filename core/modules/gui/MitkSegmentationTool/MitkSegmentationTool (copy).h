@@ -17,8 +17,6 @@ namespace Ui {
 class MitkSegmentationTool;
 }
 
-class MitkSegmentationToolController;
-
 class MitkSegmentationTool : public GuiModuleBase
 {
     Q_OBJECT
@@ -32,25 +30,29 @@ public:
 	// It could be "Segmentation" or "Mask"
 	void SetSpecialRoleOfInterest(QString specialRoleOfInterest);
 
-	QString GetSpecialRoleOfInterest();
-
 public slots:
 	// This could connect to DataViewBase::SelectedDataChanged(iid)
 	// Or manually set it to the mask of the subject
 	void ChangeFocusImage(long iid);
 
+	// Slots for DataManager
+	void OnDataAboutToGetRemoved(long iid);
+
 	// Internal slots
+	void OnCreateNewLabel();
+	void OnCreateNewMask();
 	void OnManualTool2DSelected(int);
+    void CreateEmptyMask(long referenceIid);
+	void OnCreateEmptyMaskBackgroundFinished();
+	void SetMaskFromNiftiData(long);
+	void SetSegmentationFromNiftiData(long);
 
 signals:
-	/*del*/void MitkSegmentationToolSaveImageToFile(long iid, bool updateDataManager);
-	void CreateNewLabelSetImageClicked();
-	void AddNewLabelClicked();
+	void MitkSegmentationToolSaveImageToFile(long iid, bool updateDataManager);
+	//void MitkSegmentationToolCreateEmptyMask(long referenceIid);
 
 private:
     void RemoveExistingToolGui();
-
-	MitkSegmentationToolController m_Controller;
 
 	bool m_WaitingOnLabelsImageCreation = false;
 	bool m_MaskLoadedForThisSubject     = false;
