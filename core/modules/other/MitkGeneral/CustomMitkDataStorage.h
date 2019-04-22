@@ -10,11 +10,18 @@
 #include "DataManager.h"
 #include "DataViewBase.h"
 
+/** class CustomMitkDataStorage
+*     Extending mitk::StandaloneDataStorage to hold the data of the currently selected subject.
+*     This happens automatically.
+*     It can also be used transparently to get/save the images from/to file
+*     and update DataManager if the data doesn't belong to the current subject. 
+*/
 class CustomMitkDataStorage : public QObject, public mitk::StandaloneDataStorage
 {
 	Q_OBJECT
 
 public:
+    /** CustomMitkDataStorage needs to be initialized with DataManager the first time */
     static CustomMitkDataStorage& CreateInstance(DataManager* dataManager);
 
     static CustomMitkDataStorage& GetInstance();
@@ -25,7 +32,14 @@ public:
     void SetDataView(DataViewBase* dataView);
 
     long AddMitkImageToSubject(long uid, mitk::Image::Pointer mitkImage, 
-        QString specialRole = QString(), QString type = QString(), QString name = QString(),
+        QString path = QString(), QString specialRole = QString(), 
+        QString type = QString(), QString name = QString(),
+        bool external = false, bool visibleInDataView = true 
+    );
+
+    long AddMitkLabelSetImageToSubject(long uid, mitk::LabelSetImage::Pointer mitkImage, 
+        QString path = QString(), QString specialRole = QString(), 
+        QString type = QString(), QString name = QString(),
         bool external = false, bool visibleInDataView = true 
     );
 
@@ -48,9 +62,6 @@ public:
     void WriteChangesToFileIfNecessaryForAllImagesOfCurrentSubject();
 
 public slots:
-    /** Slots for DataManager */
-	//void DataAboutToGetRemovedHandler(long iid);
-
     /** Slots for DataView */
     void SelectedSubjectChangedHandler(long uid); // uid == -1 if nothing is selected
 	void DataAddedForSelectedSubjectHandler(long iid);
@@ -68,6 +79,12 @@ protected:
     /** This is called before removing something from the DataStorage */
     void WriteChangesToFileIfNecessary(mitk::DataNode::Pointer dataNode);
 
+    /** This is used internally by AddMitk[...]ImageToSubject() */
+    long AddMitkNodeToSubject(long uid, mitk::DataNode::Pointer dataNode, 
+        QString path, QString specialRole, QString type, QString name,
+        bool external, bool visibleInDataView 
+    );
+
     CustomMitkDataStorage() : QObject(nullptr) {}
 
     static DataManager* m_DataManager;
@@ -78,6 +95,18 @@ protected:
      *  Mostly used by AddMitk[...]ImageToSubject()
      */
     static std::map<long, mitk::DataNode::Pointer> m_NodesWaitMap;
+
+private:
+    template<class T, class U>
+	std::vector<T> IdsOfMap(std::map<T, U>& map)
+	{
+		std::vector<T> keys;
+		keys.reserve(map.size());
+		for (auto const& imap : map) {
+			keys.push_back(imap.first);
+		}
+		return keys;
+	}
 };
 
 #endif // ! CUSTOM_MITK_DATA_STORAGE_H

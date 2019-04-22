@@ -18,11 +18,6 @@ class MitkImageViewer : public ImageViewerBase
 public:
 	MitkImageViewer(QWidget *parent = nullptr);
 	~MitkImageViewer();
-	
-    inline CustomMitkDataStorage* GetDataStorage()
-    {
-        return m_DataStorage;
-    }
 
 public slots:
 	// Slot for slider
@@ -33,22 +28,15 @@ public slots:
 	virtual void DataRemovedFromSelectedSubjectHandler(long iid) override;
 	virtual void SelectedDataChangedHandler(long iid) override;
 	virtual void DataCheckedStateChangedHandler(long iid, bool checkState) override;
-	virtual void OnExportData(long iid, QString fileName);
+	/*del*/virtual void OnExportData(long iid, QString fileName);
 
 	// Slot, but usually just called.
-	void SaveImageToFile(long iid, bool updateDataManager = true);
+	/*del*/void SaveImageToFile(long iid, bool updateDataManager = true);
 
 	// Reference is an nrrd image that shows which labels to use
-	void ConvertToNrrdAndSave(long iid, long referenceIid = -1, bool updateDataManager = true);
+	/*del*/void ConvertToNrrdAndSave(long iid, long referenceIid = -1, bool updateDataManager = true);
 
-    //long CreateEmptyMask(long referenceIid);
-
-signals:
-	void MitkLoadedNewMask(mitk::DataNode::Pointer dataNode);
-	void MitkNodeAboutToBeDeleted(long iid);
-protected:
-	//virtual void AddToDataStorage(long iid);
-
+protected:	
 	CustomQmitkStdMultiWidget* m_MitkWidget;
 	CustomMitkDataStorage*     m_DataStorage;
 

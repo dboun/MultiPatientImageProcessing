@@ -50,14 +50,34 @@ void CustomMitkDataStorage::SetDataView(DataViewBase* dataView)
     );
 }
 
-long CustomMitkDataStorage::AddMitkImageToSubject(long uid, mitk::Image::Pointer mitkImage, 
+long CustomMitkDataStorage::AddMitkImageToSubject(long uid, 
+    mitk::Image::Pointer mitkImage, QString path, 
     QString specialRole, QString type, QString name,
     bool external, bool visibleInDataView)
 {
     qDebug() << "CustomMitkDataStorage::AddImageToSubject";
+
+    mitk::DataNode::Pointer node = mitk::DataNode::New();
+    node->SetData(mitkImage);
     
-    // TODO:
-    return -1; // delete this
+    return this->AddMitkNodeToSubject(uid, node, 
+        path, specialRole, type, name, external, visibleInDataView
+    );
+}
+
+long CustomMitkDataStorage::AddMitkLabelSetImageToSubject(long uid, 
+    mitk::LabelSetImage::Pointer mitkImage, QString path,
+    QString specialRole, QString type, QString name,
+    bool external, bool visibleInDataView)
+{
+    qDebug() << "CustomMitkDataStorage::AddLabelSetImageToSubject";
+    
+    mitk::DataNode::Pointer node = mitk::DataNode::New();
+    node->SetData(mitkImage);
+    
+    return this->AddMitkNodeToSubject(uid, node, 
+        path, specialRole, type, name, external, visibleInDataView
+    );
 }
 
 long AddEmptyMitkImageToSubject(long uid, 
@@ -111,9 +131,30 @@ void CustomMitkDataStorage::WriteChangesToFileIfNecessaryForAllImagesOfCurrentSu
 	}
 }
 
+long CustomMitkDataStorage::AddMitkNodeToSubject(long uid, mitk::DataNode::Pointer dataNode, 
+    QString path, QString specialRole, QString type, QString name,
+    bool external, bool visibleInDataView )
+{
+    if (uid == m_CurrentSubjectID)
+    {
+        // TODO: Add node to m_NodesWaitMap. Add data to DataManager. 
+        //       Handle DataAddedForSelectedSubject(long iid) to load it from m_NodesWaitMap
+    }
+    else {
+        mitk::IOUtil::Save(
+		    dataNode->GetData(), 
+		    path.toStdString()
+	    );
+        
+        m_DataManager->AddDataToSubject(uid, 
+            path, specialRole, type, name, external, visibleInDataView
+        );
+    }
+}
+
 void CustomMitkDataStorage::SelectedSubjectChangedHandler(long uid)
 {
-	qDebug() << QString("MitkImageViewer::SelectedSubjectChangedHandler()") << uid;
+	qDebug() << QString("CustomMitkDataStorage::SelectedSubjectChangedHandler()") << uid;
     m_CurrentSubjectID = uid;
 
 	// Remove the previous ones
@@ -171,18 +212,22 @@ void CustomMitkDataStorage::DataRequestedAsSegmentationHandler(long iid)
 void CustomMitkDataStorage::ExportDataHandler(long iid, QString fileName)
 {
     // TODO: Maybe this should handle showing the window
+    // This could happen by having the default value "" as fileName
+    // and showing the window if that's the case
     mitk::DataNode::Pointer dataNode = this->GetNamedNode(std::to_string(iid));
 
-    mitk::IOUtil::Save(
-		dataNode->GetData(), 
-		fileName.toStdString()
-	);
-
+    if (dataNode)
+    {
+        mitk::IOUtil::Save(
+		    dataNode->GetData(), 
+		    fileName.toStdString()
+	    );
+    }
 }
 
 void CustomMitkDataStorage::AddToDataStorage(long iid)
 {
-	if (m_DataManager->GetDataType(iid) != "Image") { return; }
+    if (m_DataManager->GetDataType(iid) != "Image") { return; }
 	
 	QString specialRole = m_DataManager->GetDataSpecialRole(iid);
 	QString dataPath    = m_DataManager->GetDataPath(iid);
@@ -191,17 +236,36 @@ void CustomMitkDataStorage::AddToDataStorage(long iid)
 	if ((specialRole == "Mask" || specialRole == "Segmentation") &&
 		!dataPath.endsWith(".nrrd", Qt::CaseSensitive)
 	) {
+        qDebug() << "CustomMitkDataStorage: \"Mask\" or \"Segmentation\" was not nrrd";
 		return;
 	}
 
-	qDebug() << "MitkImageViewer: Adding iid" << iid;
+	qDebug() << "CustomMitkDataStorage::AddToDataStorage: Adding iid" << iid;
 	QString dataName = m_DataManager->GetDataName(iid);
 
-	mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(
-		dataPath.toStdString(), *this
-	);
+    // See if this is the result of waiting for the DataManager to update
+    // when the node exists
+    mitk::DataNode::Pointer dataNode;
+    for (const long& tIid : IdsOfMap<long, mitk::DataNode::Pointer>(m_NodesWaitMap))
+    {
+        if (tIid == iid)
+        {
+            dataNode = m_NodesWaitMap[tIid];
+            m_NodesWaitMap.erase(tIid);
+            break;
+        }
+    }
 
-	mitk::DataNode::Pointer dataNode = dataNodes->at(0);
+    if (!dataNode)
+    {
+        // The dataNode doesn't already exist
+        mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(
+		    dataPath.toStdString(), *this
+	    );
+        if (dataNodes.IsNull()) { return; }
+	    dataNode = dataNodes->at(0);
+    }
+
 	dataNode->SetName(QString::number(iid).toStdString().c_str());
     //dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
 	dataNode->SetVisibility(false);
@@ -219,8 +283,8 @@ void CustomMitkDataStorage::AddToDataStorage(long iid)
 
 	if (specialRole == QString("Segmentation"))
 	{
-		auto labelSetImage = dynamic_cast<mitk::LabelSetImage*>(dataNode->GetData());
-		labelSetImage->GetActiveLabelSet()->SetActiveLabel(0);
+	    // auto labelSetImage = dynamic_cast<mitk::LabelSetImage*>(dataNode->GetData());
+	    // labelSetImage->GetActiveLabelSet()->SetActiveLabel(0);
 	}
 	
     emit MitkLoadedNewNode(iid, dataNode);

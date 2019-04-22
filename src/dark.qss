@@ -242,8 +242,10 @@ QDockWidget::close-button, QDockWidget::float-button {
 /*------------------------ QTabWidget ------------------------*/
 QTabWidget
 {
-	border: 1px transparent black;
+	border: 1px black;
 }
+/*border: 1px transparent black;*/
+
 QTabWidget::pane { /* The tab widget frame */
 }
 

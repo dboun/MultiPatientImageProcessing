@@ -7,4 +7,4 @@
 #   A list of other modules to turn on if this module needs them
 set( MODULE_NAME MitkSegmentationTool )
 set( ON_OR_OFF_BY_DEFAULT OFF )
-set( NEEDS_MODULES MitkImageViewer )
+set( NEEDS_MODULES MitkGeneral )

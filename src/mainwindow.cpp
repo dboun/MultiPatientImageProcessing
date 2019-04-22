@@ -104,32 +104,30 @@ MainWindow::MainWindow(QWidget *parent) :
 //   m_MitkDrawingTool->SetDataManager(m_DataManager);
 //   m_MitkDrawingTool->SetAppName(m_AppName);
 //   m_MitkDrawingTool->SetAppNameShort(m_AppNameShort);
-
 //   // Experiment
 //   //GuiModuleBase::PlaceWidgetInWidget(m_MitkDrawingTool, ui->drawingToolContainer);
-  
 // #endif
 
-#ifdef BUILD_MODULE_GeodesicTrainingGUI
-  m_GeodesicTrainingGUI = new GeodesicTrainingGUI(
-    qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), this
-  );
-  auto gtGUI = qobject_cast<GeodesicTrainingGUI*>(m_GeodesicTrainingGUI);
-  gtGUI->SetMitkImageViewer(
-    qobject_cast<MitkImageViewer*>(m_ImageViewer)
-  );
-  gtGUI->SetDataView(m_DataView);
-  gtGUI->SetDataManager(m_DataManager);
-  gtGUI->SetAppName(m_AppName);
-  gtGUI->SetAppNameShort(m_AppNameShort);
-  ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, "MLL");
-  //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
-#endif
+// #ifdef BUILD_MODULE_GeodesicTrainingGUI
+//   m_GeodesicTrainingGUI = new GeodesicTrainingGUI(
+//     qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), this
+//   );
+//   auto gtGUI = qobject_cast<GeodesicTrainingGUI*>(m_GeodesicTrainingGUI);
+//   gtGUI->SetMitkImageViewer(
+//     qobject_cast<MitkImageViewer*>(m_ImageViewer)
+//   );
+//   gtGUI->SetDataView(m_DataView);
+//   gtGUI->SetDataManager(m_DataManager);
+//   gtGUI->SetAppName(m_AppName);
+//   gtGUI->SetAppNameShort(m_AppNameShort);
+//   ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, "MLL");
+//   //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
+// #endif
 
 #ifdef BUILD_MODULE_MitkSegmentationTool
-  auto st = new MitkSegmentationTool(
-    qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), this
-  );
+  auto st = new MitkSegmentationTool(this);
+  st->SetDataManager(m_DataManager);
+  connect(m_DataView, SIGNAL(SelectedDataChanged(long)), st, SLOT(ChangeFocusImage(long)));
   ui->rightSideContainer->addTab(st, "Segmentation");
 #endif
 
@@ -146,9 +144,6 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->dataViewContainer->setGraphicsEffect(effect);
 
   // Signals and Slots
-  // connect(ui->pushButtonRun, SIGNAL(released()), 
-  //   this, SLOT(OnRunPressed())
-  // );
   connect(m_Scheduler, SIGNAL(JobFinished(AlgorithmModuleBase*)), 
     this, SLOT(OnSchedulerJobFinished(AlgorithmModuleBase*))
   );
@@ -163,9 +158,6 @@ MainWindow::MainWindow(QWidget *parent) :
   );
   connect(ui->actionClose_all_subjects, SIGNAL(triggered()),
     this, SLOT(OnCloseAllSubjects())
-  );
-  connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)),
-    this, SLOT(SelectedSubjectChangedHandler(long))
   );
 }
 
@@ -319,14 +311,6 @@ void MainWindow::closeEvent (QCloseEvent *e)
 
   // Remove data in reverse order to avoid reloading everything to the viewer
 	auto uids = m_DataManager->GetAllSubjectIds();
-	
-  // Test
-	{
-		for(auto uid : uids)
-		{
-			qDebug() << "uid" << uid << "was loaded";
-		}
-	}
   
   long uid;
 	for (long i = uids.size()-1; i >= 0; i--)
@@ -707,29 +691,6 @@ void MainWindow::OnAlgorithmFinishedWithError(AlgorithmModuleBase* algorithmModu
 		algorithmModuleBase->GetAlgorithmName(),
 		errorMessage	
 	);
-}
-
-void MainWindow::SelectedSubjectChangedHandler(long uid)
-{
-	qDebug() << "Selected Subject Changed for MainWindow";
-
-  if (uid == -1)
-  {
-    return;
-  }
-
-  // Checking if there is a mask already
-  auto iids = m_DataManager->GetAllDataIdsOfSubject(uid);
-
-  bool foundMask = false;
-  for (const auto& iid : iids)
-  {
-    if (m_DataManager->GetDataSpecialRole(iid) == "Mask")
-    {
-      foundMask = true;
-      break;
-    }
-  }
 }
 
 // void MainWindow::EnableRunButton()

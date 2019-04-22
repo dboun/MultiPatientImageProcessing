@@ -9,7 +9,7 @@
 #include <mitkStandaloneDataStorage.h>
 
 #include "GuiModuleBase.h"
-#include "MitkImageViewer.h"
+#include "CustomMitkDataStorage.h"
 
 class QmitkToolGUI;
 
@@ -22,21 +22,21 @@ class MitkSegmentationTool : public GuiModuleBase
     Q_OBJECT
 
 public:
-    explicit MitkSegmentationTool(mitk::DataStorage *datastorage, QWidget *parent = nullptr);
+    explicit MitkSegmentationTool(QWidget *parent = nullptr);
     ~MitkSegmentationTool();
-
-	void SetMitkImageViewer(MitkImageViewer* mitkImageViewer);
 
 	void SetDataManager(DataManager* dataManager) override;
 
-	void SetDataView(DataViewBase* dataViewBase);
+	// It could be "Segmentation" or "Mask"
+	void SetSpecialRoleOfInterest(QString specialRoleOfInterest);
 
 public slots:
+	// This could connect to DataViewBase::SelectedDataChanged(iid)
+	// Or manually set it to the mask of the subject
+	void ChangeFocusImage(long iid);
+
 	// Slots for DataManager
 	void OnDataAboutToGetRemoved(long iid);
-	
-	// Slots for MitkViewer
-	void OnMitkLoadedNewMask(mitk::DataNode::Pointer dataNode);
 
 	// Internal slots
 	void OnCreateNewLabel();
@@ -52,8 +52,6 @@ signals:
 	//void MitkSegmentationToolCreateEmptyMask(long referenceIid);
 
 private:
-	// void CreateNewSegmentation();
-
     void RemoveExistingToolGui();
 
 	bool m_WaitingOnLabelsImageCreation = false;
@@ -62,12 +60,15 @@ private:
 	mitk::DataNode::Pointer m_LoadedMaskNode;
 	
 	Ui::MitkSegmentationTool *ui;
-	QProgressDialog      *m_ProgressDialog;
-	QFutureWatcher<void> *m_ProgressDialogWatcher;
+	QProgressDialog          *m_ProgressDialog;
+	QFutureWatcher<void>     *m_ProgressDialogWatcher;
 	
 	mitk::ToolManager::Pointer m_ToolManager;
-	mitk::DataStorage *m_DataStorage;
-	QmitkToolGUI *m_LastToolGUI;
+	CustomMitkDataStorage*     m_DataStorage;
+	QmitkToolGUI*              m_LastToolGUI;
+
+	QString m_SpecialRoleOfInterest = "Segmentation";
+	long    m_CurrentFocusImage     = -1;
 };
 
 #endif // ! MITK_SEGMENTATION_TOOL_H

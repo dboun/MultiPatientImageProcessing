@@ -47,9 +47,7 @@ public slots:
   void OnAlgorithmFinished(AlgorithmModuleBase* algorithmModuleBase);
   void OnAlgorithmFinishedWithError(AlgorithmModuleBase* algorithmModuleBase, 
     QString errorMessage);
-  
-  void SelectedSubjectChangedHandler(long uid);
-  
+    
 private:
 
   //void EnableRunButton();
