@@ -23,6 +23,10 @@
 #include "ImageViewerBase.h"
 #include "AlgorithmModuleBase.h"
 
+#ifdef BUILD_MODULE_MitkGeneral
+#include "CustomMitkDataStorage.h"
+#endif
+
 #ifdef BUILD_MODULE_GeodesicTrainingGUI
 #include "GeodesicTrainingGUI.h"
 #endif
@@ -63,6 +67,11 @@ MainWindow::MainWindow(QWidget *parent) :
   m_DataView->SetAppName(m_AppName);
   m_DataView->SetAppNameShort(m_AppNameShort);
   GuiModuleBase::PlaceWidgetInWidget(m_DataView, ui->dataViewContainer);
+
+  // Initialize CustomMitkDataStorage
+#ifdef BUILD_MODULE_MitkGeneral
+  CustomMitkDataStorage::CreateInstance(m_DataManager).SetDataView(m_DataView);
+#endif
 
   // Initialize ImageViewer
 #ifdef BUILD_MODULE_MitkImageViewer

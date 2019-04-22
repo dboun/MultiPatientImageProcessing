@@ -23,7 +23,8 @@ MitkImageViewer::MitkImageViewer(QWidget *parent) : ImageViewerBase(parent)
 
 	// MITK Initialization
 	m_MitkWidget->InitializeWidget();
-	m_DataStorage = mitk::StandaloneDataStorage::New();
+	//m_DataStorage = mitk::StandaloneDataStorage::New();
+	m_DataStorage = &CustomMitkDataStorage::GetInstance();
 	m_MitkWidget->SetDataStorage(m_DataStorage);
 	m_MitkWidget->InitPositionTracking();
 	m_MitkWidget->EnablePositionTracking();
@@ -52,16 +53,16 @@ MitkImageViewer::MitkImageViewer(QWidget *parent) : ImageViewerBase(parent)
 
 void MitkImageViewer::OpacitySliderHandler(int value) 
 {
-  long iid = this->GetDataView()->GetCurrentDataID();
+	long iid = this->GetDataView()->GetCurrentDataID();
 
-  if (iid == -1) { return; }
-	
-  qDebug() << "Changing opacity of " << iid <<" to value " << value;
+	if (iid == -1) { return; }
 
-  mitk::DataNode* node = m_DataStorage->GetNamedNode(
-	  QString::number(iid).toStdString().c_str()
-  );
-  
+	qDebug() << "Changing opacity of " << iid <<" to value " << value;
+
+	mitk::DataNode* node = m_DataStorage->GetNamedNode(
+		QString::number(iid).toStdString().c_str()
+	);
+
 	if (node)
 	{
 		//node->SetProperty("layer", mitk::IntProperty::New(1));
@@ -69,7 +70,7 @@ void MitkImageViewer::OpacitySliderHandler(int value)
 		//node->GetData()->Modified();
 	}
 
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 MitkImageViewer::~MitkImageViewer()
@@ -79,57 +80,13 @@ MitkImageViewer::~MitkImageViewer()
 
 void MitkImageViewer::SelectedSubjectChangedHandler(long uid) 
 {
-	// This means that a new subject is selected
-
-	qDebug() << QString("MitkImageViewer::SelectedSubjectChangedHandler()") << uid;
-
-	// Remove the previous ones
-	QRegExp numberRegExp("\\d*");  // a digit (\d), zero or more times (*)
-	
-	mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-	for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
-		
-		QString nodeName = QString(it->Value()->GetName().c_str());
-				
-		// If the node name can be converted to a number 
-		// (all of our node are named with their iid)
-		if (numberRegExp.exactMatch(nodeName))
-		{
-			qDebug() << "Removing node with name: " << it->Value()->GetName().c_str();
-			emit MitkNodeAboutToBeDeleted(std::stol(it.Value()->GetName().c_str()));
-			m_DataStorage->Remove(it.Value());
-		}
-	}
-
-	if (uid != -1) 
-	{ 
-		auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(uid);
-
-		for(const long& iid : iids)
-		{
-			this->AddToDataStorage(iid);
-		} 
-	}
-
 	m_MitkWidget->ResetCrosshair();
-	//mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
 	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 	m_FirstTimeForThisSubject = true;
 }
 
-void MitkImageViewer::DataAddedForSelectedSubjectHandler(long iid)
-{
-	AddToDataStorage(iid);
-}
-
 void MitkImageViewer::DataRemovedFromSelectedSubjectHandler(long iid)
 {
-	qDebug() << "MitkImageViewer::DataRemovedFromSelectedSubjectHandler";
-	
-	emit MitkNodeAboutToBeDeleted(iid);
-	m_DataStorage->Remove(
-		m_DataStorage->GetNamedNode(QString::number(iid).toStdString().c_str())
-	);
 	m_MitkWidget->RequestUpdate();
 }
 
@@ -190,10 +147,10 @@ void MitkImageViewer::SelectedDataChangedHandler(long iid)
 
 void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState) 
 {
-  // An image got checked/unchecked in the viewer
-  // All the images of a new selected subject start unchecked
-  // so here we add them or remove them to the data storage
-  qDebug() << QString("MitkImageViewer::DataCheckedStateChangedHandler()") 
+	// An image got checked/unchecked in the viewer
+	// All the images of a new selected subject start unchecked
+	// so here we add them or remove them to the data storage
+	qDebug() << QString("MitkImageViewer::DataCheckedStateChangedHandler()") 
 		<< iid << "( Special Role:" << this->GetDataManager()->GetDataSpecialRole(iid) << ")";
 
 	mitk::DataNode::Pointer dataNode = this->m_DataStorage->GetNamedNode(
@@ -231,7 +188,7 @@ void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 		dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
 	}
 
-  dataNode->SetVisibility(checkState);
+	dataNode->SetVisibility(checkState);
 	if (m_FirstTimeForThisSubject)
 	{
 		m_MitkWidget->ResetCrosshair();
@@ -242,11 +199,11 @@ void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 	//mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
 
-  // if (checkState)
-  // {
+	// if (checkState)
+	// {
 
-  //   // QString imageName;// don't actually use this -> = m_DataManager->GetDataName(iid);
-  //   // QString imagePath = this->GetDataManager()->GetDataPath(iid);
+	//   // QString imageName;// don't actually use this -> = m_DataManager->GetDataName(iid);
+	//   // QString imagePath = this->GetDataManager()->GetDataPath(iid);
 
 	// 	// if (imagePath.isEmpty()) { return; }
 
@@ -639,48 +596,5 @@ void MitkImageViewer::ConvertToNrrdAndSave(long iid, long referenceIid, bool upd
 		this->GetDataManager()->AddDataToSubject(
 			uid, outputImagePath, imageSpecialRole, "Image"
 		);
-	}
-}
-
-void MitkImageViewer::AddToDataStorage(long iid)
-{
-	if (this->GetDataManager()->GetDataType(iid) != "Image") { return; }
-	
-	QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
-	QString dataPath    = this->GetDataManager()->GetDataPath(iid);
-
-	if ((specialRole == "Mask" || specialRole == "Segmentation") &&
-		!dataPath.endsWith(".nrrd", Qt::CaseSensitive)
-	) {
-		return;
-	}
-
-	qDebug() << "MitkImageViewer: Adding iid" << iid;
-	QString dataName = this->GetDataManager()->GetDataName(iid);
-
-	mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(
-		dataPath.toStdString(), *m_DataStorage
-	);
-
-	mitk::DataNode::Pointer dataNode = dataNodes->at(0);
-	dataNode->SetName(QString::number(iid).toStdString().c_str());
-  //dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
-	dataNode->SetVisibility(false);
-
-//	dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
-//	dataNode->SetProperty("layer", mitk::IntProperty::New(2));
-
-	if (specialRole == QString("Mask"))
-	{
-//		dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
-//		dataNode->SetProperty("layer", mitk::IntProperty::New(48));
-
-		emit MitkLoadedNewMask(dataNode);
-	}
-
-	if (specialRole == QString("Segmentation"))
-	{
-		auto labelSetImage = dynamic_cast<mitk::LabelSetImage*>(dataNode->GetData());
-		labelSetImage->GetActiveLabelSet()->SetActiveLabel(0);
 	}
 }

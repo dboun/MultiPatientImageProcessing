@@ -38,6 +38,7 @@ set_property(TARGET ${MODULE_NAME}
 
 target_link_libraries( ${MODULE_NAME} 
   MpipBase
+  ${NEEDS_MODULES}
 
   Qt5::Core
   Qt5::Gui

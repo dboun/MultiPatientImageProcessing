@@ -9,6 +9,7 @@
 #include <CustomQmitkStdMultiWidget.h>
 
 #include "ImageViewerBase.h"
+#include "CustomMitkDataStorage.h"
 
 class MitkImageViewer : public ImageViewerBase
 {
@@ -18,7 +19,7 @@ public:
 	MitkImageViewer(QWidget *parent = nullptr);
 	~MitkImageViewer();
 	
-    inline mitk::DataStorage* GetDataStorage()
+    inline CustomMitkDataStorage* GetDataStorage()
     {
         return m_DataStorage;
     }
@@ -29,7 +30,6 @@ public slots:
 
 	// Slots for DataViewBase
 	virtual void SelectedSubjectChangedHandler(long uid) override;
-	virtual void DataAddedForSelectedSubjectHandler(long iid) override;
 	virtual void DataRemovedFromSelectedSubjectHandler(long iid) override;
 	virtual void SelectedDataChangedHandler(long iid) override;
 	virtual void DataCheckedStateChangedHandler(long iid, bool checkState) override;
@@ -47,10 +47,10 @@ signals:
 	void MitkLoadedNewMask(mitk::DataNode::Pointer dataNode);
 	void MitkNodeAboutToBeDeleted(long iid);
 protected:
-	virtual void AddToDataStorage(long iid);
+	//virtual void AddToDataStorage(long iid);
 
 	CustomQmitkStdMultiWidget* m_MitkWidget;
-	mitk::StandaloneDataStorage::Pointer m_DataStorage;
+	CustomMitkDataStorage*     m_DataStorage;
 
 private:
 	bool m_FirstTimeForThisSubject = true;
