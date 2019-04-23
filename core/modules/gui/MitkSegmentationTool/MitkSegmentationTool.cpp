@@ -57,9 +57,9 @@ MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
     ui->toolSelectionBox->SetLayoutColumns(3);
     ui->toolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::AlwaysEnabled);
 
-    connect(ui->newLabelPushBtn, SIGNAL(clicked()), this, SLOT(OnAddNewLabelClicked()));
-    connect(ui->createMaskPushBtn, SIGNAL(clicked()), this, SLOT(OnCreateNewLabelSetImageClicked()));
-    connect(ui->toolSelectionBox, SIGNAL(ToolSelected(int)), this, SLOT(OnManualTool2DSelected(int)));
+    connect(ui->newLabelPushBtn,   SIGNAL(clicked()),         this, SLOT(OnAddNewLabelClicked()));
+    connect(ui->createMaskPushBtn, SIGNAL(clicked()),         this, SLOT(OnCreateNewLabelSetImageClicked()));
+    connect(ui->toolSelectionBox,  SIGNAL(ToolSelected(int)), this, SLOT(OnManualTool2DSelected(int)));
     
     ui->toolGUIArea->setVisible(false);
     ui->toolSelectionBox->setVisible(false);
@@ -68,25 +68,51 @@ MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
     connect(m_ProgressDialogWatcher, SIGNAL(finished()),
       this, SLOT(OnCreateEmptyMaskBackgroundFinished())
     );
+
+  // Create mitk node with an (all zero) 3D image for resetting
+  using ImageType = itk::Image< unsigned char, 3 >;
+  ImageType::Pointer image = ImageType::New();
+
+  ImageType::IndexType start;
+  start[0] = 0;  // first index on X
+  start[1] = 0;  // first index on Y
+  start[2] = 0;  // first index on Z
+
+  ImageType::SizeType  size;
+  size[0] = 1;  // size along X
+  size[1] = 1;  // size along Y
+  size[2] = 1;  // size along Z
+
+  ImageType::RegionType region;
+  region.SetSize( size );
+  region.SetIndex( start );
+
+  image->SetRegions( region );
+  image->Allocate();
+
+  mitk::Image::Pointer emptyNormalImage = mitk::Image::New();
+  emptyNormalImage->InitializeByItk<ImageType>(image);
+  mitk::LabelSetImage::Pointer emptyLabelSetImage = mitk::LabelSetImage::New();
+  //emptyLabelSetImage->Initialize(dynamic_cast<mitk::Image*>(m_LoadedMaskNode->GetData()));
+  emptyLabelSetImage->Initialize(emptyNormalImage);
+  m_EmptyImageNode = mitk::DataNode::New();
+  m_EmptyImageNode->SetData(emptyLabelSetImage);
 }
 
 MitkSegmentationTool::~MitkSegmentationTool()
 {
-  if (m_LoadedMaskNode)
-  {
-    // this->OnDataAboutToGetRemoved(
-    //   QString(m_LoadedMaskNode->GetName().c_str()).toLong()
-    // );
-    this->ChangeFocusImage(-1);
-  }
-
+  if (m_LoadedMaskNode) { this->ChangeFocusImage(-1); }
   delete ui;
 }
 
 void MitkSegmentationTool::ChangeFocusImage(long iid)
 {
   qDebug() << "MitkSegmentationTool::ChangeFocusImage";
+  
+  if (m_CurrentFocusImageID != iid) { RevertToNullState(); }
+
   if (iid == -1) { return; }
+
   if(this->GetDataManager()->GetDataType(iid) != "LabelSetImage") { return; }
   QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
   if (specialRole != m_SpecialRoleOfInterest) { return; }
@@ -100,7 +126,13 @@ void MitkSegmentationTool::ChangeFocusImage(long iid)
   }
 
   mitk::DataNode::Pointer dataNode = m_DataStorage->GetNamedNode(std::to_string(iid));
-  if (!dataNode) { return; }
+  if (!dataNode) 
+  { 
+    RevertToNullState(); 
+    return; 
+  }
+
+  m_CurrentFocusImageID = iid;
 
   qDebug() << "MitkSegmentationTool::ChangeFocusImage: Changing to" << iid;
   m_MaskLoadedForThisSubject = true;
@@ -173,15 +205,6 @@ void MitkSegmentationTool::ChangeFocusImage(long iid)
 //   qDebug() << "MitkSegmentationTool::OnDataAboutToGetRemovedFinished";
 // }
 
-void MitkSegmentationTool::SetDataManager(DataManager* dataManager)
-{
-  m_DataManager = dataManager;
-
-  // connect(m_DataManager, SIGNAL(DataAboutToGetRemoved(long)),
-  //   this, SLOT(OnDataAboutToGetRemoved(long))
-  // );
-}
-
 void MitkSegmentationTool::SetAllowMultiple(bool allowMultiple)
 {
   m_AllowMultiple = allowMultiple;
@@ -189,24 +212,19 @@ void MitkSegmentationTool::SetAllowMultiple(bool allowMultiple)
 
 void MitkSegmentationTool::RevertToNullState()
 {
+  m_CurrentFocusImageID = -1;
+  
   ui->newLabelPushBtn->hide();
   ui->labelSetWidget->hide();
   ui->createMaskPushBtn->show();
-
-  //emit MitkSegmentationToolSaveImageToFile(loadedMaskIid, false);
 
   m_MaskLoadedForThisSubject = false;
   
   ui->toolGUIArea->setVisible(false);
   ui->toolSelectionBox->setVisible(false);
-
-  mitk::LabelSetImage::Pointer emptyImage = mitk::LabelSetImage::New();
-  emptyImage->Initialize(dynamic_cast<mitk::Image*>(m_LoadedMaskNode->GetData()));
-  mitk::DataNode::Pointer emptyNode = mitk::DataNode::New();
-  emptyNode->SetData(emptyImage);
   
-  m_ToolManager->SetWorkingData(emptyNode);
-  m_ToolManager->SetReferenceData(emptyNode); 
+  m_ToolManager->SetWorkingData(m_EmptyImageNode);
+  m_ToolManager->SetReferenceData(m_EmptyImageNode); 
 
   //ui->labelSetWidget->UpdateAllTableWidgetItems();
   ui->labelSetWidget->ResetAllTableWidgetItems();
@@ -218,71 +236,6 @@ void MitkSegmentationTool::SetSpecialRoleOfInterest(QString specialRoleOfInteres
 {
   m_SpecialRoleOfInterest = specialRoleOfInterest;
 }
-
-QString MitkSegmentationTool::GetSpecialRoleOfInterest()
-{
-  return m_SpecialRoleOfInterest;
-}
-
-// void MitkSegmentationTool::OnEnableSegmentation()
-// {
-//   m_LabelsImageName.clear();
-
-//   QString path = m_DataManager->GetDataPath(m_CurrentData);
-//   QFileInfo f(path);
-//   mitk::DataNode::Pointer referenceNode = this->m_DataStorage->GetNamedNode(f.baseName().toStdString().c_str());
-
-//   if (!referenceNode)
-//   {
-//     QMessageBox::information(
-//       this, "New Segmentation Session", "Please load and select a patient image before starting some action.");
-//     return;
-//   }
-
-//   m_ToolManager->ActivateTool(-1);
-
-//   mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceNode->GetData());
-//   assert(referenceImage);
-
-//   m_LabelsImageName = QString::fromStdString(m_DataManager->GetSubjectName(
-// 	  m_DataManager->GetSubjectIdFromDataId(m_CurrentData)
-//   ).toStdString());
-//   m_LabelsImageName.append("-mask");
-
-//   bool ok = false;
-//   m_LabelsImageName = QInputDialog::getText(this, "New Segmentation Session", "New name:", QLineEdit::Normal, m_LabelsImageName, &ok);
-
-//   if (!ok)
-//   {
-//     return;
-//   }
-
-//   mitk::LabelSetImage::Pointer workingImage = mitk::LabelSetImage::New();
-//   try
-//   {
-//     workingImage->Initialize(referenceImage);
-//   }
-//   catch (mitk::Exception& e)
-//   {
-//     MITK_ERROR << "Exception caught: " << e.GetDescription();
-//     QMessageBox::information(this, "New Segmentation Session", "Could not create a new segmentation session.\n");
-//     return;
-//   }
-
-//   mitk::DataNode::Pointer workingNode = mitk::DataNode::New();
-//   workingNode->SetData(workingImage);
-//   workingNode->SetName(m_LabelsImageName.toStdString());
-
-//   if (!this->m_DataStorage->Exists(workingNode))
-//   {
-//     this->m_DataStorage->Add(workingNode, referenceNode);
-//   }
-
-//   this->m_ToolManager->SetWorkingData(workingNode);
-//   this->m_ToolManager->SetReferenceData(referenceNode);
-
-//   OnCreateNewLabel();
-// }
 
 void MitkSegmentationTool::OnAddNewLabelClicked()
 {
@@ -339,7 +292,7 @@ void MitkSegmentationTool::OnCreateNewLabelSetImageClicked()
 {   
     // -1 means to the current subject
     long iid = m_DataStorage->AddEmptyMitkLabelSetImageToSubject(
-      -1, this->GetSpecialRoleOfInterest()
+      -1, m_SpecialRoleOfInterest
     );
     
     if (iid == -1)

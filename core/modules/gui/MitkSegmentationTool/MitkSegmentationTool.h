@@ -27,20 +27,20 @@ public:
     explicit MitkSegmentationTool(QWidget *parent = nullptr);
     ~MitkSegmentationTool();
 
-	void SetDataManager(DataManager* dataManager) override;
-
+	/** If this is set to true multiple segmentations (of this special role) 
+	 *  can exist for this subject. */
 	void SetAllowMultiple(bool allowMultiple);
 
+	/** Clears the current segmentation and reverts to the state as if 
+	 *  no segmentation is loaded. Doesn't actually delete the segmentation. */
 	void RevertToNullState();
 
-	// It could be "Segmentation" or "Mask"
+	/** It could be "Segmentation" or "Mask" or "Seeds" or whatever */
 	void SetSpecialRoleOfInterest(QString specialRoleOfInterest);
 
-	QString GetSpecialRoleOfInterest();
-
 public slots:
-	// This could connect to DataViewBase::SelectedDataChanged(iid)
-	// Or manually set it to the mask of the subject
+	/** This could connect to DataViewBase::SelectedDataChanged(iid) 
+	 *  or to manually use it to set the mask of the subject */
 	void ChangeFocusImage(long iid);
 
 	// Internal slots
@@ -49,7 +49,6 @@ public slots:
 	void OnAddNewLabelClicked();
 
 signals:
-	///*del*/void MitkSegmentationToolSaveImageToFile(long iid, bool updateDataManager);
 	void CreateNewLabelSetImageClicked();
 	void AddNewLabelClicked();
 
@@ -60,6 +59,8 @@ private:
 	bool m_MaskLoadedForThisSubject     = false;
 	
 	mitk::DataNode::Pointer m_LoadedMaskNode;
+
+	mitk::DataNode::Pointer m_EmptyImageNode; // Used to reset mitk widgets
 	
 	Ui::MitkSegmentationTool *ui;
 	QProgressDialog          *m_ProgressDialog;
@@ -70,7 +71,7 @@ private:
 	QmitkToolGUI*              m_LastToolGUI;
 
 	QString m_SpecialRoleOfInterest = "Segmentation";
-	long    m_CurrentFocusImage     = -1;
+	long    m_CurrentFocusImageID     = -1;
 
 	bool    m_AllowMultiple = true;
 };
