@@ -45,6 +45,8 @@ public slots:
 	void OnManualTool2DSelected(int);
 	void OnCreateNewLabelSetImageClicked();
 	void OnAddNewLabelClicked();
+	void OnMitkGoToLabel(const mitk::Point3D &);
+	void Refresh();
 
 signals:
 	void CreateNewLabelSetImageClicked();

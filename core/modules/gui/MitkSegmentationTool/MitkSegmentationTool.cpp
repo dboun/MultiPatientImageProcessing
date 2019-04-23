@@ -61,6 +61,13 @@ MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
     ui->labelSetWidget->SetOrganColors(mitk::OrganNamesHandling::GetDefaultOrganColorString());
     ui->labelSetWidget->findChild<ctkSearchBox*>("m_LabelSearchBox")->hide();
     //ui->labelSetWidget->hide();
+    connect(ui->labelSetWidget, SIGNAL(goToLabel(const mitk::Point3D&)),
+      this, SLOT(OnMitkGoToLabel(const mitk::Point3D&))
+    );
+    // auto pbVisible = ui->labelSetWidget->findChild<QPushButton*>("pbVisible");
+    // connect(pbVisible, SIGNAL(clicked()), this, SLOT(Refresh()));
+    // auto pbColor = ui->labelSetWidget->findChild<QPushButton*>("pbColor");
+    // connect(pbColor, SIGNAL(clicked()), this, SLOT(Refresh()));
 
     ui->toolSelectionBox->SetToolManager(*m_ToolManager);
     ui->toolSelectionBox->setEnabled(true);
@@ -299,6 +306,21 @@ void MitkSegmentationTool::OnAddNewLabelClicked()
   ui->labelSetWidget->ResetAllTableWidgetItems();
 
   mitk::RenderingManager::GetInstance()->InitializeViews(workingNode->GetData()->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true);
+
+  // Here is good place to see the clicks on the eye etc
+  //QObjectList widgetList = ui->labelSetWidget->layout()->children();
+}
+
+void MitkSegmentationTool::OnMitkGoToLabel(const mitk::Point3D &)
+{
+  // pretty much refreshing just to be sure
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+}
+
+void MitkSegmentationTool::Refresh()
+{
+  // To refresh when the 'eye' and other LabelSetWidget widgets are clicked
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll(); 
 }
 
 void MitkSegmentationTool::OnCreateNewLabelSetImageClicked()
