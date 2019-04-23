@@ -203,199 +203,199 @@ void MitkImageViewer::OnExportData(long iid, QString fileName)
 
 void MitkImageViewer::SaveImageToFile(long iid, bool updateDataManager)
 {
-	qDebug() << "MitkImageViewer::SaveImageToFile" << iid;
+	// qDebug() << "MitkImageViewer::SaveImageToFile" << iid;
 
-	// Find the node
-	mitk::DataNode::Pointer dataNode;
+	// // Find the node
+	// mitk::DataNode::Pointer dataNode;
 
-	mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-	for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
-		if (QString::number(iid).toStdString() == it->Value()->GetName())
-		{
-			dataNode = it->Value();
-			break;
-		}
-	}
-
-	if (!m_DataStorage->Exists(dataNode))
-	{
-		qDebug() << "MitkImageViewer::SaveImageToFile error: Can't find dataNode" << iid;
-		return;
-	}
-
-	long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
-	
-	// QFileInfo f(this->GetDataManager()->GetDataPath(iid));
-	// QString baseName = f.baseName();
-
-	// QString specialRole   = this->GetDataManager()->GetDataSpecialRole(iid);
-	// QString directoryName = this->GetDataManager()->GetSubjectPath(uid);
-
-	// if (specialRole != "")
-	// {
-	// 	directoryName += QString("/") + m_AppNameShort + QString("/")
-	// 	               + m_AppNameShort + "_" + specialRole;
+	// mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+	// for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
+	// 	if (QString::number(iid).toStdString() == it->Value()->GetName())
+	// 	{
+	// 		dataNode = it->Value();
+	// 		break;
+	// 	}
 	// }
+
+	// if (!m_DataStorage->Exists(dataNode))
+	// {
+	// 	qDebug() << "MitkImageViewer::SaveImageToFile error: Can't find dataNode" << iid;
+	// 	return;
+	// }
+
+	// long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
+	
+	// // QFileInfo f(this->GetDataManager()->GetDataPath(iid));
+	// // QString baseName = f.baseName();
+
+	// // QString specialRole   = this->GetDataManager()->GetDataSpecialRole(iid);
+	// // QString directoryName = this->GetDataManager()->GetSubjectPath(uid);
+
+	// // if (specialRole != "")
+	// // {
+	// // 	directoryName += QString("/") + m_AppNameShort + QString("/")
+	// // 	               + m_AppNameShort + "_" + specialRole;
+	// // }
+
+	// // if (!QDir(directoryName).exists())
+	// // {
+	// // 	QDir().mkpath(directoryName);
+	// // }
+
+	// // QString nifti = directoryName + QString("/") + baseName + QString(".nii.gz");
+	// // QString nrrd  = directoryName + QString("/") + baseName + QString(".nrrd");
+
+	// // qDebug() << "Will save image to: ";
+	// // qDebug() << "-  " << nifti;
+	// // qDebug() << "-  " << nrrd;
+
+	// // qDebug() << "MitkImageViewer saving image" << nifti;
+	// // qDebug() << "MitkImageViewer saving image" << nrrd;
+
+
+	// QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
+	// QString path = this->GetDataManager()->GetDataPath(iid);
+	// qDebug() << "MitkImageViewer where" << path << "was";
+
+	// mitk::IOUtil::Save(
+	// 	dataNode->GetData(), 
+	// 	// nifti.toStdString()
+	// 	path.toStdString()
+	// );
+	
+	// // if (specialRole == "Mask" || specialRole == "Segmentation")
+	// // {
+	// // 	mitk::IOUtil::Save(
+	// // 		dataNode->GetData(), 
+	// // 		nrrd.toStdString()
+	// // 	);
+	// // }
+
+	// if (updateDataManager)
+	// {
+	// 	// auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(
+	// 	// 	this->GetDataManager()->GetSubjectIdFromDataId(iid)
+	// 	// );
+
+	// 	// if (specialRole == "Mask")
+	// 	// {
+	// 	// 	for (const long& tIid : iids)
+	// 	// 	{
+	// 	// 		if (this->GetDataManager()->GetDataSpecialRole(tIid) == "Mask")
+	// 	// 		{
+	// 	// 			this->GetDataManager()->RemoveData(tIid, true);
+	// 	// 		}
+	// 	// 	}
+	// 	// }
+	// 	this->GetDataManager()->RemoveData(iid, true);
+	// 	this->GetDataManager()->AddDataToSubject(
+	// 		uid, path, specialRole, "Image"
+	// 	);
+
+	// 	// this->GetDataManager()->AddDataToSubject(
+	// 	// 	uid, nifti, specialRole
+	// 	// );
+
+	// 	// this->GetDataManager()->AddDataToSubject(
+	// 	// 	uid, nrrd, specialRole
+	// 	// );
+	// }
+}
+
+void MitkImageViewer::ConvertToNrrdAndSave(long iid, long referenceIid, bool updateDataManager)
+{
+	// qDebug() << "MitkImageViewer::ConvertToNrrdAndSave" << iid << referenceIid;
+
+	// // Reference image info
+	// QString referencePath = this->GetDataManager()->GetDataPath(referenceIid);
+
+	// // Image info
+	// QString imageSpecialRole = this->GetDataManager()->GetDataSpecialRole(iid);
+	// QString imagePath = this->GetDataManager()->GetDataPath(iid);
+	// long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
+
+	// // Load the two images
+	// mitk::LabelSetImage::Pointer referenceImage = mitk::IOUtil::Load<mitk::LabelSetImage>(
+	// 	referencePath.toStdString()
+	// );
+	// mitk::Image::Pointer inputImage = mitk::IOUtil::Load<mitk::Image>(
+	// 	imagePath.toStdString()
+	// );
+
+	// mitk::Image::Pointer image;
+	// if (inputImage->GetDimension() == 3)
+	// {
+	// 	image = inputImage;
+	// }
+	// else {
+	// 	mitk::Convert2Dto3DImageFilter::Pointer convertFilter = mitk::Convert2Dto3DImageFilter::New();
+	// 	convertFilter->SetInput(inputImage);
+	// 	convertFilter->Update();
+	// 	image = convertFilter->GetOutput();
+	// }
+
+	// // The output image
+	// mitk::LabelSetImage::Pointer outputImage = mitk::LabelSetImage::New();
+	
+	// // Copy the data from input image
+	// try {
+	// 	outputImage->InitializeByLabeledImage(image);
+	// }
+	// catch (mitk::Exception e)
+	// {
+	// 	qDebug() << "Initializing didn't work";
+	// 	qDebug() << e.GetDescription();
+	// }
+	
+	// // Copy the labels from reference image
+	// mitk::LabelSet::Pointer referenceLabelSet =	referenceImage->GetActiveLabelSet();
+	// mitk::LabelSet::Pointer outputLabelSet    =	outputImage->GetActiveLabelSet();
+
+	// mitk::LabelSet::LabelContainerConstIteratorType itR;
+	// mitk::LabelSet::LabelContainerConstIteratorType it;
+	
+	// for (itR =  referenceLabelSet->IteratorConstBegin();
+	// 		 itR != referenceLabelSet->IteratorConstEnd(); 
+	// 		 ++itR) 
+	// {
+	// 	for (it = outputLabelSet->IteratorConstBegin(); 
+	// 			 it != outputLabelSet->IteratorConstEnd();
+	// 			 ++it)
+	// 	{
+	// 		if (itR->second->GetValue() == it->second->GetValue())
+	// 		{
+	// 			it->second->SetColor(itR->second->GetColor());
+	// 			it->second->SetName(itR->second->GetName());
+	// 		}
+	// 	}
+	// }
+	
+	// // Where to save the new image
+	// QString directoryName = this->GetDataManager()->GetSubjectPath(uid) 
+	// 	+ QString("/") + m_AppNameShort + QString("/")
+	// 	+ m_AppNameShort + "_" + imageSpecialRole;
 
 	// if (!QDir(directoryName).exists())
 	// {
 	// 	QDir().mkpath(directoryName);
 	// }
 
-	// QString nifti = directoryName + QString("/") + baseName + QString(".nii.gz");
-	// QString nrrd  = directoryName + QString("/") + baseName + QString(".nrrd");
+	// // Find the full path to save the output image
+	// QFileInfo f(imagePath);
+	// QString outputImagePath = directoryName + "/" + f.baseName() + ".nrrd";
 
-	// qDebug() << "Will save image to: ";
-	// qDebug() << "-  " << nifti;
-	// qDebug() << "-  " << nrrd;
+	// // Save the image to file
+	// qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Saving to file";
+	// mitk::IOUtil::Save(
+	// 	outputImage, outputImagePath.toStdString()
+	// );
+	// qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Saving to file finished";
 
-	// qDebug() << "MitkImageViewer saving image" << nifti;
-	// qDebug() << "MitkImageViewer saving image" << nrrd;
-
-
-	QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
-	QString path = this->GetDataManager()->GetDataPath(iid);
-	qDebug() << "MitkImageViewer where" << path << "was";
-
-	mitk::IOUtil::Save(
-		dataNode->GetData(), 
-		// nifti.toStdString()
-		path.toStdString()
-	);
-	
-	// if (specialRole == "Mask" || specialRole == "Segmentation")
+	// if (updateDataManager)
 	// {
-	// 	mitk::IOUtil::Save(
-	// 		dataNode->GetData(), 
-	// 		nrrd.toStdString()
+	// 	qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Updating data manager";
+	// 	this->GetDataManager()->AddDataToSubject(
+	// 		uid, outputImagePath, imageSpecialRole, "Image"
 	// 	);
 	// }
-
-	if (updateDataManager)
-	{
-		// auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(
-		// 	this->GetDataManager()->GetSubjectIdFromDataId(iid)
-		// );
-
-		// if (specialRole == "Mask")
-		// {
-		// 	for (const long& tIid : iids)
-		// 	{
-		// 		if (this->GetDataManager()->GetDataSpecialRole(tIid) == "Mask")
-		// 		{
-		// 			this->GetDataManager()->RemoveData(tIid, true);
-		// 		}
-		// 	}
-		// }
-		this->GetDataManager()->RemoveData(iid, true);
-		this->GetDataManager()->AddDataToSubject(
-			uid, path, specialRole, "Image"
-		);
-
-		// this->GetDataManager()->AddDataToSubject(
-		// 	uid, nifti, specialRole
-		// );
-
-		// this->GetDataManager()->AddDataToSubject(
-		// 	uid, nrrd, specialRole
-		// );
-	}
-}
-
-void MitkImageViewer::ConvertToNrrdAndSave(long iid, long referenceIid, bool updateDataManager)
-{
-	qDebug() << "MitkImageViewer::ConvertToNrrdAndSave" << iid << referenceIid;
-
-	// Reference image info
-	QString referencePath = this->GetDataManager()->GetDataPath(referenceIid);
-
-	// Image info
-	QString imageSpecialRole = this->GetDataManager()->GetDataSpecialRole(iid);
-	QString imagePath = this->GetDataManager()->GetDataPath(iid);
-	long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
-
-	// Load the two images
-	mitk::LabelSetImage::Pointer referenceImage = mitk::IOUtil::Load<mitk::LabelSetImage>(
-		referencePath.toStdString()
-	);
-	mitk::Image::Pointer inputImage = mitk::IOUtil::Load<mitk::Image>(
-		imagePath.toStdString()
-	);
-
-	mitk::Image::Pointer image;
-	if (inputImage->GetDimension() == 3)
-	{
-		image = inputImage;
-	}
-	else {
-		mitk::Convert2Dto3DImageFilter::Pointer convertFilter = mitk::Convert2Dto3DImageFilter::New();
-		convertFilter->SetInput(inputImage);
-		convertFilter->Update();
-		image = convertFilter->GetOutput();
-	}
-
-	// The output image
-	mitk::LabelSetImage::Pointer outputImage = mitk::LabelSetImage::New();
-	
-	// Copy the data from input image
-	try {
-		outputImage->InitializeByLabeledImage(image);
-	}
-	catch (mitk::Exception e)
-	{
-		qDebug() << "Initializing didn't work";
-		qDebug() << e.GetDescription();
-	}
-	
-	// Copy the labels from reference image
-	mitk::LabelSet::Pointer referenceLabelSet =	referenceImage->GetActiveLabelSet();
-	mitk::LabelSet::Pointer outputLabelSet    =	outputImage->GetActiveLabelSet();
-
-	mitk::LabelSet::LabelContainerConstIteratorType itR;
-	mitk::LabelSet::LabelContainerConstIteratorType it;
-	
-	for (itR =  referenceLabelSet->IteratorConstBegin();
-			 itR != referenceLabelSet->IteratorConstEnd(); 
-			 ++itR) 
-	{
-		for (it = outputLabelSet->IteratorConstBegin(); 
-				 it != outputLabelSet->IteratorConstEnd();
-				 ++it)
-		{
-			if (itR->second->GetValue() == it->second->GetValue())
-			{
-				it->second->SetColor(itR->second->GetColor());
-				it->second->SetName(itR->second->GetName());
-			}
-		}
-	}
-	
-	// Where to save the new image
-	QString directoryName = this->GetDataManager()->GetSubjectPath(uid) 
-		+ QString("/") + m_AppNameShort + QString("/")
-		+ m_AppNameShort + "_" + imageSpecialRole;
-
-	if (!QDir(directoryName).exists())
-	{
-		QDir().mkpath(directoryName);
-	}
-
-	// Find the full path to save the output image
-	QFileInfo f(imagePath);
-	QString outputImagePath = directoryName + "/" + f.baseName() + ".nrrd";
-
-	// Save the image to file
-	qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Saving to file";
-	mitk::IOUtil::Save(
-		outputImage, outputImagePath.toStdString()
-	);
-	qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Saving to file finished";
-
-	if (updateDataManager)
-	{
-		qDebug() << "MitkImageViewer::ConvertToNrrdAndSave: Updating data manager";
-		this->GetDataManager()->AddDataToSubject(
-			uid, outputImagePath, imageSpecialRole, "Image"
-		);
-	}
 }

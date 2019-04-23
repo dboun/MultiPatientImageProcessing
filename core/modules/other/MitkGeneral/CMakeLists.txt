@@ -43,3 +43,5 @@ SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 target_include_directories( ${MODULE_NAME} PUBLIC
   ${PROJECT_SOURCE_DIR}
 )
+
+add_subdirectory(test)

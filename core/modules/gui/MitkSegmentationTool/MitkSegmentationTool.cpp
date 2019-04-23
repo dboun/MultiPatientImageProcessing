@@ -15,14 +15,12 @@
 #include "QmitkToolGUI.h"
 
 #include "DataManager.h"
-#include "MitkSegmentationToolController.h"
 
 MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
     GuiModuleBase(parent),
     ui(new Ui::MitkSegmentationTool),
     m_DataStorage(&CustomMitkDataStorage::GetInstance()),
-    m_LastToolGUI(nullptr),
-    m_Controller(this)
+    m_LastToolGUI(nullptr)
 {
     ui->setupUi(this);
 
@@ -59,8 +57,8 @@ MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
     ui->toolSelectionBox->SetLayoutColumns(3);
     ui->toolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::AlwaysEnabled);
 
-    connect(ui->newLabelPushBtn, SIGNAL(clicked()), this, SLOT(OnCreateNewLabel()));
-    connect(ui->createMaskPushBtn, SIGNAL(clicked()), this, SLOT(OnCreateNewMask()));
+    connect(ui->newLabelPushBtn, SIGNAL(clicked()), this, SLOT(OnAddNewLabelClicked()));
+    connect(ui->createMaskPushBtn, SIGNAL(clicked()), this, SLOT(OnCreateNewLabelSetImageClicked()));
     connect(ui->toolSelectionBox, SIGNAL(ToolSelected(int)), this, SLOT(OnManualTool2DSelected(int)));
     
     ui->toolGUIArea->setVisible(false);
@@ -76,9 +74,10 @@ MitkSegmentationTool::~MitkSegmentationTool()
 {
   if (m_LoadedMaskNode)
   {
-    this->OnDataAboutToGetRemoved(
-      QString(m_LoadedMaskNode->GetName().c_str()).toLong()
-    );
+    // this->OnDataAboutToGetRemoved(
+    //   QString(m_LoadedMaskNode->GetName().c_str()).toLong()
+    // );
+    this->ChangeFocusImage(-1);
   }
 
   delete ui;
@@ -86,14 +85,19 @@ MitkSegmentationTool::~MitkSegmentationTool()
 
 void MitkSegmentationTool::ChangeFocusImage(long iid)
 {
+  qDebug() << "MitkSegmentationTool::ChangeFocusImage";
   if (iid == -1) { return; }
-
+  if(this->GetDataManager()->GetDataType(iid) != "LabelSetImage") { return; }
   QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
   if (specialRole != m_SpecialRoleOfInterest) { return; }
 
   ui->newLabelPushBtn->show();
   ui->labelSetWidget->show();
-  ui->createMaskPushBtn->hide();
+
+  if (!m_AllowMultiple)
+  {
+    ui->createMaskPushBtn->hide();
+  }
 
   mitk::DataNode::Pointer dataNode = m_DataStorage->GetNamedNode(std::to_string(iid));
   if (!dataNode) { return; }
@@ -123,59 +127,91 @@ void MitkSegmentationTool::ChangeFocusImage(long iid)
   auto workingImage = dynamic_cast<mitk::LabelSetImage*>(m_LoadedMaskNode->GetData());
   if (workingImage->GetTotalNumberOfLabels() == 1) // 1 means none
   {
-    this->OnCreateNewLabel();
+    this->OnAddNewLabelClicked();
   }
 }
 
-void MitkSegmentationTool::OnDataAboutToGetRemoved(long iid)
-{
-  qDebug() << "MitkSegmentationTool::OnDataAboutToGetRemoved" << iid;
+// void MitkSegmentationTool::OnDataAboutToGetRemoved(long iid)
+// {
+//   qDebug() << "MitkSegmentationTool::OnDataAboutToGetRemoved" << iid;
 
-  if (!m_MaskLoadedForThisSubject || !m_LoadedMaskNode || iid == -1)
-  {
-    return;
-  }
+//   if (!m_MaskLoadedForThisSubject || !m_LoadedMaskNode || iid == -1)
+//   {
+//     return;
+//   }
 
-  long loadedMaskIid = QString(m_LoadedMaskNode->GetName().c_str()).toLong();
+//   long loadedMaskIid = QString(m_LoadedMaskNode->GetName().c_str()).toLong();
 
-  if (loadedMaskIid == iid)
-  {
-    ui->newLabelPushBtn->hide();
-    ui->labelSetWidget->hide();
-    ui->createMaskPushBtn->show();
+//   if (loadedMaskIid == iid)
+//   {
+//     ui->newLabelPushBtn->hide();
+//     ui->labelSetWidget->hide();
+//     ui->createMaskPushBtn->show();
 
-    emit MitkSegmentationToolSaveImageToFile(loadedMaskIid, false);
+//     emit MitkSegmentationToolSaveImageToFile(loadedMaskIid, false);
 
-    m_MaskLoadedForThisSubject = false;
+//     m_MaskLoadedForThisSubject = false;
     
-    ui->toolGUIArea->setVisible(false);
-    ui->toolSelectionBox->setVisible(false);
+//     ui->toolGUIArea->setVisible(false);
+//     ui->toolSelectionBox->setVisible(false);
 
-    mitk::LabelSetImage::Pointer emptyImage = mitk::LabelSetImage::New();
-    emptyImage->Initialize(dynamic_cast<mitk::Image*>(m_LoadedMaskNode->GetData()));
-    mitk::DataNode::Pointer emptyNode = mitk::DataNode::New();
-    emptyNode->SetData(emptyImage);
-    //m_DataStorage->Add(emptyNode);
+//     mitk::LabelSetImage::Pointer emptyImage = mitk::LabelSetImage::New();
+//     emptyImage->Initialize(dynamic_cast<mitk::Image*>(m_LoadedMaskNode->GetData()));
+//     mitk::DataNode::Pointer emptyNode = mitk::DataNode::New();
+//     emptyNode->SetData(emptyImage);
+//     //m_DataStorage->Add(emptyNode);
 
-    m_ToolManager->SetWorkingData(emptyNode);
-    m_ToolManager->SetReferenceData(emptyNode); 
+//     m_ToolManager->SetWorkingData(emptyNode);
+//     m_ToolManager->SetReferenceData(emptyNode); 
 
-    //ui->labelSetWidget->UpdateAllTableWidgetItems();
-    ui->labelSetWidget->ResetAllTableWidgetItems();
+//     //ui->labelSetWidget->UpdateAllTableWidgetItems();
+//     ui->labelSetWidget->ResetAllTableWidgetItems();
     
-    m_LoadedMaskNode = nullptr;
-  }
+//     m_LoadedMaskNode = nullptr;
+//   }
 
-  qDebug() << "MitkSegmentationTool::OnDataAboutToGetRemovedFinished";
-}
+//   qDebug() << "MitkSegmentationTool::OnDataAboutToGetRemovedFinished";
+// }
 
 void MitkSegmentationTool::SetDataManager(DataManager* dataManager)
 {
   m_DataManager = dataManager;
 
-  connect(m_DataManager, SIGNAL(DataAboutToGetRemoved(long)),
-    this, SLOT(OnDataAboutToGetRemoved(long))
-  );
+  // connect(m_DataManager, SIGNAL(DataAboutToGetRemoved(long)),
+  //   this, SLOT(OnDataAboutToGetRemoved(long))
+  // );
+}
+
+void MitkSegmentationTool::SetAllowMultiple(bool allowMultiple)
+{
+  m_AllowMultiple = allowMultiple;
+}
+
+void MitkSegmentationTool::RevertToNullState()
+{
+  ui->newLabelPushBtn->hide();
+  ui->labelSetWidget->hide();
+  ui->createMaskPushBtn->show();
+
+  //emit MitkSegmentationToolSaveImageToFile(loadedMaskIid, false);
+
+  m_MaskLoadedForThisSubject = false;
+  
+  ui->toolGUIArea->setVisible(false);
+  ui->toolSelectionBox->setVisible(false);
+
+  mitk::LabelSetImage::Pointer emptyImage = mitk::LabelSetImage::New();
+  emptyImage->Initialize(dynamic_cast<mitk::Image*>(m_LoadedMaskNode->GetData()));
+  mitk::DataNode::Pointer emptyNode = mitk::DataNode::New();
+  emptyNode->SetData(emptyImage);
+  
+  m_ToolManager->SetWorkingData(emptyNode);
+  m_ToolManager->SetReferenceData(emptyNode); 
+
+  //ui->labelSetWidget->UpdateAllTableWidgetItems();
+  ui->labelSetWidget->ResetAllTableWidgetItems();
+  
+  m_LoadedMaskNode = nullptr;
 }
 
 void MitkSegmentationTool::SetSpecialRoleOfInterest(QString specialRoleOfInterest)
@@ -248,7 +284,7 @@ QString MitkSegmentationTool::GetSpecialRoleOfInterest()
 //   OnCreateNewLabel();
 // }
 
-void MitkSegmentationTool::OnCreateNewLabel()
+void MitkSegmentationTool::OnAddNewLabelClicked()
 {
   if (!m_MaskLoadedForThisSubject)
   {
@@ -293,28 +329,20 @@ void MitkSegmentationTool::OnCreateNewLabel()
   }
   workingImage->GetActiveLabelSet()->AddLabel(labelsImageName.toStdString(), dialog->GetColor());
 
-  if (ui->labelSetWidget->isHidden())
-    ui->labelSetWidget->show();
+  if (ui->labelSetWidget->isHidden()) { ui->labelSetWidget->show(); }
   ui->labelSetWidget->ResetAllTableWidgetItems();
 
   mitk::RenderingManager::GetInstance()->InitializeViews(workingNode->GetData()->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true);
 }
 
-void MitkSegmentationTool::OnCreateNewMask()
-{
-    // Find the first node, if there is one
-    long referenceIid = -1;
-    mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) 
-    {  
-      QString nodeName = QString(it.Value()->GetName().c_str());
-      if (QRegExp("\\d*").exactMatch(nodeName)) { // a digit (\d), zero or more times (*)
-        referenceIid = nodeName.toLong();
-        break;
-      }
-    }
+void MitkSegmentationTool::OnCreateNewLabelSetImageClicked()
+{   
+    // -1 means to the current subject
+    long iid = m_DataStorage->AddEmptyMitkLabelSetImageToSubject(
+      -1, this->GetSpecialRoleOfInterest()
+    );
     
-    if (referenceIid == -1)
+    if (iid == -1)
     {
       QMessageBox::information(this, 
         "Drawing Tool", 
@@ -323,165 +351,166 @@ void MitkSegmentationTool::OnCreateNewMask()
       return;
     }
 
-    ui->createMaskPushBtn->hide();
-    //m_WaitingOnLabelsImageCreation = true;
-    //emit MitkSegmentationToolCreateEmptyMask(referenceIid);
+    if (!m_AllowMultiple)
+    {
+      ui->createMaskPushBtn->hide();
+    }
     
-    m_ProgressDialog = new QProgressDialog(this);
-    m_ProgressDialog->setWindowFlags(Qt::Window | Qt::WindowTitleHint | 
-      Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint
-    );
-    m_ProgressDialog->setWindowTitle("Please wait");
-    m_ProgressDialog->setCancelButton(nullptr);
-    //Set progress dialog in undeterminate state: 
-    m_ProgressDialog->setMaximum( 0 );
-    m_ProgressDialog->setMinimum( 0 );
-    m_ProgressDialog->show();
+    // m_ProgressDialog = new QProgressDialog(this);
+    // m_ProgressDialog->setWindowFlags(Qt::Window | Qt::WindowTitleHint | 
+    //   Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint
+    // );
+    // m_ProgressDialog->setWindowTitle("Please wait");
+    // m_ProgressDialog->setCancelButton(nullptr);
+    // //Set progress dialog in undeterminate state: 
+    // m_ProgressDialog->setMaximum( 0 );
+    // m_ProgressDialog->setMinimum( 0 );
+    // m_ProgressDialog->show();
 
-    QFuture<void> future = QtConcurrent::run(
+    /*QFuture<void> future = QtConcurrent::run(
       this, &MitkSegmentationTool::CreateEmptyMask, 
       referenceIid
     );
-    m_ProgressDialogWatcher->setFuture(future);
+    m_ProgressDialogWatcher->setFuture(future);*/
 }
 
-void MitkSegmentationTool::SetMaskFromNiftiData(long iid)
-{
-  mitk::Image::Pointer inputImage = mitk::IOUtil::Load<mitk::Image>(
-      this->GetDataManager()->GetDataPath(iid).toStdString()
-  );
-  mitk::LabelSetImage::Pointer maskImage = mitk::LabelSetImage::New();
+// void MitkSegmentationTool::SetMaskFromNiftiData(long iid)
+// {
+//   mitk::Image::Pointer inputImage = mitk::IOUtil::Load<mitk::Image>(
+//       this->GetDataManager()->GetDataPath(iid).toStdString()
+//   );
+//   mitk::LabelSetImage::Pointer maskImage = mitk::LabelSetImage::New();
 	
-	// Copy the data from input image
-	maskImage->InitializeByLabeledImage(inputImage);
+// 	// Copy the data from input image
+// 	maskImage->InitializeByLabeledImage(inputImage);
 
-  long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
+//   long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
 
-  // Create the directory to save if it doesn't exist
-  QString directoryName = this->GetDataManager()->GetSubjectPath(uid)
-      + QString("/") + m_AppNameShort + QString("/")
-      + m_AppNameShort + "_" + "Mask";
+//   // Create the directory to save if it doesn't exist
+//   QString directoryName = this->GetDataManager()->GetSubjectPath(uid)
+//       + QString("/") + m_AppNameShort + QString("/")
+//       + m_AppNameShort + "_" + "Mask";
 
-  if (!QDir(directoryName).exists())
-  {
-      QDir().mkpath(directoryName);
-  }
+//   if (!QDir(directoryName).exists())
+//   {
+//       QDir().mkpath(directoryName);
+//   }
 
-  //QString nifti = directoryName + QString("/mask.nii.gz");
-  QString nrrd  = directoryName + QString("/mask.nrrd");
+//   //QString nifti = directoryName + QString("/mask.nii.gz");
+//   QString nrrd  = directoryName + QString("/mask.nrrd");
   
-  // Remove previous masks
-  auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(uid);
+//   // Remove previous masks
+//   auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(uid);
 
-  // Save
-  // mitk::IOUtil::Save(
-  //     maskImage,
-  //     nifti.toStdString()
-  // );
+//   // Save
+//   // mitk::IOUtil::Save(
+//   //     maskImage,
+//   //     nifti.toStdString()
+//   // );
 
-  mitk::IOUtil::Save(
-      maskImage,
-      nrrd.toStdString()
-  );
+//   mitk::IOUtil::Save(
+//       maskImage,
+//       nrrd.toStdString()
+//   );
 
-  // // Update DataManager
-  // this->GetDataManager()->AddDataToSubject(
-  //     uid, nifti, "Mask"
-  // );
+//   // // Update DataManager
+//   // this->GetDataManager()->AddDataToSubject(
+//   //     uid, nifti, "Mask"
+//   // );
 
-  this->GetDataManager()->AddDataToSubject(
-      uid, nrrd, "Mask", "Image", "<Mask>"
-  );
+//   this->GetDataManager()->AddDataToSubject(
+//       uid, nrrd, "Mask", "Image", "<Mask>"
+//   );
 
-  this->GetDataManager()->RemoveData(iid);
+//   this->GetDataManager()->RemoveData(iid);
 
-  for (const long& tIid : iids)
-  {
-    if (tIid == iid) { continue; }
+//   for (const long& tIid : iids)
+//   {
+//     if (tIid == iid) { continue; }
 
-    QString tPath = this->GetDataManager()->GetDataPath(tIid);
+//     QString tPath = this->GetDataManager()->GetDataPath(tIid);
 
-    if (/*tPath == nifti || */tPath == nrrd)
-    {
-      this->GetDataManager()->RemoveData(tIid);
-    }
-  }
-}
+//     if (/*tPath == nifti || */tPath == nrrd)
+//     {
+//       this->GetDataManager()->RemoveData(tIid);
+//     }
+//   }
+// }
 
-void MitkSegmentationTool::SetSegmentationFromNiftiData(long iid)
-{
-  mitk::Image::Pointer inputImage = mitk::IOUtil::Load<mitk::Image>(
-      this->GetDataManager()->GetDataPath(iid).toStdString()
-  );
-  mitk::LabelSetImage::Pointer segImage = mitk::LabelSetImage::New();
+// void MitkSegmentationTool::SetSegmentationFromNiftiData(long iid)
+// {
+//   mitk::Image::Pointer inputImage = mitk::IOUtil::Load<mitk::Image>(
+//       this->GetDataManager()->GetDataPath(iid).toStdString()
+//   );
+//   mitk::LabelSetImage::Pointer segImage = mitk::LabelSetImage::New();
 	
-	// Copy the data from input image
-	segImage->InitializeByLabeledImage(inputImage);
+// 	// Copy the data from input image
+// 	segImage->InitializeByLabeledImage(inputImage);
 
-  long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
+//   long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
 
-  // Create the directory to save if it doesn't exist
-  QString directoryName = this->GetDataManager()->GetSubjectPath(uid)
-      + QString("/") + m_AppNameShort + QString("/")
-      + m_AppNameShort + "_" + "Segmentation";
+//   // Create the directory to save if it doesn't exist
+//   QString directoryName = this->GetDataManager()->GetSubjectPath(uid)
+//       + QString("/") + m_AppNameShort + QString("/")
+//       + m_AppNameShort + "_" + "Segmentation";
 
-  if (!QDir(directoryName).exists())
-  {
-      QDir().mkpath(directoryName);
-  }
+//   if (!QDir(directoryName).exists())
+//   {
+//       QDir().mkpath(directoryName);
+//   }
 
-  QString nrrd, name;
-  QFileInfo f(this->GetDataManager()->GetDataPath(iid));
+//   QString nrrd, name;
+//   QFileInfo f(this->GetDataManager()->GetDataPath(iid));
 
-  if (this->GetDataManager()->GetDataSpecialRole(iid) != "Segmentation")
-  {
-    name = "<Segmentation> (" + f.baseName() + ")";
-    nrrd = directoryName + QString("/") + f.baseName() + QString("_segmentation.nrrd");
-  }
-  else {
-    name = this->GetDataManager()->GetDataName(iid);
-    nrrd = directoryName + QString("/") + f.baseName() + ".nrrd";
-  }
+//   if (this->GetDataManager()->GetDataSpecialRole(iid) != "Segmentation")
+//   {
+//     name = "<Segmentation> (" + f.baseName() + ")";
+//     nrrd = directoryName + QString("/") + f.baseName() + QString("_segmentation.nrrd");
+//   }
+//   else {
+//     name = this->GetDataManager()->GetDataName(iid);
+//     nrrd = directoryName + QString("/") + f.baseName() + ".nrrd";
+//   }
 
-  // Copy the labels from reference image
-  if (m_LoadedMaskNode)
-	{
-    mitk::LabelSet::Pointer referenceLabelSet =	dynamic_cast<mitk::LabelSetImage*>(
-      m_LoadedMaskNode->GetData()
-    )->GetActiveLabelSet();
-    mitk::LabelSet::Pointer outputLabelSet    =	segImage->GetActiveLabelSet();
+//   // Copy the labels from reference image
+//   if (m_LoadedMaskNode)
+// 	{
+//     mitk::LabelSet::Pointer referenceLabelSet =	dynamic_cast<mitk::LabelSetImage*>(
+//       m_LoadedMaskNode->GetData()
+//     )->GetActiveLabelSet();
+//     mitk::LabelSet::Pointer outputLabelSet    =	segImage->GetActiveLabelSet();
 
-    mitk::LabelSet::LabelContainerConstIteratorType itR;
-    mitk::LabelSet::LabelContainerConstIteratorType it;
+//     mitk::LabelSet::LabelContainerConstIteratorType itR;
+//     mitk::LabelSet::LabelContainerConstIteratorType it;
     
-    for (itR =  referenceLabelSet->IteratorConstBegin();
-        itR != referenceLabelSet->IteratorConstEnd(); 
-        ++itR) 
-    {
-      for (it = outputLabelSet->IteratorConstBegin(); 
-          it != outputLabelSet->IteratorConstEnd();
-          ++it)
-      {
-        if (itR->second->GetValue() == it->second->GetValue())
-        {
-          it->second->SetColor(itR->second->GetColor());
-          it->second->SetName(itR->second->GetName());
-        }
-      }
-    }
-  }
+//     for (itR =  referenceLabelSet->IteratorConstBegin();
+//         itR != referenceLabelSet->IteratorConstEnd(); 
+//         ++itR) 
+//     {
+//       for (it = outputLabelSet->IteratorConstBegin(); 
+//           it != outputLabelSet->IteratorConstEnd();
+//           ++it)
+//       {
+//         if (itR->second->GetValue() == it->second->GetValue())
+//         {
+//           it->second->SetColor(itR->second->GetColor());
+//           it->second->SetName(itR->second->GetName());
+//         }
+//       }
+//     }
+//   }
   
-  mitk::IOUtil::Save(
-      segImage,
-      nrrd.toStdString()
-  );
+//   mitk::IOUtil::Save(
+//       segImage,
+//       nrrd.toStdString()
+//   );
 
-  this->GetDataManager()->AddDataToSubject(
-      uid, nrrd, "Segmentation", "Image", name
-  );
+//   this->GetDataManager()->AddDataToSubject(
+//       uid, nrrd, "Segmentation", "Image", name
+//   );
 
-  this->GetDataManager()->RemoveData(iid);
-}
+//   this->GetDataManager()->RemoveData(iid);
+// }
 
 void MitkSegmentationTool::OnManualTool2DSelected(int id)
 {
@@ -552,77 +581,77 @@ void MitkSegmentationTool::RemoveExistingToolGui()
   }
 }
 
-void MitkSegmentationTool::CreateEmptyMask(long referenceIid)
-{
-  mitk::Image::Pointer referenceImage = mitk::IOUtil::Load<mitk::Image>(
-    this->GetDataManager()->GetDataPath(referenceIid).toStdString()
-  );
+// void MitkSegmentationTool::CreateEmptyMask(long referenceIid)
+// {
+//   mitk::Image::Pointer referenceImage = mitk::IOUtil::Load<mitk::Image>(
+//     this->GetDataManager()->GetDataPath(referenceIid).toStdString()
+//   );
 
-  mitk::LabelSetImage::Pointer maskImage = mitk::LabelSetImage::New();
-  try
-  {
-    maskImage->Initialize(referenceImage);
-  }
-  catch (mitk::Exception& e)
-  {
-    MITK_ERROR << "Exception caught: " << e.GetDescription();
-    QMessageBox::information(this, "New Segmentation Session", "Could not create a new segmentation session.\n");
-    return;
-  }
+//   mitk::LabelSetImage::Pointer maskImage = mitk::LabelSetImage::New();
+//   try
+//   {
+//     maskImage->Initialize(referenceImage);
+//   }
+//   catch (mitk::Exception& e)
+//   {
+//     MITK_ERROR << "Exception caught: " << e.GetDescription();
+//     QMessageBox::information(this, "New Segmentation Session", "Could not create a new segmentation session.\n");
+//     return;
+//   }
 
-  long uid = this->GetDataManager()->GetSubjectIdFromDataId(referenceIid);
+//   long uid = this->GetDataManager()->GetSubjectIdFromDataId(referenceIid);
 
-  // Create the directory to save if it doesn't exist
-  QString directoryName = this->GetDataManager()->GetSubjectPath(uid)
-      + QString("/") + m_AppNameShort + QString("/")
-      + m_AppNameShort + "_" + m_SpecialRoleOfInterest;
+//   // Create the directory to save if it doesn't exist
+//   QString directoryName = this->GetDataManager()->GetSubjectPath(uid)
+//       + QString("/") + m_AppNameShort + QString("/")
+//       + m_AppNameShort + "_" + m_SpecialRoleOfInterest;
 
-  if (!QDir(directoryName).exists())
-  {
-      QDir().mkpath(directoryName);
-  }
+//   if (!QDir(directoryName).exists())
+//   {
+//       QDir().mkpath(directoryName);
+//   }
 
-  //QString nifti = directoryName + QString("/mask.nii.gz");
-  QString nrrd  = directoryName + QString("/" + m_SpecialRoleOfInterest.toLower() + "nrrd");
-  // TODO: Not overwrite previous segmentations
+//   //QString nifti = directoryName + QString("/mask.nii.gz");
+//   QString nrrd  = directoryName + QString("/" + m_SpecialRoleOfInterest.toLower() + "nrrd");
+//   // TODO: Not overwrite previous segmentations
 
-  // Remove previous masks
-  auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(uid);
+//   // Remove previous masks
+//   auto iids = this->GetDataManager()->GetAllDataIdsOfSubject(uid);
 
-  for (const long& tIid : iids)
-  {
-      QString tPath = this->GetDataManager()->GetDataPath(tIid);
+//   for (const long& tIid : iids)
+//   {
+//       QString tPath = this->GetDataManager()->GetDataPath(tIid);
 
-      if (/*tPath == nifti || */tPath == nrrd)
-      {
-          this->GetDataManager()->RemoveData(tIid);
-      }
-  }
+//       if (/*tPath == nifti || */tPath == nrrd)
+//       {
+//           this->GetDataManager()->RemoveData(tIid);
+//       }
+//   }
 
-  // Save
-  // mitk::IOUtil::Save(
-  //     maskImage,
-  //     nifti.toStdString()
-  // );
+//   // Save
+//   // mitk::IOUtil::Save(
+//   //     maskImage,
+//   //     nifti.toStdString()
+//   // );
 
-  mitk::IOUtil::Save(
-      maskImage,
-      nrrd.toStdString()
-  );
+//   mitk::IOUtil::Save(
+//       maskImage,
+//       nrrd.toStdString()
+//   );
 
-  // Update DataManager
-  // this->GetDataManager()->AddDataToSubject(
-  //     uid, nifti, "Mask"
-  // );
+//   // Update DataManager
+//   // this->GetDataManager()->AddDataToSubject(
+//   //     uid, nifti, "Mask"
+//   // );
 
-  this->GetDataManager()->AddDataToSubject(
-      uid, nrrd, m_SpecialRoleOfInterest, "Image", "<" + m_SpecialRoleOfInterest + ">"
-  );
-}
+//   this->GetDataManager()->AddDataToSubject(
+//       uid, nrrd, m_SpecialRoleOfInterest, "Image", "<" + m_SpecialRoleOfInterest + ">"
+//   );
+// }
 
-void MitkSegmentationTool::OnCreateEmptyMaskBackgroundFinished()
-{
-  ui->newLabelPushBtn->show();
-  m_ProgressDialog->cancel();
-  delete m_ProgressDialog;
-}
+// void MitkSegmentationTool::OnCreateEmptyMaskBackgroundFinished()
+// {
+//   ui->newLabelPushBtn->show();
+//   m_ProgressDialog->cancel();
+//   delete m_ProgressDialog;
+// }

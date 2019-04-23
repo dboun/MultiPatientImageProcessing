@@ -106,6 +106,8 @@ public slots:
 	@param specialRole if the image has a special role like 'mask' or 'model'
 	@param type user defined (like image or xml)
 	@param name deduced from the path if not provided
+	@param external false if the data is held in AppData
+	@param visibleInDataView whether to show the data to the user
 	@return the image's id. -1 if adding failed
 	*/
 	long AddDataToSubject(long uid, QString path, QString specialRole = QString(), 
@@ -115,16 +117,13 @@ public slots:
 
 	/** Remove image
 	@param iid the data's id.
-	@param silent will not emit a DataAboutToGetRemoved(long) to avoid infinite loops
 	*/
-	void RemoveData(long iid, bool silent = false);
+	void RemoveData(long iid);
 
 signals:
 	void SubjectAdded(long uid);
 	void SubjectRemoved(long uid);
 	void SubjectDataChanged(long uid);
-
-	void DataAboutToGetRemoved(long iid);
 
 protected:
 	std::map<long, Subject> m_Subjects; 

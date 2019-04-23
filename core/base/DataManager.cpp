@@ -206,28 +206,28 @@ long DataManager::AddSubjectAndDataByDirectoryPath(QString dirPath, QString subj
 
 	for (const auto& filePath : allFiles)
 	{
-		// Find if the data has a special role (at least a one that we define)
-		// If there is a subdirectory called APPNAMESHORT_X
-		// Then X is the special role of the images contained in this subdirectory
-		QString filePathTemp = filePath;
-		filePathTemp.replace("\\", "/", Qt::CaseSensitive);
-		QStringList filePathSplit = filePathTemp.split("/");
-		QString parentDirOfFile = filePathSplit.value(filePathSplit.length() - 2);
+		// // Find if the data has a special role (at least a one that we define)
+		// // If there is a subdirectory called APPNAMESHORT_X
+		// // Then X is the special role of the images contained in this subdirectory
+		// QString filePathTemp = filePath;
+		// filePathTemp.replace("\\", "/", Qt::CaseSensitive);
+		// QStringList filePathSplit = filePathTemp.split("/");
+		// QString parentDirOfFile = filePathSplit.value(filePathSplit.length() - 2);
 		
-		qDebug() << "Parent dir of file" << parentDirOfFile;
+		// qDebug() << "Parent dir of file" << parentDirOfFile;
 		
-		QString specialRole;
+		// QString specialRole;
 
-		if (parentDirOfFile.startsWith(m_AppNameShort, Qt::CaseSensitive))
-		{
-			specialRole = parentDirOfFile.right(
-				parentDirOfFile.length() - m_AppNameShort.length() - 1
-			);
-			qDebug() << "Special Role detected" << specialRole;
-		}
+		// if (parentDirOfFile.startsWith(m_AppNameShort, Qt::CaseSensitive))
+		// {
+		// 	specialRole = parentDirOfFile.right(
+		// 		parentDirOfFile.length() - m_AppNameShort.length() - 1
+		// 	);
+		// 	qDebug() << "Special Role detected" << specialRole;
+		// }
 
 		// Actually add the data if necessary
-		AddDataToSubject(uid, filePath, specialRole, "Image");
+		AddDataToSubject(uid, filePath, /*specialRole*/"", "Image");
 	}
 
 	return uid;
@@ -285,7 +285,6 @@ void DataManager::RemoveSubject(long uid)
 
 	for (long& iid :  m_Subjects[uid].dataIds)
 	{
-		emit DataAboutToGetRemoved(iid);
 		m_Data.erase(iid);
 	}
 
@@ -334,14 +333,9 @@ long DataManager::AddDataToSubject(long uid, QString path, QString specialRole,
 	return iid;
 }
 
-void DataManager::RemoveData(long iid, bool silent)
+void DataManager::RemoveData(long iid)
 {
 	std::unique_lock<std::mutex> ul(m_Mutex);
-	
-	if (!silent)
-	{
-		emit DataAboutToGetRemoved(iid);
-	}
 
 	if (m_Data.find(iid) == m_Data.end())
 	{

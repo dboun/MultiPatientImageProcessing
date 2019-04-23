@@ -70,7 +70,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Initialize CustomMitkDataStorage
 #ifdef BUILD_MODULE_MitkGeneral
-  CustomMitkDataStorage::CreateInstance(m_DataManager).SetDataView(m_DataView);
+  CustomMitkDataStorage::CreateInstance(m_DataManager);
+  CustomMitkDataStorage::GetInstance().SetDataView(m_DataView);
+  CustomMitkDataStorage::GetInstance().SetAppNameShort(m_AppNameShort);
 #endif
 
   // Initialize ImageViewer

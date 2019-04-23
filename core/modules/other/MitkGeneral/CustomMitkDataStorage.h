@@ -12,7 +12,7 @@
 
 /** class CustomMitkDataStorage
 *     Extending mitk::StandaloneDataStorage to hold the data of the currently selected subject.
-*     This happens automatically.
+*     This happens automatically and the class only listens to DataView announced changes.
 *     It can also be used transparently to get/save the images from/to file
 *     and update DataManager if the data doesn't belong to the current subject. 
 */
@@ -28,23 +28,24 @@ public:
 
 	~CustomMitkDataStorage();
 
+    void SetAppNameShort(QString appNameShort);
+
     /** DataViewBase should be connected with this before connecting with anything else */
     void SetDataView(DataViewBase* dataView);
 
     long AddMitkImageToSubject(long uid, mitk::Image::Pointer mitkImage, 
         QString path = QString(), QString specialRole = QString(), 
-        QString type = QString(), QString name = QString(),
-        bool external = false, bool visibleInDataView = true 
+        QString name = QString(), bool external = false, bool visibleInDataView = true 
     );
 
     long AddMitkLabelSetImageToSubject(long uid, mitk::LabelSetImage::Pointer mitkImage, 
         QString path = QString(), QString specialRole = QString(), 
-        QString type = QString(), QString name = QString(),
-        bool external = false, bool visibleInDataView = true 
+        QString name = QString(), bool external = false, bool visibleInDataView = true 
     );
 
-    long AddEmptyMitkImageToSubject(long uid, 
-        QString specialRole = QString(), QString type = QString(), QString name = QString(),
+    /** Pass uid=-1 to add it to the current subject */
+    long AddEmptyMitkLabelSetImageToSubject(long uid, 
+        QString specialRole = QString(), QString name = QString(),
         bool external = false, bool visibleInDataView = true 
     );
 
@@ -71,6 +72,9 @@ public slots:
 	void ExportDataHandler(long iid, QString fileName);
 
 signals:
+    /** This is to inform mitk based things that a node is added.
+     *  Listen to DataView::DataRemoved(long) to know when a node is deleted.
+     *  That's because the node would be null */
     void MitkLoadedNewNode(long iid, mitk::DataNode::Pointer dataNode);
 
 protected:
@@ -92,9 +96,9 @@ protected:
 
     /** In this map nodes are added while they wait for DataManager to update.
      *  Then they are added to the mitk::DataStorage and removed from the map.
-     *  Mostly used by AddMitk[...]ImageToSubject()
+     *  Mostly used by Add[...]Mitk[...]ImageToSubject()
      */
-    static std::map<long, mitk::DataNode::Pointer> m_NodesWaitMap;
+    static std::map<QString, mitk::DataNode::Pointer> m_NodesWaitMap;
 
 private:
     template<class T, class U>
@@ -107,6 +111,8 @@ private:
 		}
 		return keys;
 	}
+
+    QString m_AppNameShort = "MPIP";
 };
 
 #endif // ! CUSTOM_MITK_DATA_STORAGE_H

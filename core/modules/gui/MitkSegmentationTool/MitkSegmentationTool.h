@@ -29,6 +29,10 @@ public:
 
 	void SetDataManager(DataManager* dataManager) override;
 
+	void SetAllowMultiple(bool allowMultiple);
+
+	void RevertToNullState();
+
 	// It could be "Segmentation" or "Mask"
 	void SetSpecialRoleOfInterest(QString specialRoleOfInterest);
 
@@ -41,16 +45,16 @@ public slots:
 
 	// Internal slots
 	void OnManualTool2DSelected(int);
+	void OnCreateNewLabelSetImageClicked();
+	void OnAddNewLabelClicked();
 
 signals:
-	/*del*/void MitkSegmentationToolSaveImageToFile(long iid, bool updateDataManager);
+	///*del*/void MitkSegmentationToolSaveImageToFile(long iid, bool updateDataManager);
 	void CreateNewLabelSetImageClicked();
 	void AddNewLabelClicked();
 
 private:
     void RemoveExistingToolGui();
-
-	MitkSegmentationToolController m_Controller;
 
 	bool m_WaitingOnLabelsImageCreation = false;
 	bool m_MaskLoadedForThisSubject     = false;
@@ -67,6 +71,8 @@ private:
 
 	QString m_SpecialRoleOfInterest = "Segmentation";
 	long    m_CurrentFocusImage     = -1;
+
+	bool    m_AllowMultiple = true;
 };
 
 #endif // ! MITK_SEGMENTATION_TOOL_H
