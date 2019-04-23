@@ -38,6 +38,16 @@ long DataViewBase::GetCurrentDataID()
 	return m_CurrentDataID;
 }
 
+bool DataViewBase::IsDataChecked(long iid)
+{
+	return true;
+}
+
+void DataViewBase::SetDataCheckedState(long iid, bool checkState)
+{
+	qDebug() << QString("DataViewBase::SetDataCheckedState(bool)");
+}
+
 void DataViewBase::SubjectAddedHandler(long uid)
 {
 	qDebug() << QString("DataViewBase::SubjectAddedHandler(long)");

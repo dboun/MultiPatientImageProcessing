@@ -32,6 +32,25 @@ DataTreeView::DataTreeView(QWidget *parent) : DataViewBase(parent)
 	);
 }
 
+bool DataTreeView::IsDataChecked(long iid)
+{
+	if (m_Data.find(iid) != m_Data.end())
+	{
+		return m_Data[iid]->data(0, IS_CHECKED).toBool();
+	}
+
+	return false;
+}
+
+void DataTreeView::SetDataCheckedState(long iid, bool checkState)
+{
+	if (m_Data.find(iid) != m_Data.end())
+	{
+		m_Data[iid]->setData(0, IS_CHECKED, checkState);
+		m_Data[iid]->setCheckState(0, (checkState)? Qt::Checked : Qt::Unchecked);
+	}
+}
+
 void DataTreeView::SubjectAddedHandler(long uid)
 {
 	QTreeWidgetItem* subjectToAdd = new QTreeWidgetItem(m_TreeWidget);
@@ -288,35 +307,41 @@ void DataTreeView::OnItemClick(QTreeWidgetItem *item, int column)
 			m_TreeWidget->setCurrentItem(item);
 		}
 		
+		
 		long iid = item->data(0, ID).toLongLong();
 		long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
 
-		bool dataChanged    = (iid != m_CurrentDataID) && (item->checkState(0) == Qt::Checked);
+		bool dataChanged = (iid != m_CurrentDataID)/* && (item->checkState(0) == Qt::Checked)*/;
 		bool subjectChanged = (uid != m_CurrentSubjectID);
 		bool dataCheckStateChanged = (
 			!item->checkState(0) != !item->data(0, IS_CHECKED).toBool() // XOR
 		);
 
+		m_CurrentDataID = iid;
+
 		// If the active current data item actually changed and it's active
 		if (subjectChanged && dataChanged)
 		{
-			m_CurrentDataID = iid;
+			// Just to be sure
+			qDebug() << "Emit DataTreeView::SelectedDataChanged" << -1;
+			emit SelectedDataChanged(-1);
+						
+			// Switch to this subject and then this data
+			SwitchExpandedView(item->parent());
 			m_CurrentSubjectID = uid;
-
+			if (dataCheckStateChanged) { // The item was enabled, but SwitchExpandedView disabled it
+				item->setData(0, IS_CHECKED, true);
+				item->setCheckState(0, Qt::Checked);
+			}
+			item->parent()->setSelected(false);
+			item->setSelected(true);
+			m_TreeWidget->setCurrentItem(item);
 			qDebug() << "Emit DataTreeView::SelectedSubjectChanged";
 			emit SelectedSubjectChanged(uid);
-			SwitchExpandedView(item->parent());
-
-			qDebug() << "Emit DataTreeView::SelectedDataChanged" << iid;
-			emit SelectedDataChanged(iid);
 		}
-		else if (!subjectChanged && dataChanged)
-		{
-			m_CurrentDataID = iid;
 
-			qDebug() << "Emit DataTreeView::SelectedDataChanged" << iid;
-			emit SelectedDataChanged(iid);
-		}
+		qDebug() << "Emit DataTreeView::SelectedDataChanged" << iid;
+		emit SelectedDataChanged(iid);
 
 		if (dataCheckStateChanged)
 		{

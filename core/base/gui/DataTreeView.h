@@ -20,6 +20,9 @@ public:
 
 	DataTreeView(QWidget *parent = nullptr);
 
+	bool IsDataChecked(long iid) override;
+	void SetDataCheckedState(long iid, bool checkState) override;
+
 public slots:
 	// Slots overriden from DataViewBase
 	void SubjectAddedHandler(long uid) override;

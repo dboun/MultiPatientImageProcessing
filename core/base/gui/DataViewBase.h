@@ -17,6 +17,9 @@ public:
 	long GetCurrentSubjectID();
 	long GetCurrentDataID();
 
+	virtual bool IsDataChecked(long iid);
+	virtual void SetDataCheckedState(long iid, bool checkState);
+
 	void SetDataManager(DataManager* dataManager) override;
 	
 public slots:

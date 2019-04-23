@@ -17,8 +17,6 @@ namespace Ui {
 class MitkSegmentationTool;
 }
 
-class MitkSegmentationToolController;
-
 class MitkSegmentationTool : public GuiModuleBase
 {
     Q_OBJECT

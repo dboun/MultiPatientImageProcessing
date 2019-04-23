@@ -24,15 +24,19 @@ MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // ui->infoLabel->setText(
+    //   QString("<b>1.</b> Create Mask.<br>") +
+    //   QString("<b>2.</b> Draw with at least two colors.<br>") +
+    //   QString("<b>3.</b> Click run and wait.<br>") +
+    //   QString("<b>4.</b> If the output segmentation") +
+    //   QString(" contains mistakes,") +
+    //   QString(" draw over them on the mask") +
+    //   QString(" with the correct color") +
+    //   QString(" and run again.")
+    // );
+
     ui->infoLabel->setText(
-      QString("<b>1.</b> Create Mask.<br>") +
-      QString("<b>2.</b> Draw with at least two colors.<br>") +
-      QString("<b>3.</b> Click run and wait.<br>") +
-      QString("<b>4.</b> If the output segmentation") +
-      QString(" contains mistakes,") +
-      QString(" draw over them on the mask") +
-      QString(" with the correct color") +
-      QString(" and run again.")
+      QString("<b>-</b> Create new for manual segmentation.<br>")
     );
 
     ui->newLabelPushBtn->hide();
@@ -109,7 +113,8 @@ void MitkSegmentationTool::ChangeFocusImage(long iid)
 {
   qDebug() << "MitkSegmentationTool::ChangeFocusImage";
   
-  if (m_CurrentFocusImageID != iid) { RevertToNullState(); }
+  if (m_CurrentFocusImageID == iid) { return; }
+  else { RevertToNullState(); }
 
   if (iid == -1) { return; }
 
