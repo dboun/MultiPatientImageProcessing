@@ -18,7 +18,7 @@ public:
 	long GetCurrentDataID();
 
 	virtual bool IsDataChecked(long iid);
-	virtual void SetDataCheckedState(long iid, bool checkState);
+	virtual void SetDataCheckedState(long iid, bool checkState, bool imitateClick = false);
 
 	void SetDataManager(DataManager* dataManager) override;
 	

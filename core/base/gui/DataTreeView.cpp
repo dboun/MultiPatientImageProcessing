@@ -42,13 +42,35 @@ bool DataTreeView::IsDataChecked(long iid)
 	return false;
 }
 
-void DataTreeView::SetDataCheckedState(long iid, bool checkState)
+void DataTreeView::SetDataCheckedState(long iid, bool checkState, bool imitateClick)
 {
-	if (m_Data.find(iid) != m_Data.end())
+	if(m_Data.find(iid) == m_Data.end()) { return; }
+
+	auto item = m_Data[iid];
+
+	bool dataCheckStateChanged = (
+		!item->checkState(0) != !item->data(0, IS_CHECKED).toBool() // XOR
+	);
+
+	if (!dataCheckStateChanged) { return; }
+
+	bool subjectChanged = (
+		this->GetDataManager()->GetSubjectIdFromDataId(iid) != m_CurrentSubjectID
+	);
+
+	if (subjectChanged && !imitateClick) { return; }
+
+	item->setCheckState(0, (checkState)? Qt::Checked : Qt::Unchecked);
+
+	if (imitateClick)
 	{
-		m_Data[iid]->setData(0, IS_CHECKED, checkState);
-		m_Data[iid]->setCheckState(0, (checkState)? Qt::Checked : Qt::Unchecked);
+		this->OnItemClick(item, 0);
 	}
+	else {
+		qDebug() << "emit DataCheckedStateChanged" << iid;
+		m_Data[iid]->setData(0, IS_CHECKED, checkState);
+		emit DataCheckedStateChanged(iid, checkState);
+	}	
 }
 
 void DataTreeView::SubjectAddedHandler(long uid)
@@ -383,6 +405,7 @@ void DataTreeView::OnItemRightClick(const QPoint& pos)
 	}
 
 	QMenu contextMenu(m_TreeWidget);
+	QPoint posForContextMenu = QPoint(pos);
 
 	QAction action1("Remove", &contextMenu);
 	connect(&action1, SIGNAL(triggered()), this, SLOT(OnItemRightClickRemove()));
@@ -391,8 +414,22 @@ void DataTreeView::OnItemRightClick(const QPoint& pos)
 	if (m_TreeWidget->itemAt(pos)->parent()) 
 	{
 		// The item is an image
+
 		long iid = m_TreeWidget->itemAt(pos)->data(0, ID).toLongLong();
 		qDebug() << "iid right clicked:" << iid;
+
+		// Check if the right click didn't occur of the current subject
+		if (this->GetDataManager()->GetSubjectIdFromDataId(iid) != m_CurrentSubjectID)
+		{
+			qDebug() << "Right click has to change subject";
+
+			auto item = m_TreeWidget->itemAt(pos);
+			this->OnItemClick(item, 0);
+
+			// Find the new position of the item
+			QRect itemRect = m_TreeWidget->visualItemRect(item);
+			posForContextMenu = QPoint(itemRect.x(), itemRect.y());
+		}
 
 		QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
 		if (specialRole != "Mask")
@@ -445,19 +482,6 @@ void DataTreeView::OnItemRightClickSetAsMask()
 {
 	long iid = m_TreeWidget->currentItem()->data(0, ID).toLongLong();
 	emit DataRequestedAsMask(iid);
-
-	// QString currentRole = m_DataManager->GetDataSpecialRole(iid);
-
-	// if (currentRole != QString("Mask"))
-	// {
-	// 	QString name = m_DataManager->GetDataName(iid);
-	// 	QString path = m_DataManager->GetDataPath(iid);
-	// 	QString type = m_DataManager->GetDataType(iid);
-	// 	long uid = m_DataManager->GetSubjectIdFromDataId(iid);
-
-	// 	m_DataManager->RemoveData(iid);
-	// 	m_DataManager->AddDataToSubject(uid, path, "Mask", type, name);
-	// }
 }
 
 void DataTreeView::OnItemRightClickSetAsSegmentation()
@@ -477,11 +501,22 @@ void DataTreeView::OnItemRightClickExport()
 	QFileInfo f(this->GetDataManager()->GetDataPath(iid));
 	QString baseName = f.baseName();
 
+	QString fileTypes;
+	for(int i = 0; i < m_AcceptedFileTypes.size(); i++)
+	{
+		fileTypes += m_AcceptedFileTypes.at(i).mid(2); // Without the first two character
+		fileTypes += "(" + m_AcceptedFileTypes.at(i) + ")";
+
+		if (i < m_AcceptedFileTypes.size() - 1) { fileTypes += ";;"; }
+	}
+
+	qDebug() << "Filetypes: " << fileTypes;
+
 	// Show Dialog to get desired name
 	QString fileName = QFileDialog::getSaveFileName(this, 
 		QString("Save ") + specialRole.toLower(),
 		originalSubjectPath.replace("\\", "/", Qt::CaseSensitive) + QString("/") + baseName + QString(".nii.gz"), 
-		tr("Images (*.nii.gz)")
+		fileTypes // tr("Images (*.nii.gz)")
 	);
 	
 	if (fileName.isEmpty())
@@ -489,10 +524,24 @@ void DataTreeView::OnItemRightClickExport()
 		// Basically canceled
 		return;
 	}
+
+	qDebug() << "Filename for export (before potentially adding .nii.gz): " << fileName;
   
-  if (!fileName.endsWith(".nii.gz"))
-  {
-	  fileName = fileName + ".nii.gz";
+	// Check if the filename ends with a supported file type.
+	// If it doesn't add default.
+	// This is because QFileDialog::getSaveFileName allows this on linux.
+	// On Windows it forces one of the filetypes in filter.
+	bool foundFileType = false;
+	foreach(QString ft, m_AcceptedFileTypes)
+	{
+		if (fileName.endsWith(ft)) { 
+			foundFileType = true; 
+			break; 
+		}
+	}
+	if (!foundFileType)
+	{
+		fileName = fileName + ".nii.gz";
 	}
 
 	emit ExportData(iid, fileName);

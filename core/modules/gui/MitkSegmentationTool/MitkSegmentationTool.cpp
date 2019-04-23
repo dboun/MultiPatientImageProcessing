@@ -35,8 +35,16 @@ MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
     //   QString(" and run again.")
     // );
 
+    // ui->infoLabel->setText(
+    //   QString("<ul>") +
+    //   QString("<li>Create new for manual segmentation</li>") +
+    //   QString("<li>Select a segmentation in the data view to edit/view it</li>") +
+    //   QString("</ul>")
+    // );
+
     ui->infoLabel->setText(
-      QString("<b>-</b> Create new for manual segmentation.<br>")
+      QString(" &#8226; Create new for manual segmentation<br>") +
+      QString(" &#8226; Select a segmentation in the data view to edit/view it<br>")
     );
 
     ui->newLabelPushBtn->hide();

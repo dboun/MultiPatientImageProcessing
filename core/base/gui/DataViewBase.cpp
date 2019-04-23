@@ -43,9 +43,9 @@ bool DataViewBase::IsDataChecked(long iid)
 	return true;
 }
 
-void DataViewBase::SetDataCheckedState(long iid, bool checkState)
+void DataViewBase::SetDataCheckedState(long iid, bool checkState, bool imitateClick)
 {
-	qDebug() << QString("DataViewBase::SetDataCheckedState(bool)");
+	qDebug() << QString("DataViewBase::SetDataCheckedState");
 }
 
 void DataViewBase::SubjectAddedHandler(long uid)

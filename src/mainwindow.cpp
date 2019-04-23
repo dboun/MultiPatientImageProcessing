@@ -129,6 +129,12 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifdef BUILD_MODULE_MitkSegmentationTool
   auto st = new MitkSegmentationTool(this);
   st->SetDataManager(m_DataManager);
+  
+  // TEST
+  st->SetAllowMultiple(false);
+	st->SetSpecialRoleOfInterest("Seeds");
+  // EO TEST
+
   connect(m_DataView, SIGNAL(SelectedDataChanged(long)), st, SLOT(ChangeFocusImage(long)));
   ui->rightSideContainer->addTab(st, "Segmentation");
 #endif

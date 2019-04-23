@@ -15,13 +15,14 @@ class DataTreeView : public DataViewBase
 	Q_OBJECT
 
 public:
+	// For storing information about the tree's items
 	const int ID         = Qt::UserRole;
 	const int IS_CHECKED = Qt::UserRole + 1;
 
 	DataTreeView(QWidget *parent = nullptr);
 
 	bool IsDataChecked(long iid) override;
-	void SetDataCheckedState(long iid, bool checkState) override;
+	void SetDataCheckedState(long iid, bool checkState, bool imitateClick = false) override;
 
 public slots:
 	// Slots overriden from DataViewBase
@@ -30,7 +31,7 @@ public slots:
 	void SubjectDataChangedHandler(long uid) override;
 	void UpdateProgressHandler(long uid, QString message, int progress) override;
 
-	// Custom slots
+	// Internal slots
 	void OnItemClick(QTreeWidgetItem *item, int column);
 	void OnItemRightClick(const QPoint& pos);
 	void OnItemRightClickRemove();
@@ -39,7 +40,7 @@ public slots:
 	void OnItemRightClickExport();
 
 private:
-	// For convenience
+	/** For convenience a function to change to a new subject */
 	void SwitchExpandedView(QTreeWidgetItem* focusItem);
 
 	QTreeWidget* m_TreeWidget;
