@@ -172,7 +172,7 @@ long CustomMitkDataStorage::AddEmptyMitkLabelSetImageToSubject(long uid,
         QChar nextChar = possibleCharacters.at(index);
         randomString.append(nextChar);
     }
-    QString path = directoryName + "/" + randomString + ".nii.gz";
+    QString path = directoryName + "/" + randomString + ".nrrd";
 
     // Add the node to the wait list
     mitk::DataNode::Pointer dataNode = mitk::DataNode::New();
@@ -353,14 +353,18 @@ void CustomMitkDataStorage::AddToDataStorage(long iid)
     {
         if (tName == name)
         {
+            qDebug() << "Found node in wait map.";
+            qDebug() << "wait map previous size: " << m_NodesWaitMap.size();
             dataNode = m_NodesWaitMap[tName];
             m_NodesWaitMap.erase(tName);
+            qDebug() << "wait map new size: " << m_NodesWaitMap.size();
             break;
         }
     }
 
     if (dataNode)
     {
+        qDebug() << "The data node from the wait map actually exists";
         this->Add(dataNode);
     }
     else {
@@ -399,21 +403,19 @@ void CustomMitkDataStorage::AddToDataStorage(long iid)
 void CustomMitkDataStorage::WriteChangesToFileIfNecessary(mitk::DataNode::Pointer dataNode)
 {
     if (!dataNode) { return; }
+    
     long iid = QString(dataNode->GetName().c_str()).toLong();
-
-    if (m_DataManager->GetDataIsExternal(iid) || m_DataManager->GetDataType(iid) != "Image") 
-    { 
-        return; 
-    }
-
-    QString specialRole = m_DataManager->GetDataSpecialRole(iid);
-
-    if (specialRole == "Mask" || specialRole == "Segmentation")
+    
+    if (m_DataManager->GetDataIsExternal(iid)) { return; }
+    
+    QString type = m_DataManager->GetDataType(iid);
+    
+    if (type == "Image" || type == "LabelSetImage")
     {
         mitk::IOUtil::Save(
-		    dataNode->GetData(), 
-		    m_DataManager->GetDataPath(iid).toStdString()
-	    );
+            dataNode->GetData(), 
+            m_DataManager->GetDataPath(iid).toStdString()
+        );
     }
 }
 
