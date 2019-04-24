@@ -137,6 +137,9 @@ void DataTreeView::SubjectRemovedHandler(long uid)
 	QTreeWidgetItem* subjectToRemove = m_Subjects[uid];
 	m_CurrentDataID = -1;
 
+	qDebug() << "Emit DataTreeView::SelectedDataChanged" << -1;
+	emit SelectedDataChanged(-1);
+
 	if (subjectToRemove)
 	{
 		//auto iter = m_Subjects.find(uid);

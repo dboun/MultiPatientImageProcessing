@@ -231,6 +231,11 @@ long CustomMitkDataStorage::ReAddAsLabelSetImage(long iid, QString newSpecialRol
                 newName = "<" + newSpecialRole + ">" + newName;
             }
         }
+        else if (newSpecialRole != "")
+        {
+            if (newName != "") { newName = " " + newName; }
+            newName = "<" + newSpecialRole + "> (" + newName + ")";
+        }
     }
     QString newDataPath;
     {
@@ -621,8 +626,15 @@ void CustomMitkDataStorage::DataRemovedFromSelectedSubjectHandler(long iid)
 
 void CustomMitkDataStorage::DataRequestedAsSeedsHandler(long iid)
 {
+    long uid = m_DataManager->GetSubjectIdFromDataId(iid);
+
     try {
-        this->ReAddAsLabelSetImage(iid, "Seeds", true);
+        long newIid = this->ReAddAsLabelSetImage(iid, "Seeds", true);
+
+        for (const long& tIid : m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Seeds"))
+        {
+            if (tIid != newIid) { m_DataManager->RemoveData(tIid); }
+        }
     } catch (...) {
         qDebug() << "CustomMitkDataStorage::DataRequestedAsSeedsHandler: Exception occured";
     }
