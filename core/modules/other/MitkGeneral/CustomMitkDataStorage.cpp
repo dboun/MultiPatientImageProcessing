@@ -316,14 +316,54 @@ void CustomMitkDataStorage::ExportDataHandler(long iid, QString fileName)
     // TODO: Maybe this should handle showing the window
     // This could happen by having the default value "" as fileName
     // and showing the window if that's the case
-    mitk::DataNode::Pointer dataNode = this->GetNamedNode(std::to_string(iid));
+    
+    // Find the node
+	mitk::DataNode::Pointer dataNode;
+	mitk::DataStorage::SetOfObjects::ConstPointer all = this->GetAll();
+	for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
+		if (QString::number(iid).toStdString() == it->Value()->GetName())
+		{
+			dataNode = it->Value();
+			break;
+		}
+	}
+    if (!this->Exists(dataNode))
+	{
+		qDebug() << "Can't find dataNode for exporting image " << iid;
+		return;
+	}
+	
+	// Find output directory for exporting
+	QString filePathTemp = fileName;
+	filePathTemp.replace("\\", "/", Qt::CaseSensitive);
+	QStringList filePathSplit = filePathTemp.split("/");
+	QString parentDirOfFile = filePathSplit.value(filePathSplit.length() - 2);
+	qDebug() << "Parent dir of file" << parentDirOfFile;
 
-    if (dataNode)
-    {
+	// Create output directory if it doesn't exist
+	if (!QDir(parentDirOfFile).exists())
+	{
+		if (!QDir().mkpath(parentDirOfFile)) { 
+			QMessageBox::warning(nullptr, 
+				tr("Problem exporting"),
+				tr("No permission to write in this directory")
+			);
+			return; 
+		}
+	}
+
+    // Save
+	qDebug() << "Will save image to:" << fileName;
+    try {
         mitk::IOUtil::Save(
 		    dataNode->GetData(), 
 		    fileName.toStdString()
 	    );
+    } catch (mitk::Exception& e) {
+        MITK_ERROR << "Exception caught: " << e.GetDescription();
+        QMessageBox::information(nullptr, "Exporting data", 
+            "Could not export data. Please check if you have write access to the directory.\n"
+        );
     }
 }
 

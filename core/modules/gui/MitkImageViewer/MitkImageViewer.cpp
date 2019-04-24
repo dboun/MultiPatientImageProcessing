@@ -120,7 +120,7 @@ void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 		{
 			dataNode->SetProperty("layer", mitk::IntProperty::New(3));
 		}
-		else if (specialRole == "Mask")
+		else if (specialRole == "Seeds")
 		{
 			dataNode->SetProperty("layer", mitk::IntProperty::New(4));
 		}
@@ -147,59 +147,59 @@ void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
-void MitkImageViewer::OnExportData(long iid, QString fileName)
-{
-	// Find the node
-	mitk::DataNode::Pointer dataNode;
+// void MitkImageViewer::OnExportData(long iid, QString fileName)
+// {
+	// // Find the node
+	// mitk::DataNode::Pointer dataNode;
 
-	mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-	for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
-		if (QString::number(iid).toStdString() == it->Value()->GetName())
-		{
-			dataNode = it->Value();
-			break;
-		}
-	}
+	// mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
+	// for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it) {
+	// 	if (QString::number(iid).toStdString() == it->Value()->GetName())
+	// 	{
+	// 		dataNode = it->Value();
+	// 		break;
+	// 	}
+	// }
 
-	if (!m_DataStorage->Exists(dataNode))
-	{
-		qDebug() << "Can't find dataNode to save image " << iid;
-		return;
-	}
+	// if (!m_DataStorage->Exists(dataNode))
+	// {
+	// 	qDebug() << "Can't find dataNode to save image " << iid;
+	// 	return;
+	// }
 
-	long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
+	// long uid = this->GetDataManager()->GetSubjectIdFromDataId(iid);
 	
-	// Parent dir of file
-	QString filePathTemp = fileName;
-	filePathTemp.replace("\\", "/", Qt::CaseSensitive);
-	QStringList filePathSplit = filePathTemp.split("/");
-	QString parentDirOfFile = filePathSplit.value(filePathSplit.length() - 2);
+	// // Parent dir of file
+	// QString filePathTemp = fileName;
+	// filePathTemp.replace("\\", "/", Qt::CaseSensitive);
+	// QStringList filePathSplit = filePathTemp.split("/");
+	// QString parentDirOfFile = filePathSplit.value(filePathSplit.length() - 2);
 	
-	qDebug() << "Parent dir of file" << parentDirOfFile;
+	// qDebug() << "Parent dir of file" << parentDirOfFile;
 
-	// The name of the file
-	QFileInfo f(fileName);
-	QString baseName = f.baseName();
+	// // The name of the file
+	// QFileInfo f(fileName);
+	// QString baseName = f.baseName();
 
-	// Create output directory if it doesn't exist
-	if (!QDir(parentDirOfFile).exists())
-	{
-		if (!QDir().mkpath(parentDirOfFile)) { 
-			QMessageBox::warning(this, 
-				"Problem exporting",
-				"No permission to write in this directory"
-			);
-			return; 
-		}
-	}
+	// // Create output directory if it doesn't exist
+	// if (!QDir(parentDirOfFile).exists())
+	// {
+	// 	if (!QDir().mkpath(parentDirOfFile)) { 
+	// 		QMessageBox::warning(this, 
+	// 			"Problem exporting",
+	// 			"No permission to write in this directory"
+	// 		);
+	// 		return; 
+	// 	}
+	// }
 
-	qDebug() << "Will save image to:" << fileName;
+	// qDebug() << "Will save image to:" << fileName;
 
-	mitk::IOUtil::Save(
-		dataNode->GetData(), 
-		fileName.toStdString()
-	);
-}
+	// mitk::IOUtil::Save(
+	// 	dataNode->GetData(), 
+	// 	fileName.toStdString()
+	// );
+// }
 
 void MitkImageViewer::SaveImageToFile(long iid, bool updateDataManager)
 {

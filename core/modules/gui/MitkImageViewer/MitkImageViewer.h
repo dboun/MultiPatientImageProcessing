@@ -28,7 +28,7 @@ public slots:
 	virtual void DataRemovedFromSelectedSubjectHandler(long iid) override;
 	virtual void SelectedDataChangedHandler(long iid) override;
 	virtual void DataCheckedStateChangedHandler(long iid, bool checkState) override;
-	/*del*/virtual void OnExportData(long iid, QString fileName);
+	// /*del*/virtual void OnExportData(long iid, QString fileName);
 
 	// Slot, but usually just called.
 	/*del*/void SaveImageToFile(long iid, bool updateDataManager = true);
@@ -36,7 +36,7 @@ public slots:
 	// Reference is an nrrd image that shows which labels to use
 	/*del*/void ConvertToNrrdAndSave(long iid, long referenceIid = -1, bool updateDataManager = true);
 
-protected:	
+protected:
 	CustomQmitkStdMultiWidget* m_MitkWidget;
 	CustomMitkDataStorage*     m_DataStorage;
 

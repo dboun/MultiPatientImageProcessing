@@ -35,7 +35,7 @@ public slots:
 	void OnItemClick(QTreeWidgetItem *item, int column);
 	void OnItemRightClick(const QPoint& pos);
 	void OnItemRightClickRemove();
-	void OnItemRightClickSetAsMask();
+	void OnItemRightClickSetAsSeeds();
 	void OnItemRightClickSetAsSegmentation();
 	void OnItemRightClickExport();
 

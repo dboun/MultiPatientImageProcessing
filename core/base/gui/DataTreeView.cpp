@@ -214,7 +214,7 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 			qDebug() << "Emit DataTreeView::DataAddedForSelectedSubject" << iid;
 			emit DataAddedForSelectedSubject(iid);
 		
-			if (specialRole == "Mask" || specialRole == "Segmentation") 
+			if (specialRole == "Seeds" || specialRole == "Segmentation") 
 			{
 				dataToAdd->setCheckState(0, Qt::Checked);
 				dataToAdd->setData(0, IS_CHECKED, true);
@@ -230,7 +230,7 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 			if (specialRole == "Segmentation")
 			{
 				for (const long& dIid : m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
-					uid, "Mask"))
+					uid, "Seeds"))
 				{
 					if (m_Data[dIid] && m_Data[dIid]->data(0, IS_CHECKED) == true) 
 					{
@@ -432,14 +432,14 @@ void DataTreeView::OnItemRightClick(const QPoint& pos)
 		}
 
 		QString specialRole = this->GetDataManager()->GetDataSpecialRole(iid);
-		if (specialRole != "Mask")
+		if (specialRole != "Seeds")
 		{
-			QAction* action2 = new QAction("Set as mask", &contextMenu);
-			connect(action2, SIGNAL(triggered()), this, SLOT(OnItemRightClickSetAsMask()));
+			QAction* action2 = new QAction("Set as seeds", &contextMenu);
+			connect(action2, SIGNAL(triggered()), this, SLOT(OnItemRightClickSetAsSeeds()));
 			contextMenu.addAction(action2);
 		}
 		
-		if (specialRole != "Mask" && specialRole != "Segmentation")
+		if (specialRole != "Seeds" && specialRole != "Segmentation")
 		{
 			QAction* action22 = new QAction("Convert to segmentation", &contextMenu);
 			connect(action22, SIGNAL(triggered()), this, SLOT(OnItemRightClickSetAsSegmentation()));
@@ -447,14 +447,14 @@ void DataTreeView::OnItemRightClick(const QPoint& pos)
 		}
 		else if (specialRole == "Segmentation" && 
 			this->GetDataManager()->GetAllDataIdsOfSubjectWithSpecialRole(
-				m_CurrentSubjectID, "Mask").size() > 0)
+				m_CurrentSubjectID, "Seeds").size() > 0)
 		{
-			QAction* action22 = new QAction("Sync colors from mask", &contextMenu);
+			QAction* action22 = new QAction("Sync colors from seeds", &contextMenu);
 			connect(action22, SIGNAL(triggered()), this, SLOT(OnItemRightClickSetAsSegmentation()));
 			contextMenu.addAction(action22);
 		}
 		
-		if (specialRole == "Mask" || specialRole == "Segmentation")
+		if (specialRole == "Seeds" || specialRole == "Segmentation")
 		{
 			QAction* action3 = new QAction("Export", &contextMenu);
 			connect(action3, SIGNAL(triggered()), this, SLOT(OnItemRightClickExport()));
@@ -478,10 +478,10 @@ void DataTreeView::OnItemRightClickRemove()
   }
 }
 
-void DataTreeView::OnItemRightClickSetAsMask()
+void DataTreeView::OnItemRightClickSetAsSeeds()
 {
 	long iid = m_TreeWidget->currentItem()->data(0, ID).toLongLong();
-	emit DataRequestedAsMask(iid);
+	emit DataRequestedAsSeeds(iid);
 }
 
 void DataTreeView::OnItemRightClickSetAsSegmentation()
@@ -512,6 +512,12 @@ void DataTreeView::OnItemRightClickExport()
 
 	qDebug() << "Filetypes: " << fileTypes;
 
+	if (!this->GetDataManager()->GetDataIsExternal(iid) && 
+	    this->GetDataManager()->GetDataSpecialRole(iid) != "")
+	{
+		baseName = this->GetDataManager()->GetDataSpecialRole(iid).toLower();
+	}
+
 	// Show Dialog to get desired name
 	QString fileName = QFileDialog::getSaveFileName(this, 
 		QString("Save ") + specialRole.toLower(),
@@ -534,7 +540,7 @@ void DataTreeView::OnItemRightClickExport()
 	bool foundFileType = false;
 	foreach(QString ft, m_AcceptedFileTypes)
 	{
-		if (fileName.endsWith(ft)) { 
+		if (fileName.endsWith(ft.mid(1))) { 
 			foundFileType = true; 
 			break; 
 		}

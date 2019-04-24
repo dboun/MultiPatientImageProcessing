@@ -136,7 +136,7 @@ MainWindow::MainWindow(QWidget *parent) :
   // EO TEST
 
   connect(m_DataView, SIGNAL(SelectedDataChanged(long)), st, SLOT(ChangeFocusImage(long)));
-  ui->rightSideContainer->addTab(st, "Segmentation");
+  ui->rightSideContainer->addTab(st, "Segmentation panel");
 #endif
 
   // Turn on drag and drop

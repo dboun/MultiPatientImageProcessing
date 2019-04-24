@@ -36,7 +36,7 @@ signals:
 	void DataRemovedFromSelectedSubject(long iid);
 	void DataCheckedStateChanged(long iid, bool checkState); // Optional
 
-	void DataRequestedAsMask(long iid);
+	void DataRequestedAsSeeds(long iid);
 	void DataRequestedAsSegmentation(long iid);
 	void ExportData(long iid, QString fileName);
 
