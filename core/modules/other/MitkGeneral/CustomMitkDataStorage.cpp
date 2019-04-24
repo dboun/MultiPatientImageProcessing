@@ -4,7 +4,10 @@
 #include <QMessageBox>
 #include <QFileInfo>
 
+#include <mitkImage.h>
+#include <mitkLabelSetImage.h>
 #include <mitkIOUtil.h>
+#include <mitkConvert2Dto3DImageFilter.h>
 
 #include <stdexcept>
 #include <string>
@@ -47,8 +50,8 @@ void CustomMitkDataStorage::SetDataView(DataViewBase* dataView)
 	connect(dataView, SIGNAL(DataRemovedFromSelectedSubject(long)), 
         this, SLOT(DataRemovedFromSelectedSubjectHandler(long))
     );
-	connect(dataView, SIGNAL(DataRequestedAsMask(long)), 
-        this, SLOT(DataRequestedAsMaskHandler(long))
+	connect(dataView, SIGNAL(DataRequestedAsSeeds(long)), 
+        this, SLOT(DataRequestedAsSeedsHandler(long))
     );
 	connect(dataView, SIGNAL(DataRequestedAsSegmentation(long)), 
         this, SLOT(DataRequestedAsSegmentationHandler(long))
@@ -191,6 +194,227 @@ long CustomMitkDataStorage::AddEmptyMitkLabelSetImageToSubject(long uid,
     );
 }
 
+long CustomMitkDataStorage::ReAddAsLabelSetImage(long iid, QString newSpecialRole, 
+    bool syncColors, long referenceIid)
+{
+    // --- Original image info ---
+    QString originalName             = m_DataManager->GetDataName(iid);
+    QString originalDataPath         = m_DataManager->GetDataPath(iid);
+    QString originalType             = m_DataManager->GetDataType(iid);
+    QString originalSpecialRole      = m_DataManager->GetDataSpecialRole(iid);
+	bool originalIsExternal          = m_DataManager->GetDataIsExternal(iid);
+	bool originalIsVisibleInDataView = m_DataManager->GetDataIsVisibleInDataView(iid);
+	long uid                         = m_DataManager->GetSubjectIdFromDataId(iid);
+
+    // --- New image info ---
+    QString newName;
+    {
+        // Setting newName
+        newName = originalName;
+        QString originalSpecialRolePrefix = "<" + originalSpecialRole + ">";
+        if (originalName.startsWith(originalSpecialRolePrefix))
+        {
+            newName.remove(0, originalSpecialRolePrefix.size());
+            if (newSpecialRole == "" && newName.startsWith("( "))
+            {
+                // Remove the parentheses around the basename
+                newName.remove(0, 2);
+                newName.remove(newName.size()-1, 1);
+            }
+            else if (newSpecialRole == "" && newName == "")
+            {
+                newName = "LabelSetImage";
+            }
+            else if (newSpecialRole != "")
+            {
+                if (newName != "") { newName = " " + newName; }
+                newName = "<" + newSpecialRole + ">" + newName;
+            }
+        }
+    }
+    QString newDataPath;
+    {
+        // Setting newDataPath
+
+        // Generate a random name (can't use newIid, because it doesn't exist yet)
+        // (also can't use name because it might not be unique)
+        const QString possibleCharacters(
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+        );
+        const int randomStringLength = 12;
+        QString randomString;
+        for(int i=0; i<randomStringLength; ++i)
+        {
+            int index = qrand() % possibleCharacters.length();
+            QChar nextChar = possibleCharacters.at(index);
+            randomString.append(nextChar);
+        }
+        newDataPath = m_DataManager->GetSubjectPath(uid) + "/" + randomString + ".nrrd";
+    }
+
+    // --- Checks / operations without involving mitk ---
+    if (originalType != "Image" && originalType != "LabelSetImage") // Also checks if iid = -1
+    { 
+        return -1; 
+    }
+
+    if (syncColors && m_DataManager->GetDataType(referenceIid) != "LabelSetImage") 
+    { 
+        referenceIid = -1; // Automatically pick
+    }
+
+    if (syncColors && referenceIid == -1)
+    {
+        // Automatically set the reference iid with priority to seeds
+        if (m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Segmentation").size() > 0)
+        {
+            referenceIid = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
+                uid, "Segmentation"
+            )[0];
+        }
+        if (m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Seeds").size() > 0)
+        {
+            referenceIid = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
+                uid, "Seeds"
+            )[0];
+        }
+
+        if (referenceIid != -1) 
+        {
+            qDebug() << "Automatically picked" << referenceIid << "as reference iid";
+        }
+        else {
+            qDebug() << "No image to set as reference iid automatically";
+            syncColors = false;
+        }
+    }
+
+    if (!syncColors 
+        && originalType == "LabelSetImage"
+        && originalSpecialRole == newSpecialRole) 
+    { 
+        qDebug() << "No changes can be made";
+        return iid; 
+    }
+
+    if (!syncColors && uid != m_CurrentSubjectID && originalType == "LabelSetImage") 
+    {
+        // Just need to change the specialRole and potentially the name
+        // LabelSetImage -> always internal
+
+        // Add and remove need to happen in this order to not get the subject removed
+        // if there is only this image in the subject
+        long newIid = m_DataManager->AddDataToSubject(uid, newDataPath,
+            newSpecialRole, "LabelSetImage", newName, 
+            false, originalIsVisibleInDataView
+        );
+        m_DataManager->RemoveData(iid);
+        return newIid;
+    }
+
+    // --- Actual conversions ---
+    qDebug() << "Doing an actual conversion";
+    mitk::LabelSetImage::Pointer newLSImage = mitk::LabelSetImage::New();
+
+    // If the originalType is "Image" it needs to be converted
+    if (originalType == "Image")
+    {
+        qDebug() << "Original type was Image";
+        mitk::Image::Pointer originalImage;
+
+        mitk::Image::Pointer originalImageFromDS;
+
+        try {
+            originalImageFromDS = this->GetImage(iid);
+        } catch (...) {
+            qDebug() << "Something went wrong with reading the original image";
+            return -1;
+        }
+
+        if (!originalImageFromDS) {
+            qDebug() << "Original image cannot be used";
+            return -1;
+        }
+
+        // If the original image is 2D convert to 3D (because LabelSetImage needs to be 3D)
+        qDebug() << "Checking image dimensions";
+        if (originalImageFromDS->GetDimension() == 3)
+        {
+            qDebug() << "Image is 3D";
+            originalImage = originalImageFromDS;
+        }
+        else if (originalImageFromDS->GetDimension() == 2)
+        {
+            qDebug() << "Image is 2D";
+            mitk::Convert2Dto3DImageFilter::Pointer convertFilter = 
+                mitk::Convert2Dto3DImageFilter::New();
+            convertFilter->SetInput(originalImageFromDS);
+            convertFilter->Update();
+            originalImage= convertFilter->GetOutput();
+        }
+        else {
+            return -1;
+        }
+
+        // Copy the data from input image
+        try {
+            newLSImage->InitializeByLabeledImage(originalImage);
+        } catch (mitk::Exception e) {
+            qDebug() << "Initializing didn't work";
+            qDebug() << e.GetDescription();
+            return -1;
+        }
+    }
+    else {
+        qDebug() << "Original type was LabelSetImage";
+        newLSImage = this->GetLabelSetImage(iid);
+    }
+
+    // Sync colors (labels) from reference image if necessary
+    if (syncColors && referenceIid != -1)
+    {
+        qDebug() << "Syncing colors";
+        mitk::LabelSetImage::Pointer referenceImage = this->GetLabelSetImage(referenceIid);
+        if (referenceImage && newLSImage)
+        {
+            mitk::LabelSet::Pointer referenceLabelSet =	referenceImage->GetActiveLabelSet();
+            mitk::LabelSet::Pointer outputLabelSet    =	newLSImage->GetActiveLabelSet();
+
+            mitk::LabelSet::LabelContainerConstIteratorType itR;
+            mitk::LabelSet::LabelContainerConstIteratorType it;
+
+            for (itR =  referenceLabelSet->IteratorConstBegin();
+                        itR != referenceLabelSet->IteratorConstEnd(); 
+                        ++itR) 
+            {
+                for (it = outputLabelSet->IteratorConstBegin(); 
+                            it != outputLabelSet->IteratorConstEnd();
+                            ++it)
+                {
+                    if (itR->second->GetValue() == it->second->GetValue())
+                    {
+                        it->second->SetColor(itR->second->GetColor());
+                        it->second->SetName(itR->second->GetName());
+                    }
+                }
+            }
+        }
+    }
+
+    // --- Updating DataManager & DataStorage ---
+    qDebug() << "Updating DataManager & DataStorage";
+    mitk::DataNode::Pointer dataNode = mitk::DataNode::New();
+    dataNode->SetData(newLSImage);
+    // Add and remove need to happen in this order to not get the subject removed
+    // if there is only this image in the subject
+    long newIid = this->AddMitkNodeToSubject(uid, dataNode, 
+        newDataPath, newSpecialRole, "LabelSetImage", newName,
+        false, originalIsVisibleInDataView 
+    );
+    m_DataManager->RemoveData(iid);
+    return newIid;
+}
+
 mitk::Image::Pointer CustomMitkDataStorage::GetImage(long iid)
 {
     qDebug() << "CustomMitkDataStorage::GetImage" << iid;
@@ -211,7 +435,97 @@ mitk::Image::Pointer CustomMitkDataStorage::GetImage(long iid)
         );
     }
 
-    // TODO:
+    long uid = m_DataManager->GetSubjectIdFromDataId(iid);
+
+    if (m_CurrentSubjectID == uid)
+    {
+        qDebug() << "CustomMitkDataStorage::GetImage: Loading from data storage";
+        mitk::DataNode::Pointer node = this->GetNamedNode(std::to_string(iid));
+        
+        mitk::Image::Pointer image; 
+        
+        if (node && this->Exists(node) && node->GetData()) 
+        { 
+            qDebug() << "CustomMitkDataStorage::GetImage: Found image in node with name" 
+                     << node->GetName().c_str();
+            
+            try {
+                image = dynamic_cast<mitk::Image*>(node->GetData()); 
+            } catch (...) {
+                qDebug() << "Can't fetch from node";
+                throw std::invalid_argument( 
+                    std::string("CustomMitkDataStorage::GetImage: Can't fetch from node")
+                );
+            }
+        }
+        else {
+            qDebug() << "Problem with node";
+            throw std::invalid_argument( 
+                std::string("CustomMitkDataStorage::GetImage: No such node")
+            );
+        }
+
+        qDebug() << "Will return image if it exists";
+        if (image) {
+            return image;
+        }
+        else {
+            qDebug() << "No such image";
+            throw std::invalid_argument( 
+                std::string("CustomMitkDataStorage::GetImage: No such image")
+            );
+        }
+    }
+    else {
+        // TODO: Load
+        qDebug() << "CustomMitkDataStorage::GetImage: Loading not implemented yet";
+        throw std::invalid_argument( 
+            std::string("CustomMitkDataStorage::GetImage: Loading not implemented yet")
+        );
+    }
+}
+
+mitk::LabelSetImage::Pointer CustomMitkDataStorage::GetLabelSetImage(long iid)
+{
+    qDebug() << "CustomMitkDataStorage::GetLabelSetImage" << iid;
+
+    if (m_DataManager->GetSubjectIdFromDataId(iid) == -1)
+    {
+        throw std::invalid_argument( 
+            std::string("CustomMitkDataStorage::GetLabelSetImage: No such image, iid=") + 
+            std::to_string(iid)
+        );
+    }
+
+    if (m_DataManager->GetDataType(iid) != "LabelSetImage")
+    {
+        throw std::invalid_argument( 
+            std::string("CustomMitkDataStorage::GetLabelSetImage: Not a labels image, iid=") + 
+            std::to_string(iid)
+        );
+    }
+
+    long uid = m_DataManager->GetSubjectIdFromDataId(iid);
+
+    if (m_CurrentSubjectID == uid)
+    {
+        auto node = this->GetNamedNode(std::to_string(iid));
+        if (node && node->GetData()) 
+        { 
+            return dynamic_cast<mitk::LabelSetImage*>(node->GetData()); 
+        }
+        else {
+            throw std::invalid_argument( 
+                std::string("CustomMitkDataStorage::GetImage: No such node")
+            );
+        }
+    }
+    else {
+        // TODO: Load
+        throw std::invalid_argument( 
+            std::string("CustomMitkDataStorage::GetImage: Loading not implemented yet")
+        );
+    }
 }
 
 void CustomMitkDataStorage::WriteChangesToFileIfNecessaryForAllImagesOfCurrentSubject()
@@ -240,8 +554,11 @@ long CustomMitkDataStorage::AddMitkNodeToSubject(long uid, mitk::DataNode::Point
 {
     if (uid == m_CurrentSubjectID)
     {
-        // TODO: Add node to m_NodesWaitMap. Add data to DataManager. 
-        //       Handle DataAddedForSelectedSubject(long iid) to load it from m_NodesWaitMap
+        m_NodesWaitMap[name] = dataNode;
+
+        return m_DataManager->AddDataToSubject(
+            uid, path, specialRole, type, name, external, visibleInDataView
+        );
     }
     else {
         mitk::IOUtil::Save(
@@ -302,14 +619,22 @@ void CustomMitkDataStorage::DataRemovedFromSelectedSubjectHandler(long iid)
     this->Remove(node);
 }
 
-void CustomMitkDataStorage::DataRequestedAsMaskHandler(long iid)
+void CustomMitkDataStorage::DataRequestedAsSeedsHandler(long iid)
 {
-    // TODO:
+    try {
+        this->ReAddAsLabelSetImage(iid, "Seeds", true);
+    } catch (...) {
+        qDebug() << "CustomMitkDataStorage::DataRequestedAsSeedsHandler: Exception occured";
+    }
 }
 
 void CustomMitkDataStorage::DataRequestedAsSegmentationHandler(long iid)
 {
-    // TODO:
+    try {
+        this->ReAddAsLabelSetImage(iid, "Segmentation", true);
+    } catch (...) {
+        qDebug() << "CustomMitkDataStorage::DataRequestedAsSegmentationHandler: Exception occured";
+    }
 }
 
 void CustomMitkDataStorage::ExportDataHandler(long iid, QString fileName)
@@ -403,40 +728,31 @@ void CustomMitkDataStorage::AddToDataStorage(long iid)
         }
     }
 
-    if (dataNode)
+    if (!dataNode)
     {
-        qDebug() << "The data node from the wait map actually exists";
-        this->Add(dataNode);
-    }
-    else {
-        // The dataNode doesn't already exist
-        mitk::StandaloneDataStorage::SetOfObjects::Pointer dataNodes = mitk::IOUtil::Load(
-		    dataPath.toStdString(), *this
-	    );
-        if (dataNodes.IsNull()) { return; }
-	    dataNode = dataNodes->at(0);
+        dataNode = mitk::DataNode::New();
+        qDebug() << "The dataNode doesn't already exist";
+        qDebug() << "Data path:" << dataPath;
+        if (type == "Image") {
+            dataNode->SetData(
+                mitk::IOUtil::Load<mitk::Image>(dataPath.toStdString())
+            );
+        }
+        else {
+            dataNode->SetData(
+                mitk::IOUtil::Load<mitk::LabelSetImage>(dataPath.toStdString())
+            );
+        }
+        qDebug() << "Added image";
     }
 
 	dataNode->SetName(QString::number(iid).toStdString().c_str());
+    this->Add(dataNode);
     //dataNode->SetProperty("opacity", mitk::FloatProperty::New(0.0));
 	dataNode->SetVisibility(false);
 
     //dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
     //dataNode->SetProperty("layer", mitk::IntProperty::New(2));
-
-	if (specialRole == QString("Mask"))
-	{
-        // dataNode->SetProperty("fixedLayer", mitk::BoolProperty::New(true));
-        // dataNode->SetProperty("layer", mitk::IntProperty::New(48));
-
-        //emit MitkLoadedNewMask(dataNode);
-	}
-
-	if (specialRole == QString("Segmentation"))
-	{
-	    // auto labelSetImage = dynamic_cast<mitk::LabelSetImage*>(dataNode->GetData());
-	    // labelSetImage->GetActiveLabelSet()->SetActiveLabel(0);
-	}
 	
     emit MitkLoadedNewNode(iid, dataNode);
 }

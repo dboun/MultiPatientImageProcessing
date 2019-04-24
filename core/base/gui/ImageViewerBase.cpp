@@ -71,11 +71,6 @@ void ImageViewerBase::DataCheckedStateChangedHandler(long iid, bool checkState)
 	qDebug() << QString("ViewerBase::DataCheckedStateChangedHandler()") << iid;
 }
 
-void ImageViewerBase::SaveImageToFile(long iid)
-{
-	qDebug() << QString("ViewerBase::SaveImageToFile()") << iid;
-}
-
 DataViewBase* ImageViewerBase::GetDataView()
 {
 	return m_DataView;

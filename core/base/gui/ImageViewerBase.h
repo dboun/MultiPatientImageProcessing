@@ -31,9 +31,6 @@ public slots:
 	virtual void DataRemovedFromSelectedSubjectHandler(long iid);
 	virtual void DataCheckedStateChangedHandler(long iid, bool checkState); //optional
 
-	// Slot, but probably just called.
-	virtual void SaveImageToFile(long iid);
-
 protected:
 	DataViewBase* GetDataView();
 

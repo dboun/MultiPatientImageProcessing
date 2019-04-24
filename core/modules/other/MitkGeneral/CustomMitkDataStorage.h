@@ -50,6 +50,20 @@ public:
         bool external = false, bool visibleInDataView = true 
     );
 
+    /** The image will be converted to LabelSetImage with the special role specified.
+     *  If it is already a LabelSetImage the labels it can optionally sync the colors (labels)
+     *  from another LabelSetImage. The origin image will be removed only if any operations 
+     *  happened and a new one will be added.
+     @param iid the image to be converted
+     @param newSpecialRole the new special role
+     @param syncColors whether to copy colors (labels) from another LabelSetImage
+     @param referenceIid image to get the colors (labels) from. If -1 it gets automatically picked.
+     @return the new iid of the converted image (the previous gets removed)
+     */
+    long ReAddAsLabelSetImage(long iid, QString newSpecialRole = "Segmentation", 
+        bool syncColors = true, long referenceIid = -1
+    );
+
     /** GetImage returns from DataStorage if the image is from the current subject
         otherwise it normally loads it (outside the DataStorage) and returns it */
     mitk::Image::Pointer GetImage(long iid); 
@@ -68,7 +82,7 @@ public slots:
     void SelectedSubjectChangedHandler(long uid); // uid == -1 if nothing is selected
 	void DataAddedForSelectedSubjectHandler(long iid);
 	void DataRemovedFromSelectedSubjectHandler(long iid);
-	void DataRequestedAsMaskHandler(long iid);
+	void DataRequestedAsSeedsHandler(long iid);
 	void DataRequestedAsSegmentationHandler(long iid);
 	void ExportDataHandler(long iid, QString fileName);
 

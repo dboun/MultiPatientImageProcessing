@@ -54,11 +54,6 @@ MainWindow::MainWindow(QWidget *parent) :
   m_DataManager->SetAcceptedFileTypes(m_AcceptedFileTypes);
   m_DataManager->SetAppNameShort(m_AppNameShort);
 
-  // Initialize CustomMitkDataStorage
-#ifdef BUILD_MODULE_MitkGeneral
-  CustomMitkDataStorage::CreateInstance(m_DataManager);
-#endif
-
   // Initialize Scheduler
   m_Scheduler = &DefaultScheduler::GetInstance();
   
@@ -73,8 +68,9 @@ MainWindow::MainWindow(QWidget *parent) :
   m_DataView->SetAppNameShort(m_AppNameShort);
   GuiModuleBase::PlaceWidgetInWidget(m_DataView, ui->dataViewContainer);
 
-  // Set up CustomMitkDataStorage
+  // Initialize CustomMitkDataStorage (Needs to be initialized before other mitk based widgets)
 #ifdef BUILD_MODULE_MitkGeneral
+  CustomMitkDataStorage::CreateInstance(m_DataManager);
   CustomMitkDataStorage::GetInstance()->SetDataView(m_DataView);
   CustomMitkDataStorage::GetInstance()->SetAppNameShort(m_AppNameShort);
 #endif
@@ -84,9 +80,6 @@ MainWindow::MainWindow(QWidget *parent) :
   m_ImageViewer = new MitkImageViewer(ui->viewerContainer);
   m_ImageViewer->setMinimumWidth(600);
   m_ImageViewer->setMinimumHeight(500);
-  connect(m_DataView, SIGNAL(ExportData(long, QString)), 
-    qobject_cast<MitkImageViewer*>(m_ImageViewer), SLOT(OnExportData(long, QString))
-  );
 #else
   qDebug() << "Using abstract image viewer";
   m_ImageViewer = new ImageViewerBase(ui->viewerContainer);
@@ -133,12 +126,6 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifdef BUILD_MODULE_MitkSegmentationTool
   auto st = new MitkSegmentationTool(this);
   st->SetDataManager(m_DataManager);
-  
-  // TEST
-  //st->SetAllowMultiple(false);
-	//st->SetSpecialRoleOfInterest("Seeds");
-  // EO TEST
-
   connect(m_DataView, SIGNAL(SelectedDataChanged(long)), st, SLOT(ChangeFocusImage(long)));
   ui->rightSideContainer->addTab(st, "Segmentation panel");
 #endif
@@ -152,7 +139,6 @@ MainWindow::MainWindow(QWidget *parent) :
   effect->setXOffset(1);
   effect->setYOffset(1);
   effect->setColor(Qt::black);
-  //ui->pushButtonRun->setGraphicsEffect(effect);
   ui->dataViewContainer->setGraphicsEffect(effect);
 
   // Signals and Slots
@@ -438,17 +424,13 @@ void MainWindow::OnOpenImagesForNewSubject()
   }
 
   // Find suggested subject name
-
   QString firstFileBaseName = QFileInfo(filenames.at(0)).baseName();
   QStringList firstFileSplit = firstFileBaseName.split("_");
   QString divider = "_";
-    
-  // If the name is not using '_', assume '-'
-  if (firstFileSplit.size() == 1) { 
+  if (firstFileSplit.size() == 1) { // If the name is not using '_', assume '-'
     firstFileSplit = firstFileBaseName.split("-"); 
     divider = "-";
   }
-
   QString suggestedSubjectName = firstFileSplit.at(0);
   for (int i=1; i < firstFileSplit.size()-1; i++)
   {
@@ -468,9 +450,8 @@ void MainWindow::OnOpenImagesForNewSubject()
     );
   } while(ok && subjectName.isEmpty());
   
-  if (!ok)
+  if (!ok) // The user pressed cancel
   {
-    // The user pressed cancel
     return;
   }
 
