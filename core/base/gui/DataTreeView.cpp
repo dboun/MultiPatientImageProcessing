@@ -44,9 +44,11 @@ bool DataTreeView::IsDataChecked(long iid)
 
 void DataTreeView::SetDataCheckedState(long iid, bool checkState, bool imitateClick)
 {
+	qDebug() << "DataTreeView::SetDataCheckedState" << iid;
 	if(m_Data.find(iid) == m_Data.end()) { return; }
 
 	auto item = m_Data[iid];
+	item->setCheckState(0, (checkState)? Qt::Checked : Qt::Unchecked);
 
 	bool dataCheckStateChanged = (
 		!item->checkState(0) != !item->data(0, IS_CHECKED).toBool() // XOR
@@ -59,8 +61,6 @@ void DataTreeView::SetDataCheckedState(long iid, bool checkState, bool imitateCl
 	);
 
 	if (subjectChanged && !imitateClick) { return; }
-
-	item->setCheckState(0, (checkState)? Qt::Checked : Qt::Unchecked);
 
 	if (imitateClick)
 	{
@@ -269,6 +269,7 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 
 			if (m_CurrentSubjectID == uid)
 			{
+				bool wasTheSelectedData = (m_CurrentDataID == iid);
 				if (m_TreeWidget->currentItem() && m_TreeWidget->currentItem()->parent())
 				{
 					m_CurrentDataID = m_TreeWidget->currentItem()->data(0, ID).toLongLong();
@@ -276,6 +277,12 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 				else {
 					m_CurrentDataID = -1;
 				}
+
+				if (wasTheSelectedData) { 
+					qDebug() << "Emit DataTreeView::SelectedDataChanged" << -1;
+					emit SelectedDataChanged(-1); 
+				}
+
 				qDebug() << "Emit DataTreeView::DataRemovedFromSelectedSubject" << iid;
 				emit DataRemovedFromSelectedSubject(iid);
 			}

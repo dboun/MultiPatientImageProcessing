@@ -9,6 +9,7 @@
 #include <mitkStandaloneDataStorage.h>
 
 #include "GuiModuleBase.h"
+#include "DataViewBase.h"
 #include "CustomMitkDataStorage.h"
 
 class QmitkToolGUI;
@@ -36,6 +37,11 @@ public:
 	/** It could be "Segmentation" or "Mask" or "Seeds" or whatever */
 	void SetSpecialRoleOfInterest(QString specialRoleOfInterest);
 
+	void SetEnabled(bool enabled) override;
+
+	/** Optional. Used to check current segmentation if an edit tool is clicked */
+	void SetDataView(DataViewBase* dataView);
+
 public slots:
 	/** This could connect to DataViewBase::SelectedDataChanged(iid) 
 	 *  or to manually use it to set the mask of the subject */
@@ -59,9 +65,10 @@ private:
 	bool m_MaskLoadedForThisSubject     = false;
 	
 	mitk::DataNode::Pointer m_LoadedMaskNode;
-
 	mitk::DataNode::Pointer m_EmptyImageNode; // Used to reset mitk widgets
 	
+	DataViewBase*             m_DataView;
+
 	Ui::MitkSegmentationTool *ui;
 	// QProgressDialog          *m_ProgressDialog;
 	// QFutureWatcher<void>     *m_ProgressDialogWatcher;

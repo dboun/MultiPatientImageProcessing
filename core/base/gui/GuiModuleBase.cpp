@@ -14,6 +14,11 @@ void GuiModuleBase::SetDataManager(DataManager* dataManager)
     m_DataManager = dataManager;
 }
 
+void GuiModuleBase::SetEnabled(bool enabled)
+{
+
+}
+
 void GuiModuleBase::SetAppName(QString appName)
 {
     m_AppName = appName;

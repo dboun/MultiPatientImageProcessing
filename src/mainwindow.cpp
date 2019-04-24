@@ -107,28 +107,27 @@ MainWindow::MainWindow(QWidget *parent) :
 //   //GuiModuleBase::PlaceWidgetInWidget(m_MitkDrawingTool, ui->drawingToolContainer);
 // #endif
 
-// #ifdef BUILD_MODULE_GeodesicTrainingGUI
-//   m_GeodesicTrainingGUI = new GeodesicTrainingGUI(
-//     qobject_cast<MitkImageViewer*>(m_ImageViewer)->GetDataStorage(), this
-//   );
-//   auto gtGUI = qobject_cast<GeodesicTrainingGUI*>(m_GeodesicTrainingGUI);
-//   gtGUI->SetMitkImageViewer(
-//     qobject_cast<MitkImageViewer*>(m_ImageViewer)
-//   );
-//   gtGUI->SetDataView(m_DataView);
-//   gtGUI->SetDataManager(m_DataManager);
-//   gtGUI->SetAppName(m_AppName);
-//   gtGUI->SetAppNameShort(m_AppNameShort);
-//   ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, "MLL");
-//   //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
-// #endif
+  connect(ui->rightSideContainer, SIGNAL(currentChanged(int)), this, SLOT(OnTabSelected(int)));
 
-#ifdef BUILD_MODULE_MitkSegmentationTool
+#ifdef BUILD_MODULE_GeodesicTrainingGUI
+  m_GeodesicTrainingGUI = new GeodesicTrainingGUI(this);
+  auto gtGUI = qobject_cast<GeodesicTrainingGUI*>(m_GeodesicTrainingGUI);
+  gtGUI->SetDataView(m_DataView);
+  gtGUI->SetDataManager(m_DataManager);
+  gtGUI->SetAppName(m_AppName);
+  gtGUI->SetAppNameShort(m_AppNameShort);
+  ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, " MLL ");
+  //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
+#endif
+
+#ifdef BUILD_MODULE_MitkSegmentationToolREMOVETHIS
   auto st = new MitkSegmentationTool(this);
   st->SetDataManager(m_DataManager);
+  st->SetDataView(m_DataView);
   connect(m_DataView, SIGNAL(SelectedDataChanged(long)), st, SLOT(ChangeFocusImage(long)));
-  ui->rightSideContainer->addTab(st, "Segmentation panel");
+  ui->rightSideContainer->addTab(st, " Segmentation panel ");
 #endif
+
 
   // Turn on drag and drop
   setAcceptDrops(true); 
@@ -612,6 +611,22 @@ void MainWindow::OnRunPressed()
 
 //   ul.unlock();
 //   m_Scheduler->QueueAlgorithm(algorithm);
+}
+
+void MainWindow::OnTabSelected(int tab)
+{
+  GuiModuleBase* g = (GuiModuleBase*) ui->rightSideContainer->widget(tab);
+  g->SetEnabled(true);
+
+  // switch (tab)
+  // {
+  // case 0:
+  //   qDebug() << "MLL tab";
+  //   break;
+  // case 1:
+  //   qDebug() << "Segmentation panel tab";
+  //   break;
+  // }
 }
 
 void MainWindow::OnSchedulerJobFinished(AlgorithmModuleBase* algorithmModuleBase)

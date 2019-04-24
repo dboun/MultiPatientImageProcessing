@@ -34,11 +34,13 @@ public:
   void closeEvent(QCloseEvent *e) override;
 
 public slots:
+  // Internal
   void OnOpenSubjects();
   void OnOpenImagesForNewSubject();
   void OnOpenImagesForSelectedSubject();
   void OnCloseAllSubjects();
   void OnRunPressed();
+  void OnTabSelected(int tab);
   
   // Slots for Scheduler
   void OnSchedulerJobFinished(AlgorithmModuleBase* algorithmModuleBase);

@@ -57,7 +57,7 @@
      </property>
     </widget>
    </item>
-   <item alignment="Qt::AlignLeft">
+   <item>
     <widget class="ActionPushButton" name="createMaskPushBtn">
      <property name="text">
       <string>Create new segmentation</string>

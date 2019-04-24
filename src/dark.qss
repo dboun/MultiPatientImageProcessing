@@ -86,12 +86,12 @@ ActionPushButton {
     font-size:17px; 
     border-color: #172d44; 
     background-color: #0d1a26; 
-    margin-left: 7px;
     padding-left: 8px;
     padding-right: 8px;
     padding-top: 5px;
     padding-bottom: 5px;
 }
+/*margin-left: 7px;*/
 
 /*    
     border-color: #9f0000;  

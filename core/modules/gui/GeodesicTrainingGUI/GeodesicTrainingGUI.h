@@ -5,13 +5,11 @@
 #include <QProgressDialog>
 #include <QFutureWatcher>
 
-#include <mitkStandaloneDataStorage.h>
-
 #include "GuiModuleBase.h"
 
-class MitkDrawingTool;
-class MitkImageViewer;
 class DataViewBase;
+class MitkSegmentationTool;
+class CustomMitkDataStorage;
 
 namespace Ui {
 class GeodesicTrainingGUI;
@@ -22,25 +20,33 @@ class GeodesicTrainingGUI : public GuiModuleBase
     Q_OBJECT
 
 public:
-    explicit GeodesicTrainingGUI(mitk::DataStorage *datastorage, QWidget *parent = nullptr);
+    explicit GeodesicTrainingGUI(QWidget *parent = nullptr);
     ~GeodesicTrainingGUI();
-
-	void SetMitkImageViewer(MitkImageViewer* mitkImageViewer);
 
 	void SetDataManager(DataManager* dataManager) override;
 
-	void SetDataView(DataViewBase* dataViewBase);
+	void SetDataView(DataViewBase* dataView);
+
+	void SetEnabled(bool enabled) override;
 
 public slots:
+	// Slots for DataViewBase
+	void SelectedSubjectChangedHandler(long uid);
+	void DataAddedForSelectedSubjectHandler(long iid);
+	void DataRemovedFromSelectedSubjectHandler(long iid);
+
+	// Internal slots
 	void OnRunClicked();
 
+signals:
+	void ChangeFocusSeeds(long iid);
+
 private:
-	MitkDrawingTool* m_MitkDrawingTool;
-	MitkImageViewer* m_MitkImageViewer;
-	DataViewBase*    m_DataView;
+	DataViewBase*          m_DataView;
+	CustomMitkDataStorage* m_DataStorage;
+	MitkSegmentationTool*  m_MitkSegmentationTool;
 
 	Ui::GeodesicTrainingGUI *ui;
-	mitk::DataStorage *m_DataStorage;
 };
 
 #endif // ! GEODESIC_TRAINING_GUI_H

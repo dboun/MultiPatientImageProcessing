@@ -12,22 +12,34 @@
 #include <mitkIOUtil.h>
 
 #include "DataViewBase.h"
-#include "MitkImageViewer.h"
-#include "MitkDrawingTool.h"
-
+#include "MitkSegmentationTool.h"
+#include "CustomMitkDataStorage.h"
 #include "AlgorithmModuleBase.h"
+#include "InfoLabel.h"
 
 #include "ui_GeodesicTrainingGUI.h"
 
-GeodesicTrainingGUI::GeodesicTrainingGUI(mitk::DataStorage *datastorage, QWidget *parent) :
+GeodesicTrainingGUI::GeodesicTrainingGUI(QWidget *parent) :
   GuiModuleBase(parent),
   ui(new Ui::GeodesicTrainingGUI),
-  m_DataStorage(datastorage)//,
-  //m_MitkDrawingTool(new MitkDrawingTool(datastorage, this))
+  m_DataStorage(CustomMitkDataStorage::GetInstance()),
+  m_MitkSegmentationTool(new MitkSegmentationTool(nullptr))
 {
   ui->setupUi(this);
-  m_MitkDrawingTool = new MitkDrawingTool(datastorage, nullptr);
-  GuiModuleBase::PlaceWidgetInWidget(m_MitkDrawingTool, ui->mitkDrawingToolContainer);
+  m_MitkSegmentationTool->SetSpecialRoleOfInterest("Seeds");
+  m_MitkSegmentationTool->SetAllowMultiple(false);
+  m_MitkSegmentationTool->findChild<QPushButton*>("createMaskPushBtn")->setText(
+    "Create seeds image"
+  );
+  m_MitkSegmentationTool->findChild<InfoLabel*>("infoLabel")->setText(
+    QString("<b>1.</b> Create seeds image.<br>") +
+    QString("<b>2.</b> Draw with at least two colors.<br>") +
+    QString("<b>3.</b> Click run and wait.<br>") +
+    QString("<b>4.</b> If the output segmentation") +
+    QString(" contains mistakes, draw over them on the seeds image") +
+    QString(" with the correct color and run again.")
+  );
+  GuiModuleBase::PlaceWidgetInWidget(m_MitkSegmentationTool, ui->mitkDrawingToolContainer);
 
   connect(ui->pushButtonRun, SIGNAL(clicked()), this, SLOT(OnRunClicked()));
 }
@@ -37,27 +49,61 @@ GeodesicTrainingGUI::~GeodesicTrainingGUI()
   delete ui;
 }
 
-void GeodesicTrainingGUI::SetMitkImageViewer(MitkImageViewer* mitkImageViewer)
-{
-  m_MitkImageViewer = mitkImageViewer;
-  m_MitkDrawingTool->SetMitkImageViewer(mitkImageViewer);
-}
-
 void GeodesicTrainingGUI::SetDataManager(DataManager* dataManager)
 {
   m_DataManager = dataManager;
-  m_MitkDrawingTool->SetDataManager(dataManager);
+  m_MitkSegmentationTool->SetDataManager(dataManager);
 }
 
-void GeodesicTrainingGUI::SetDataView(DataViewBase* dataViewBase)
+void GeodesicTrainingGUI::SetDataView(DataViewBase* dataView)
 {
-  m_DataView = dataViewBase;
-  m_MitkDrawingTool->SetDataView(dataViewBase);
+  m_DataView = dataView;
+  connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)), 
+    this, SLOT(SelectedSubjectChangedHandler(long))
+  );
+  connect(m_DataView, SIGNAL(DataAddedForSelectedSubject(long)), 
+    this, SLOT(DataAddedForSelectedSubjectHandler(long))
+  );
+  connect(m_DataView, SIGNAL(DataRemovedFromSelectedSubject(long)), 
+    this, SLOT(DataRemovedFromSelectedSubjectHandler(long))
+  );
+
+  m_MitkSegmentationTool->SetDataView(m_DataView);
+}
+
+void GeodesicTrainingGUI::SetEnabled(bool enabled)
+{
+  m_MitkSegmentationTool->SetEnabled(enabled);
+}
+
+void GeodesicTrainingGUI::SelectedSubjectChangedHandler(long uid)
+{
+  long seed  = -1;
+  auto seeds = this->GetDataManager()->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Seeds");
+  if (seeds.size() > 0) { seed = seeds[0]; }
+  m_MitkSegmentationTool->ChangeFocusImage(seed);
+}
+
+void GeodesicTrainingGUI::DataAddedForSelectedSubjectHandler(long iid)
+{
+  if (this->GetDataManager()->GetDataSpecialRole(iid) == "Seeds")
+  {
+    m_MitkSegmentationTool->ChangeFocusImage(iid);
+  }
+}
+
+void GeodesicTrainingGUI::DataRemovedFromSelectedSubjectHandler(long iid)
+{
+  long uid   = m_DataView->GetCurrentSubjectID();
+  long seed  = -1;
+  auto seeds = this->GetDataManager()->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Seeds");
+  if (seeds.size() > 0) { seed = seeds[0]; }
+  m_MitkSegmentationTool->ChangeFocusImage(seed);
 }
 
 void GeodesicTrainingGUI::OnRunClicked()
 {
-  // qDebug() << "GeodesicTrainingGUI::OnRunClicked";
+  qDebug() << "GeodesicTrainingGUI::OnRunClicked";
 	// long uid = m_DataView->GetCurrentSubjectID(); // For convenience
 
 	// if (uid == -1)

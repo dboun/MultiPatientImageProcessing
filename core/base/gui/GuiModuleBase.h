@@ -16,6 +16,7 @@ public:
 
   /** These should be set by the main window or whatever uses the widget */
   virtual void SetDataManager(DataManager* dataManager);
+  virtual void SetEnabled(bool enabled); 
   void SetAppName(QString appName);
   void SetAppNameShort(QString appNameShort);
   
