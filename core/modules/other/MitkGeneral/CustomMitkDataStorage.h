@@ -16,17 +16,18 @@
 *     It can also be used transparently to get/save the images from/to file
 *     and update DataManager if the data doesn't belong to the current subject. 
 */
-class CustomMitkDataStorage : public QObject, public mitk::StandaloneDataStorage
+class MITKCORE_EXPORT CustomMitkDataStorage : public QObject, public mitk::StandaloneDataStorage
 {
 	Q_OBJECT
 
 public:
+    mitkClassMacro(CustomMitkDataStorage, mitk::StandaloneDataStorage);
+    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
+
     /** CustomMitkDataStorage needs to be initialized with DataManager the first time */
-    static CustomMitkDataStorage& CreateInstance(DataManager* dataManager);
+    static CustomMitkDataStorage* CreateInstance(DataManager* dataManager);
 
-    static CustomMitkDataStorage& GetInstance();
-
-	~CustomMitkDataStorage();
+    static CustomMitkDataStorage* GetInstance();
 
     void SetAppNameShort(QString appNameShort);
 
@@ -89,7 +90,9 @@ protected:
         bool external, bool visibleInDataView 
     );
 
-    CustomMitkDataStorage() : QObject(nullptr) {}
+    CustomMitkDataStorage();
+
+    ~CustomMitkDataStorage();
 
     static DataManager* m_DataManager;
     static long         m_CurrentSubjectID;

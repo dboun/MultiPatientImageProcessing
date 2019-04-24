@@ -54,6 +54,11 @@ MainWindow::MainWindow(QWidget *parent) :
   m_DataManager->SetAcceptedFileTypes(m_AcceptedFileTypes);
   m_DataManager->SetAppNameShort(m_AppNameShort);
 
+  // Initialize CustomMitkDataStorage
+#ifdef BUILD_MODULE_MitkGeneral
+  CustomMitkDataStorage::CreateInstance(m_DataManager);
+#endif
+
   // Initialize Scheduler
   m_Scheduler = &DefaultScheduler::GetInstance();
   
@@ -68,11 +73,10 @@ MainWindow::MainWindow(QWidget *parent) :
   m_DataView->SetAppNameShort(m_AppNameShort);
   GuiModuleBase::PlaceWidgetInWidget(m_DataView, ui->dataViewContainer);
 
-  // Initialize CustomMitkDataStorage
+  // Set up CustomMitkDataStorage
 #ifdef BUILD_MODULE_MitkGeneral
-  CustomMitkDataStorage::CreateInstance(m_DataManager);
-  CustomMitkDataStorage::GetInstance().SetDataView(m_DataView);
-  CustomMitkDataStorage::GetInstance().SetAppNameShort(m_AppNameShort);
+  CustomMitkDataStorage::GetInstance()->SetDataView(m_DataView);
+  CustomMitkDataStorage::GetInstance()->SetAppNameShort(m_AppNameShort);
 #endif
 
   // Initialize ImageViewer
@@ -131,8 +135,8 @@ MainWindow::MainWindow(QWidget *parent) :
   st->SetDataManager(m_DataManager);
   
   // TEST
-  st->SetAllowMultiple(false);
-	st->SetSpecialRoleOfInterest("Seeds");
+  //st->SetAllowMultiple(false);
+	//st->SetSpecialRoleOfInterest("Seeds");
   // EO TEST
 
   connect(m_DataView, SIGNAL(SelectedDataChanged(long)), st, SLOT(ChangeFocusImage(long)));

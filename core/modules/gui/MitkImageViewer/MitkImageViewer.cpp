@@ -12,7 +12,8 @@
 
 #include <iostream>
 
-MitkImageViewer::MitkImageViewer(QWidget *parent) : ImageViewerBase(parent)
+MitkImageViewer::MitkImageViewer(QWidget *parent) : ImageViewerBase(parent),
+	m_DataStorage(CustomMitkDataStorage::GetInstance())
 {
 	// Create an instance of CustomQmitkStdMultiWidget and show it
 	m_MitkWidget = new CustomQmitkStdMultiWidget(this);
@@ -23,8 +24,6 @@ MitkImageViewer::MitkImageViewer(QWidget *parent) : ImageViewerBase(parent)
 
 	// MITK Initialization
 	m_MitkWidget->InitializeWidget();
-	//m_DataStorage = mitk::StandaloneDataStorage::New();
-	m_DataStorage = &CustomMitkDataStorage::GetInstance();
 	m_MitkWidget->SetDataStorage(m_DataStorage);
 	m_MitkWidget->InitPositionTracking();
 	m_MitkWidget->EnablePositionTracking();
@@ -74,7 +73,7 @@ void MitkImageViewer::OpacitySliderHandler(int value)
 
 MitkImageViewer::~MitkImageViewer()
 {
-
+	qDebug() << "MitkImageViewer::~MitkImageViewer()";
 }
 
 void MitkImageViewer::SelectedSubjectChangedHandler(long uid) 

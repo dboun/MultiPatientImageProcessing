@@ -10,7 +10,7 @@ class Test : public QObject {
 private slots:
     void initTestCase() { // Called once at the start
         m_DataManager = new DataManager(this);
-        ds = &CustomMitkDataStorage::CreateInstance(m_DataManager);
+        ds = CustomMitkDataStorage::CreateInstance(m_DataManager);
         connect(ds, SIGNAL(MitkLoadedNewNode(long, mitk::DataNode::Pointer)),
             (Test*)this, SLOT(OnMitkLoadedNewNode(long, mitk::DataNode::Pointer))
         );

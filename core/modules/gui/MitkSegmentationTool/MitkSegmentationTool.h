@@ -63,8 +63,8 @@ private:
 	mitk::DataNode::Pointer m_EmptyImageNode; // Used to reset mitk widgets
 	
 	Ui::MitkSegmentationTool *ui;
-	QProgressDialog          *m_ProgressDialog;
-	QFutureWatcher<void>     *m_ProgressDialogWatcher;
+	// QProgressDialog          *m_ProgressDialog;
+	// QFutureWatcher<void>     *m_ProgressDialogWatcher;
 	
 	mitk::ToolManager::Pointer m_ToolManager;
 	CustomMitkDataStorage*     m_DataStorage;

@@ -9,22 +9,23 @@
 #include <stdexcept>
 #include <string>
 
-CustomMitkDataStorage& CustomMitkDataStorage::CreateInstance(DataManager* dataManager)
+CustomMitkDataStorage* CustomMitkDataStorage::CreateInstance(DataManager* dataManager)
 {
     m_DataManager = dataManager;
     m_CurrentSubjectID = -1;
     return GetInstance();
 }
 
-CustomMitkDataStorage& CustomMitkDataStorage::GetInstance()
+CustomMitkDataStorage* CustomMitkDataStorage::GetInstance()
 {
-    static CustomMitkDataStorage instance; // static is initialized only once
+    // static is initialized only once
+    static CustomMitkDataStorage::Pointer instance = CustomMitkDataStorage::New(); 
     return instance;
 }
 
 CustomMitkDataStorage::~CustomMitkDataStorage()
 {
-    
+    qDebug() << "CustomMitkDataStorage::~CustomMitkDataStorage()";
 }
 
 void CustomMitkDataStorage::SetAppNameShort(QString appNameShort)
@@ -457,6 +458,11 @@ void CustomMitkDataStorage::WriteChangesToFileIfNecessary(mitk::DataNode::Pointe
             m_DataManager->GetDataPath(iid).toStdString()
         );
     }
+}
+
+CustomMitkDataStorage::CustomMitkDataStorage() : QObject(nullptr) 
+{
+
 }
 
 DataManager* CustomMitkDataStorage::m_DataManager;

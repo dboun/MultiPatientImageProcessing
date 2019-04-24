@@ -17,110 +17,88 @@
 #include "DataManager.h"
 
 MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
-    GuiModuleBase(parent),
-    ui(new Ui::MitkSegmentationTool),
-    m_DataStorage(&CustomMitkDataStorage::GetInstance()),
-    m_LastToolGUI(nullptr)
+  GuiModuleBase(parent),
+  ui(new Ui::MitkSegmentationTool),
+  m_DataStorage(CustomMitkDataStorage::GetInstance()),
+  m_LastToolGUI(nullptr)
 {
-    ui->setupUi(this);
+  ui->setupUi(this);
 
-    // ui->infoLabel->setText(
-    //   QString("<b>1.</b> Create Mask.<br>") +
-    //   QString("<b>2.</b> Draw with at least two colors.<br>") +
-    //   QString("<b>3.</b> Click run and wait.<br>") +
-    //   QString("<b>4.</b> If the output segmentation") +
-    //   QString(" contains mistakes,") +
-    //   QString(" draw over them on the mask") +
-    //   QString(" with the correct color") +
-    //   QString(" and run again.")
-    // );
+  ui->infoLabel->setText(
+    QString(" &#8226; Create new for manual segmentation<br>") +
+    QString(" &#8226; Select a segmentation in the data view to edit/view it<br>")
+  );
 
-    // ui->infoLabel->setText(
-    //   QString("<ul>") +
-    //   QString("<li>Create new for manual segmentation</li>") +
-    //   QString("<li>Select a segmentation in the data view to edit/view it</li>") +
-    //   QString("</ul>")
-    // );
+  ui->newLabelPushBtn->hide();
+  ui->labelSetWidget->hide();
+  ui->createMaskPushBtn->show();
 
-    ui->infoLabel->setText(
-      QString(" &#8226; Create new for manual segmentation<br>") +
-      QString(" &#8226; Select a segmentation in the data view to edit/view it<br>")
-    );
+  this->m_ToolManager = mitk::ToolManagerProvider::GetInstance()->GetToolManager();
+  assert(m_ToolManager);
 
-    ui->newLabelPushBtn->hide();
-    ui->labelSetWidget->hide();
-    ui->createMaskPushBtn->show();
+  m_ToolManager->SetDataStorage(*m_DataStorage);
+  m_ToolManager->InitializeTools();
 
-    this->m_ToolManager = mitk::ToolManagerProvider::GetInstance()->GetToolManager();
-    assert(m_ToolManager);
+  // ui->labelSetWidget->SetDataStorage(m_DataStorage);
+  // ui->labelSetWidget->SetOrganColors(mitk::OrganNamesHandling::GetDefaultOrganColorString());
+  // ui->labelSetWidget->findChild<ctkSearchBox*>("m_LabelSearchBox")->hide();
+  // connect(ui->labelSetWidget, SIGNAL(goToLabel(const mitk::Point3D&)),
+  //   this, SLOT(OnMitkGoToLabel(const mitk::Point3D&))
+  // );
+  // // auto pbVisible = ui->labelSetWidget->findChild<QPushButton*>("pbVisible");
+  // // connect(pbVisible, SIGNAL(clicked()), this, SLOT(Refresh()));
+  // // auto pbColor = ui->labelSetWidget->findChild<QPushButton*>("pbColor");
+  // // connect(pbColor, SIGNAL(clicked()), this, SLOT(Refresh()));
 
-    m_ToolManager->SetDataStorage(*m_DataStorage);
-    m_ToolManager->InitializeTools();
+  // ui->toolSelectionBox->SetToolManager(*m_ToolManager);
+  // ui->toolSelectionBox->setEnabled(true);
+  // ui->toolSelectionBox->SetGenerateAccelerators(true);
+  // ui->toolSelectionBox->SetDisplayedToolGroups(tr("Add Subtract Correction Paint Erase").toStdString());
+  // ui->toolSelectionBox->SetLayoutColumns(3);
+  // ui->toolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::AlwaysEnabled);
 
-    ui->labelSetWidget->SetDataStorage(m_DataStorage);
-    ui->labelSetWidget->SetOrganColors(mitk::OrganNamesHandling::GetDefaultOrganColorString());
-    ui->labelSetWidget->findChild<ctkSearchBox*>("m_LabelSearchBox")->hide();
-    //ui->labelSetWidget->hide();
-    connect(ui->labelSetWidget, SIGNAL(goToLabel(const mitk::Point3D&)),
-      this, SLOT(OnMitkGoToLabel(const mitk::Point3D&))
-    );
-    // auto pbVisible = ui->labelSetWidget->findChild<QPushButton*>("pbVisible");
-    // connect(pbVisible, SIGNAL(clicked()), this, SLOT(Refresh()));
-    // auto pbColor = ui->labelSetWidget->findChild<QPushButton*>("pbColor");
-    // connect(pbColor, SIGNAL(clicked()), this, SLOT(Refresh()));
+  connect(ui->newLabelPushBtn,   SIGNAL(clicked()),         this, SLOT(OnAddNewLabelClicked()));
+  connect(ui->createMaskPushBtn, SIGNAL(clicked()),         this, SLOT(OnCreateNewLabelSetImageClicked()));
+  connect(ui->toolSelectionBox,  SIGNAL(ToolSelected(int)), this, SLOT(OnManualTool2DSelected(int)));
+  
+  ui->toolGUIArea->setVisible(false);
+  ui->toolSelectionBox->setVisible(false);
 
-    ui->toolSelectionBox->SetToolManager(*m_ToolManager);
-    ui->toolSelectionBox->setEnabled(true);
-    ui->toolSelectionBox->SetGenerateAccelerators(true);
-    ui->toolSelectionBox->SetDisplayedToolGroups(tr("Add Subtract Correction Paint Erase").toStdString());
-    ui->toolSelectionBox->SetLayoutColumns(3);
-    ui->toolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::AlwaysEnabled);
+  // // Create mitk node with an (all zero) 3D image for resetting
+  // using ImageType = itk::Image< unsigned char, 3 >;
+  // ImageType::Pointer image = ImageType::New();
 
-    connect(ui->newLabelPushBtn,   SIGNAL(clicked()),         this, SLOT(OnAddNewLabelClicked()));
-    connect(ui->createMaskPushBtn, SIGNAL(clicked()),         this, SLOT(OnCreateNewLabelSetImageClicked()));
-    connect(ui->toolSelectionBox,  SIGNAL(ToolSelected(int)), this, SLOT(OnManualTool2DSelected(int)));
-    
-    ui->toolGUIArea->setVisible(false);
-    ui->toolSelectionBox->setVisible(false);
+  // ImageType::IndexType start;
+  // start[0] = 0;  // first index on X
+  // start[1] = 0;  // first index on Y
+  // start[2] = 0;  // first index on Z
 
-    m_ProgressDialogWatcher = new QFutureWatcher<void>(this);
-    connect(m_ProgressDialogWatcher, SIGNAL(finished()),
-      this, SLOT(OnCreateEmptyMaskBackgroundFinished())
-    );
+  // ImageType::SizeType  size;
+  // size[0] = 1;  // size along X
+  // size[1] = 1;  // size along Y
+  // size[2] = 1;  // size along Z
 
-  // Create mitk node with an (all zero) 3D image for resetting
-  using ImageType = itk::Image< unsigned char, 3 >;
-  ImageType::Pointer image = ImageType::New();
+  // ImageType::RegionType region;
+  // region.SetSize( size );
+  // region.SetIndex( start );
 
-  ImageType::IndexType start;
-  start[0] = 0;  // first index on X
-  start[1] = 0;  // first index on Y
-  start[2] = 0;  // first index on Z
+  // image->SetRegions( region );
+  // image->Allocate();
 
-  ImageType::SizeType  size;
-  size[0] = 1;  // size along X
-  size[1] = 1;  // size along Y
-  size[2] = 1;  // size along Z
-
-  ImageType::RegionType region;
-  region.SetSize( size );
-  region.SetIndex( start );
-
-  image->SetRegions( region );
-  image->Allocate();
-
-  mitk::Image::Pointer emptyNormalImage = mitk::Image::New();
-  emptyNormalImage->InitializeByItk<ImageType>(image);
-  mitk::LabelSetImage::Pointer emptyLabelSetImage = mitk::LabelSetImage::New();
-  //emptyLabelSetImage->Initialize(dynamic_cast<mitk::Image*>(m_LoadedMaskNode->GetData()));
-  emptyLabelSetImage->Initialize(emptyNormalImage);
-  m_EmptyImageNode = mitk::DataNode::New();
-  m_EmptyImageNode->SetData(emptyLabelSetImage);
+  // mitk::Image::Pointer emptyNormalImage = mitk::Image::New();
+  // emptyNormalImage->InitializeByItk<ImageType>(image);
+  // mitk::LabelSetImage::Pointer emptyLabelSetImage = mitk::LabelSetImage::New();
+  // emptyLabelSetImage->Initialize(emptyNormalImage);
+  // m_EmptyImageNode = mitk::DataNode::New();
+  // m_EmptyImageNode->SetData(emptyLabelSetImage);
+  // this->m_ToolManager->SetWorkingData(m_EmptyImageNode);
+  // this->m_ToolManager->SetReferenceData(m_EmptyImageNode);
 }
 
 MitkSegmentationTool::~MitkSegmentationTool()
 {
-  if (m_LoadedMaskNode) { this->ChangeFocusImage(-1); }
+  qDebug() << "MitkSegmentationTool::~MitkSegmentationTool()";
+  //if (m_LoadedMaskNode) { this->ChangeFocusImage(-1); }
   delete ui;
 }
 
@@ -328,7 +306,7 @@ void MitkSegmentationTool::OnCreateNewLabelSetImageClicked()
     // -1 means to the current subject
     long iid = m_DataStorage->AddEmptyMitkLabelSetImageToSubject(
       -1, m_SpecialRoleOfInterest
-    );
+    ); 
     
     if (iid == -1)
     {
