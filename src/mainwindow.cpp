@@ -117,7 +117,10 @@ MainWindow::MainWindow(QWidget *parent) :
   gtGUI->SetDataManager(m_DataManager);
   gtGUI->SetAppName(m_AppName);
   gtGUI->SetAppNameShort(m_AppNameShort);
-  ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, " MLL ");
+  //ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, " MLL ");
+  SideWidget* sideWidgetGeodesicTraining = new SideWidget(this);
+  sideWidgetGeodesicTraining->AddCustomWidget(m_GeodesicTrainingGUI);
+  ui->rightSideContainer->addTab(sideWidgetGeodesicTraining, " MLL ");
   
   //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
   //ui->rightSideContainer->findChild<QTabBar *>(QLatin1String("qt_tabwidget_tabbar"))->hide();
