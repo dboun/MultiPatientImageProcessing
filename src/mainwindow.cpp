@@ -231,6 +231,19 @@ void MainWindow::dropEvent(QDropEvent *e)
     qDebug() << "Filter: " << filter;
     filesOrDirs = filesOrDirs.filter(QRegExp(filter, Qt::CaseInsensitive));
 
+    if (filesOrDirs.size() == 0)
+    {
+      QMessageBox::information(this, "Importing",
+        "Can't read any of the files dropped. Accepted filetypes are: " 
+        + filter.mid(6).left(
+          filter.mid(6).lastIndexOf(
+            QChar(')')
+          )
+        )
+      );
+      return;
+    }
+
     QString firstFileBaseName = QFileInfo(filesOrDirs.at(0)).baseName();
     QStringList firstFileSplit = firstFileBaseName.split("_");
     QString divider = "_";
