@@ -46,6 +46,7 @@ GeodesicTrainingGUI::GeodesicTrainingGUI(QWidget *parent) :
   GuiModuleBase::PlaceWidgetInWidget(m_MitkSegmentationTool, ui->mitkDrawingToolContainer);
 
   connect(ui->pushButtonRun, SIGNAL(clicked()), this, SLOT(OnRunClicked()));
+  ui->pushButtonRun->hide();
 
   connect(m_Scheduler, SIGNAL(JobFinished(AlgorithmModuleBase*)), 
     this, SLOT(OnSchedulerJobFinished(AlgorithmModuleBase*))
@@ -93,7 +94,14 @@ void GeodesicTrainingGUI::SelectedSubjectChangedHandler(long uid)
 {
   long seed  = -1;
   auto seeds = this->GetDataManager()->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Seeds");
-  if (seeds.size() > 0) { seed = seeds[seeds.size()-1]; }
+  if (seeds.size() > 0) 
+  { 
+    seed = seeds[seeds.size()-1]; 
+    ui->pushButtonRun->show();
+  }
+  else {
+    ui->pushButtonRun->hide();
+  }
   m_MitkSegmentationTool->ChangeFocusImage(seed);
 }
 
@@ -102,6 +110,7 @@ void GeodesicTrainingGUI::DataAddedForSelectedSubjectHandler(long iid)
   if (this->GetDataManager()->GetDataSpecialRole(iid) == "Seeds")
   {
     m_MitkSegmentationTool->ChangeFocusImage(iid);
+    ui->pushButtonRun->show();
   }
 }
 
@@ -110,7 +119,13 @@ void GeodesicTrainingGUI::DataRemovedFromSelectedSubjectHandler(long iid)
   long uid   = m_DataView->GetCurrentSubjectID();
   long seed  = -1;
   auto seeds = this->GetDataManager()->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Seeds");
-  if (seeds.size() > 0) { seed = seeds[seeds.size()-1]; }
+  if (seeds.size() > 0) { 
+    seed = seeds[seeds.size()-1]; 
+    ui->pushButtonRun->show();
+  }
+  else {
+    ui->pushButtonRun->hide();
+  }
   m_MitkSegmentationTool->ChangeFocusImage(seed);
 }
 
