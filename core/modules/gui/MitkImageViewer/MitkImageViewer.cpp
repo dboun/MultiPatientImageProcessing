@@ -81,6 +81,7 @@ void MitkImageViewer::SelectedSubjectChangedHandler(long uid)
 
 void MitkImageViewer::DataRemovedFromSelectedSubjectHandler(long iid)
 {
+	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 	m_MitkWidget->RequestUpdate();
 }
 
@@ -137,4 +138,5 @@ void MitkImageViewer::DataCheckedStateChangedHandler(long iid, bool checkState)
 
 	dataNode->GetData()->Modified();
 	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+	m_MitkWidget->RequestUpdate();
 }

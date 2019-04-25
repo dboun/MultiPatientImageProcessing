@@ -7,4 +7,4 @@
 #   A list of other modules to turn on if this module needs them
 set( MODULE_NAME GeodesicTraining )
 set( ON_OR_OFF_BY_DEFAULT OFF )
-set( NEEDS_MODULES  )
+set( NEEDS_MODULES MitkGeneral )

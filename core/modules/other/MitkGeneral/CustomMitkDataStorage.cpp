@@ -8,6 +8,7 @@
 #include <mitkLabelSetImage.h>
 #include <mitkIOUtil.h>
 #include <mitkConvert2Dto3DImageFilter.h>
+#include <mitkRenderingManager.h>
 
 #include <stdexcept>
 #include <string>
@@ -382,41 +383,58 @@ long CustomMitkDataStorage::ReAddAsLabelSetImage(long iid, QString newSpecialRol
         mitk::LabelSetImage::Pointer referenceImage = this->GetLabelSetImage(referenceIid);
         if (referenceImage && newLSImage)
         {
-            mitk::LabelSet::Pointer referenceLabelSet =	referenceImage->GetActiveLabelSet();
-            mitk::LabelSet::Pointer outputLabelSet    =	newLSImage->GetActiveLabelSet();
-
-            mitk::LabelSet::LabelContainerConstIteratorType itR;
-            mitk::LabelSet::LabelContainerConstIteratorType it;
-
-            for (itR =  referenceLabelSet->IteratorConstBegin();
-                        itR != referenceLabelSet->IteratorConstEnd(); 
-                        ++itR) 
+            for(unsigned int lidx = 0 ; lidx < newLSImage->GetNumberOfLayers(); lidx++)
             {
-                for (it = outputLabelSet->IteratorConstBegin(); 
-                            it != outputLabelSet->IteratorConstEnd();
-                            ++it)
+                mitk::LabelSet::Pointer referenceLabelSet =	//referenceImage->GetActiveLabelSet();
+                    referenceImage->GetLabelSet(lidx);
+                mitk::LabelSet::Pointer outputLabelSet    =	//newLSImage->GetActiveLabelSet();
+                    newLSImage->GetLabelSet(lidx);
+
+                mitk::LabelSet::LabelContainerConstIteratorType itR;
+                mitk::LabelSet::LabelContainerConstIteratorType it;
+
+                for (itR =  referenceLabelSet->IteratorConstBegin();
+                            itR != referenceLabelSet->IteratorConstEnd(); 
+                            ++itR) 
                 {
-                    if (itR->second->GetValue() == it->second->GetValue())
+                    for (it = outputLabelSet->IteratorConstBegin(); 
+                                it != outputLabelSet->IteratorConstEnd();
+                                ++it)
                     {
-                        it->second->SetColor(itR->second->GetColor());
-                        it->second->SetName(itR->second->GetName());
+                        if (itR->second->GetValue() == it->second->GetValue())
+                        {
+                            qDebug() << "Changing color";
+                            it->second->SetColor(itR->second->GetColor());
+                            it->second->SetName(itR->second->GetName());
+                        }
                     }
                 }
             }
+
+            // if (newSpecialRole == "Segmentation") { newLSImage->GetActiveLabelSet()->SetActiveLabel(0); }
         }
     }
+
+    // TODO: Fix this hack (probably needs interactors or something)
+    QString tmpPath = m_DataManager->GetSubjectPath(uid) + "tmp.nrrd";
+    mitk::IOUtil::Save(newLSImage, tmpPath.toStdString());
+    newLSImage = mitk::IOUtil::Load<mitk::LabelSetImage>(tmpPath.toStdString());
+    // EO Fix this hack
+
+    if (newSpecialRole == "Segmentation") { newLSImage->GetActiveLabelSet()->SetActiveLabel(0); }
 
     // --- Updating DataManager & DataStorage ---
     qDebug() << "Updating DataManager & DataStorage";
     mitk::DataNode::Pointer dataNode = mitk::DataNode::New();
     dataNode->SetData(newLSImage);
-    // Add and remove need to happen in this order to not get the subject removed
+    // [NOT TRUE ANY MORE] Add and remove need to happen in this order to not get the subject removed
     // if there is only this image in the subject
     long newIid = this->AddMitkNodeToSubject(uid, dataNode, 
         newDataPath, newSpecialRole, "LabelSetImage", newName,
         false, originalIsVisibleInDataView 
     );
     m_DataManager->RemoveData(iid);
+    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
     return newIid;
 }
 
@@ -482,11 +500,17 @@ mitk::Image::Pointer CustomMitkDataStorage::GetImage(long iid)
         }
     }
     else {
-        // TODO: Load
-        qDebug() << "CustomMitkDataStorage::GetImage: Loading not implemented yet";
-        throw std::invalid_argument( 
-            std::string("CustomMitkDataStorage::GetImage: Loading not implemented yet")
-        );
+        qDebug() << "Attempting to load from file";
+        try {
+            return mitk::IOUtil::Load<mitk::Image>(
+                m_DataManager->GetDataPath(iid).toStdString()
+            );
+        } catch (...) {
+            qDebug() << "CustomMitkDataStorage::GetImage: Loading from file failed";
+            throw std::invalid_argument( 
+                std::string("CustomMitkDataStorage::GetImage: Loading from file failed")
+            );
+        }
     }
 }
 
@@ -526,14 +550,21 @@ mitk::LabelSetImage::Pointer CustomMitkDataStorage::GetLabelSetImage(long iid)
         }
     }
     else {
-        // TODO: Load
-        throw std::invalid_argument( 
-            std::string("CustomMitkDataStorage::GetImage: Loading not implemented yet")
-        );
+        qDebug() << "Attempting to load from file";
+        try {
+            return mitk::IOUtil::Load<mitk::LabelSetImage>(
+                m_DataManager->GetDataPath(iid).toStdString()
+            );
+        } catch (...) {
+            qDebug() << "CustomMitkDataStorage::GetLabelSetImage: Loading from file failed";
+            throw std::invalid_argument( 
+                std::string("CustomMitkDataStorage::GetLabelSetImage: Loading from file failed")
+            );
+        }
     }
 }
 
-void CustomMitkDataStorage::WriteChangesToFileIfNecessaryForAllImagesOfCurrentSubject()
+void CustomMitkDataStorage::WriteChangesToFileForAllImagesOfCurrentSubject()
 {
     if (m_CurrentSubjectID == -1) { return; }
 
@@ -559,6 +590,7 @@ long CustomMitkDataStorage::AddMitkNodeToSubject(long uid, mitk::DataNode::Point
 {
     if (uid == m_CurrentSubjectID)
     {
+        dataNode->GetData()->Modified();
         m_NodesWaitMap[name] = dataNode;
 
         return m_DataManager->AddDataToSubject(

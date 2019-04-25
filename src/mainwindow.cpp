@@ -54,8 +54,8 @@ MainWindow::MainWindow(QWidget *parent) :
   m_DataManager->SetAcceptedFileTypes(m_AcceptedFileTypes);
   m_DataManager->SetAppNameShort(m_AppNameShort);
 
-  // Initialize Scheduler
-  m_Scheduler = &DefaultScheduler::GetInstance();
+  // Initialize Scheduler (not needed)
+  m_Scheduler = DefaultScheduler::GetInstance();
   
   // Initialize UI
   ui->setupUi(this);
@@ -118,6 +118,9 @@ MainWindow::MainWindow(QWidget *parent) :
   gtGUI->SetAppNameShort(m_AppNameShort);
   ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, " MLL ");
   //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
+  
+  // TODO: Delete this
+  ui->rightSideContainer->findChild<QTabBar *>(QLatin1String("qt_tabwidget_tabbar"))->hide();
 #endif
 
 #ifdef BUILD_MODULE_MitkSegmentationToolREMOVETHIS
@@ -141,9 +144,6 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->dataViewContainer->setGraphicsEffect(effect);
 
   // Signals and Slots
-  connect(m_Scheduler, SIGNAL(JobFinished(AlgorithmModuleBase*)), 
-    this, SLOT(OnSchedulerJobFinished(AlgorithmModuleBase*))
-  );
   connect(ui->actionOpen_Subjects, SIGNAL(triggered()), 
     this, SLOT(OnOpenSubjects())
   );
@@ -413,7 +413,7 @@ void MainWindow::OnOpenImagesForNewSubject()
   QStringList filenames = QFileDialog::getOpenFileNames(this,
     tr("Select images"),
     m_MostRecentDir,
-      nameFilter
+    nameFilter
     //tr("Nifti images (*.nii.gz | *.nii)") 
   );
 
@@ -478,11 +478,35 @@ void MainWindow::OnOpenImagesForSelectedSubject()
     return;
   }
 
+  // Create the name filter
+  QString nameFilter = "All images ("; 
+  bool first = true;
+  foreach(QString fileType, m_AcceptedFileTypes)
+  {
+    if (!first) {
+      nameFilter+= " | ";
+    }
+    else { 
+      first = false; 
+    }
+
+    nameFilter += fileType;
+  }
+  nameFilter += ")";
+  qDebug () << "Name filter:" << nameFilter;
+
+  // Open dialog
   QStringList filenames = QFileDialog::getOpenFileNames(this,
     tr("Select images"),
     m_DataManager->GetOriginalSubjectPath(uid),
-    tr("Nifti images (*.nii.gz)") 
+    nameFilter
+    //tr("Nifti images (*.nii.gz | *.nii)") 
   );
+
+  if (filenames.isEmpty())
+  {
+    return;
+  }
 
   foreach(QString file, filenames)
   {
@@ -517,102 +541,6 @@ void MainWindow::OnCloseAllSubjects()
 	}
 }
 
-void MainWindow::OnRunPressed()
-{
-//   qDebug() << "MainWindow::OnRunPressed";
-// 	long uid = m_DataView->GetCurrentSubjectID(); // For convenience
-
-// 	if (uid == -1)
-// 	{
-// 		QMessageBox::information(
-// 			this,
-// 			tr("No subject selected"),
-// 			tr("Please select a subject.")
-// 		);
-// 		return;
-// 	}
-
-//   if (m_SubjectsThatAreRunning.count(uid) != 0)
-//   {
-//     QMessageBox::warning(this,
-//       "Please wait",
-//       "Algorithm is already running for this subject"	
-//     );
-//     return;
-//   }
-
-//   std::unique_lock<std::mutex> ul(*m_DataManager->GetSubjectEditMutexPointer(uid));
-	
-//   qDebug() << QString("(Run) uid:  ") << QString::number(uid);
-
-// #ifdef BUILD_MODULE_MitkImageViewer
-
-//   auto iids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
-//     uid, "Mask"
-//   );
-
-//   long maskNrrd = -1;
-
-//   for (const long& iid : iids)
-//   {
-//     if (m_DataManager->GetDataPath(iid).endsWith(".nrrd", Qt::CaseSensitive))
-//     {
-//       maskNrrd = iid;
-//       break;
-//     }
-//   }
-
-//   if (maskNrrd != -1)
-//   {
-//     qobject_cast<MitkImageViewer*>(m_ImageViewer)->SaveImageToFile(maskNrrd, false);
-//   }
-
-//   // Remove all previous masks (if they exist)
-//   for (const long& iid : iids)
-//   {
-//     if (iid != maskNrrd)
-//     {
-//       m_DataManager->RemoveData(iid);
-//     }
-//   }  
-
-//   // Remove all previous segmentations (if they exist)
-//   for (const long& iid : m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(uid, "Segmentation"))
-//   {
-//     if (m_DataManager->GetDataName(iid) == "<Segmentation>")
-//     {
-//       m_DataManager->RemoveData(iid);
-//     }
-//   }
-// #endif
-
-// #ifdef BUILD_MODULE_GeodesicTraining
-// 	AlgorithmModuleBase* algorithm = new GeodesicTrainingModule();
-// #else
-//   AlgorithmModuleBase* algorithm = new AlgorithmModuleBase();
-// #endif
-
-//   m_SubjectsThatAreRunning.insert(uid);
-
-//   algorithm->SetDataManager(m_DataManager);
-//   algorithm->SetUid(uid);
-//   algorithm->SetAppName(m_AppName);
-//   algorithm->SetAppNameShort(m_AppNameShort);
-
-//   connect(algorithm, SIGNAL(ProgressUpdateUI(long, QString, int)), 
-//     m_DataView, SLOT(UpdateProgressHandler(long, QString, int))
-//   );
-//   connect(algorithm, SIGNAL(AlgorithmFinished(AlgorithmModuleBase*)),
-//     this, SLOT(OnAlgorithmFinished(AlgorithmModuleBase*))
-//   );
-//   connect(algorithm, SIGNAL(AlgorithmFinishedWithError(AlgorithmModuleBase*, QString)),
-//     this, SLOT(OnAlgorithmFinishedWithError(AlgorithmModuleBase*, QString))
-//   );
-
-//   ul.unlock();
-//   m_Scheduler->QueueAlgorithm(algorithm);
-}
-
 void MainWindow::OnTabSelected(int tab)
 {
   GuiModuleBase* g = (GuiModuleBase*) ui->rightSideContainer->widget(tab);
@@ -628,123 +556,3 @@ void MainWindow::OnTabSelected(int tab)
   //   break;
   // }
 }
-
-void MainWindow::OnSchedulerJobFinished(AlgorithmModuleBase* algorithmModuleBase)
-{
-  delete algorithmModuleBase;
-}
-
-void MainWindow::OnAlgorithmFinished(AlgorithmModuleBase* algorithmModuleBase)
-{
-  if (algorithmModuleBase->GetAlgorithmNameShort() == "GeodesicTraining")
-  {
-#ifdef BUILD_MODULE_MitkImageViewer
-    // long uid = algorithmModuleBase->GetUid();
-
-    // auto segmentationIids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
-    //   uid, "Segmentation"
-    // );
-
-    // auto maskIids = m_DataManager->GetAllDataIdsOfSubjectWithSpecialRole(
-    //   uid, "Mask"
-    // );
-
-    // // Find the most recent segmentation (Not needed now but that might change)
-    // // If the segmentations are saved with 2,3,etc in the end
-
-    // long recentSegmentationIid = (segmentationIids.size() > 0) ? segmentationIids[0] : -1;
-    // QString recentSegmentationPath = m_DataManager->GetDataPath(recentSegmentationIid);
-
-    // for (const long& segmentationIid : segmentationIids)
-    // {
-    //   QString segmentationPath = m_DataManager->GetDataPath(segmentationIid);
-
-    //   if (segmentationPath.endsWith(".nii.gz") &&
-    //       segmentationPath > recentSegmentationPath
-    //   ) {
-    //     recentSegmentationIid  = segmentationIid;
-    //     recentSegmentationPath = segmentationPath;
-    //   }
-    // }
-
-    // long maskNrrdIid = -1;
-
-    // for (const long& maskIid : maskIids)
-    // {
-    //   if (m_DataManager->GetDataPath(maskIid).endsWith(".nrrd"))
-    //   {
-    //     maskNrrdIid = maskIid;
-    //     break;
-    //   }
-    // }
-
-    // if (maskNrrdIid != -1 && recentSegmentationIid != -1)
-    // {
-    //   qobject_cast<MitkImageViewer*>(m_ImageViewer)->ConvertToNrrdAndSave(
-    //     recentSegmentationIid, maskNrrdIid
-    //   );
-    // }
-#endif
-
-    m_SubjectsThatAreRunning.erase(algorithmModuleBase->GetUid());
-  }
-}
-
-void MainWindow::OnAlgorithmFinishedWithError(AlgorithmModuleBase* algorithmModuleBase, 
-  QString errorMessage)
-{
-  m_SubjectsThatAreRunning.erase(algorithmModuleBase->GetUid());
-  QMessageBox::warning(
-		this,
-		algorithmModuleBase->GetAlgorithmName(),
-		errorMessage	
-	);
-}
-
-// void MainWindow::EnableRunButton()
-// {
-// 	ui->pushButtonRun->setEnabled(true);
-
-// 	QString styleSheet(" QPushButton { font:22px;color:black; background-color:lightblue; border-style: solid;");
-// 	styleSheet += "border-color: black; border-width: 2px; border-radius: 10px; padding: 3px;}";
-// 	styleSheet += "QPushButton:checked{ background-color: red; border-style: outset;";
-// 	styleSheet += "border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; }";
-// 	styleSheet += "QPushButton:hover{ background-color: lightGray; border-style: outset;";
-// 	styleSheet += "border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; }";
-// 	styleSheet += "QPushButton:pressed{ background-color: darkGray; border-style: outset;";
-// 	styleSheet += "border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; }";
-
-// 	ui->pushButtonRun->setStyleSheet(styleSheet);
-
-// 	// Shadow effect
-// 	QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
-// 	effect->setBlurRadius(1);
-// 	effect->setXOffset(1);
-// 	effect->setYOffset(1);
-// 	effect->setColor(Qt::black);
-// 	ui->pushButtonRun->setGraphicsEffect(effect);
-// }
-
-// void MainWindow::DisableRunButton()
-// {
-//   ui->pushButtonRun->setEnabled(false);
-  
-//   QString styleSheet(" QPushButton { font:22px;color:rgba(255,255,255,135); background-color:rgba(255,255,255,20); border-style: solid;");
-//   styleSheet += "border-color: darkGray; border-width: 1px; border-radius: 10px; padding: 3px;}";
-//   //styleSheet += "QPushButton:checked{ background-color: rgba(0,125,0,0); border-style: outset;";
-//   //styleSheet += "border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; }";
-//   //styleSheet += "QPushButton:hover{ background-color: rgba(0,125,0,0); border-style: outset;";
-//   //styleSheet += "border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; }";
-//   //styleSheet += "QPushButton:pressed{ background-color: rgba(0,125,0,0); border-style: outset;";
-//   //styleSheet += "border-style: solid; border-color: black; border-width: 2px; border-radius: 10px; }";
-
-//   ui->pushButtonRun->setStyleSheet(styleSheet);
-
-//   // Shadow effect
-//   QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
-//   effect->setBlurRadius(0);
-//   effect->setXOffset(0);
-//   effect->setYOffset(0);
-//   effect->setColor(Qt::lightGray);
-//   ui->pushButtonRun->setGraphicsEffect(effect);
-// }

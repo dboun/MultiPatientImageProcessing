@@ -5,9 +5,13 @@
 #include <QProgressDialog>
 #include <QFutureWatcher>
 
+#include <set>
+
 #include "GuiModuleBase.h"
+#include "AlgorithmModuleBase.h"
 
 class DataViewBase;
+class SchedulerBase;
 class MitkSegmentationTool;
 class CustomMitkDataStorage;
 
@@ -27,6 +31,8 @@ public:
 
 	void SetDataView(DataViewBase* dataView);
 
+	void SetScheduler(SchedulerBase* scheduler);
+
 	void SetEnabled(bool enabled) override;
 
 public slots:
@@ -38,6 +44,15 @@ public slots:
 	// Internal slots
 	void OnRunClicked();
 
+	// Slots for Scheduler
+	void OnSchedulerJobFinished(AlgorithmModuleBase* algorithmModuleBase);
+
+	// Slots for AlgorithmModuleBase
+	void OnAlgorithmFinished(AlgorithmModuleBase* algorithmModuleBase);
+	void OnAlgorithmFinishedWithError(AlgorithmModuleBase* algorithmModuleBase, 
+		QString errorMessage
+	);
+
 signals:
 	void ChangeFocusSeeds(long iid);
 
@@ -45,6 +60,9 @@ private:
 	DataViewBase*          m_DataView;
 	CustomMitkDataStorage* m_DataStorage;
 	MitkSegmentationTool*  m_MitkSegmentationTool;
+	SchedulerBase*         m_Scheduler;
+
+	std::set<long> m_SubjectsThatAreRunning;
 
 	Ui::GeodesicTrainingGUI *ui;
 };

@@ -17,7 +17,7 @@ class DefaultScheduler : public SchedulerBase
     Q_OBJECT
 
 public:
-    static DefaultScheduler& GetInstance();
+    static DefaultScheduler* GetInstance();
 	~DefaultScheduler();
 
     void QueueAlgorithm(AlgorithmModuleBase* algorithmModule) override;

@@ -2,11 +2,15 @@
 
 #include <QDebug>
 #include <QThread>
+#include <memory>
 
-DefaultScheduler& DefaultScheduler::GetInstance()
+DefaultScheduler* DefaultScheduler::GetInstance()
 {
-    static DefaultScheduler instance; // static is initialized only once
-    return instance;
+	// static is initialized only once
+    static std::shared_ptr<DefaultScheduler> instance = std::shared_ptr<DefaultScheduler>(
+		new DefaultScheduler()
+	); 
+    return instance.get();
 }
 
 DefaultScheduler::~DefaultScheduler()

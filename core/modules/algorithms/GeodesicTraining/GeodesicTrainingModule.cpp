@@ -16,6 +16,7 @@
 #include <mutex>
 
 #include "GeodesicTrainingQt.h"
+#include "CustomMitkDataStorage.h"
 
 GeodesicTrainingModule::GeodesicTrainingModule(QObject *parent) : AlgorithmModuleBase(parent)
 {
@@ -45,44 +46,43 @@ void GeodesicTrainingModule::Algorithm()
     }
 
     DataManager* dm = this->GetDataManager();
+    CustomMitkDataStorage* ds = CustomMitkDataStorage::GetInstance();
 
-    int numberOfImages = 0, numberOfMasks = 0;
-    
-    std::vector<std::string> images;
-    std::string mask;
+    int numberOfImages = 0, numberOfSeedsImages = 0;
 
     auto iids = dm->GetAllDataIdsOfSubject(m_Uid);
 
-    // Find the number of images and masks
+    std::vector<long> inputImageIDs;
+    long              seedsID;
+
+    // Find the number of normal images and seeds
     for (const long& iid : iids)
 	{
-		QString dataSpecialRole = m_DataManager->GetDataSpecialRole(iid); 
-        QString dataPath = m_DataManager->GetDataPath(iid);
+		QString dataSpecialRole = m_DataManager->GetDataSpecialRole(iid);
+        QString dataType = m_DataManager->GetDataType(iid);
 
-		if (dataSpecialRole == "Mask"/* && dataPath.endsWith(".nii.gz", Qt::CaseSensitive)*/) {
-			numberOfMasks++;
-            //qDebug() << "Found nifti mask, with path" << dataPath;
-            mask = dataPath.toStdString();
+		if (dataSpecialRole == "Seeds") {
+			numberOfSeedsImages++;
+            seedsID = iid;
 		}
-		else if (dataSpecialRole == ""/* && dataPath.endsWith(".nii.gz", Qt::CaseSensitive)*/)
-		{
+		else if (dataSpecialRole == "" && dataType == "Image") {
 			numberOfImages++;
-            images.push_back(dm->GetDataPath(iid).toStdString());
+            inputImageIDs.push_back(iid);
 		}
 	}
 
-    // Abort if the numbers of images and masks are not correct 
-	if (numberOfMasks == 0)
+    // Abort if the numbers of images and seeds are not correct 
+	if (numberOfSeedsImages == 0)
 	{
         emit ProgressUpdateUI(m_Uid, "Error", -1);
-		emit AlgorithmFinishedWithError(this, "No mask drawn");
+		emit AlgorithmFinishedWithError(this, "No seeds drawn");
 		return;
 	}
-	if (numberOfMasks > 1)
+	if (numberOfSeedsImages > 1)
 	{
         emit ProgressUpdateUI(m_Uid, "Error", -1);
-        emit AlgorithmFinishedWithError(this, "Multiple masks. " +
-            QString("Please remove all but one masks ") +
+        emit AlgorithmFinishedWithError(this, "Multiple seeds. " +
+            QString("Please remove all but one seeds ") +
             QString("Right click & Remove won't delete an image from the disk).")
         );
 		return;
@@ -95,23 +95,32 @@ void GeodesicTrainingModule::Algorithm()
 	}
 
     // Directory to save the result
-    QString outputPath = dm->GetSubjectPath(m_Uid) + 
-        "/" + this->GetAppNameShort() +
-        "/" + this->GetAppNameShort() + "_Segmentation";
+    QString outputPath = dm->GetSubjectPath(m_Uid) + "/" + "GeodesicTraining";
 
     qDebug() << "GeodesicTraining will use " << m_IdealNumberOfThreads << " threads";
-    qDebug() << "GeodesicTraining will use mask " << mask.c_str();
-
+    
     // Load all the images as mitk::Image(s)
     std::vector< mitk::Image::Pointer > inputImagesMITK;
-    for (const std::string& image : images)
+    for (const long& iid : inputImageIDs)
     {
-        inputImagesMITK.push_back(
-            mitk::IOUtil::Load<mitk::Image>(image)
-        );
+        try {
+            inputImagesMITK.push_back(
+                ds->GetImage(iid)
+            );
+        } catch (...) {
+            emit AlgorithmFinishedWithError(this, "Can't read image(s)");
+            return;
+        }
     }
-    // Load the mask as mitk::Image
-    mitk::Image::Pointer maskMITK = mitk::IOUtil::Load<mitk::Image>(mask);
+
+    // Load the seeds as mitk::Image
+    mitk::LabelSetImage::Pointer seedsMITK;
+    try {
+        seedsMITK = ds->GetLabelSetImage(seedsID);
+    } catch (...) {
+        emit AlgorithmFinishedWithError(this, "Can't read seeds image(s)");
+        return;
+    }
 
     // Find the image dimensions
     //const unsigned int dimensions = mitk::IOUtil::Load<mitk::Image>(images[0])->GetDimension();
@@ -142,31 +151,31 @@ void GeodesicTrainingModule::Algorithm()
         }
         inputImagesMITK.clear();
 
-        typename itk::Image<int, 2>::Pointer maskITK;
+        typename itk::Image<int, 2>::Pointer seedsITK;
         
-        // Convert the mask to 2D itk::Image (because mitk::LabelSetImage is always 3D)
+        // Convert the seeds to 2D itk::Image (because mitk::LabelSetImage is always 3D)
         {
             typedef itk::Image<int, 2> LabelsImageType2D;
             typedef itk::Image<int, 3> LabelsImageType3D;
-            typename LabelsImageType3D::Pointer maskITK3D;
-            mitk::CastToItkImage(maskMITK, maskITK3D);
-            auto regionSize = maskITK3D->GetLargestPossibleRegion().GetSize();
+            typename LabelsImageType3D::Pointer seedsITK3D;
+            mitk::CastToItkImage(seedsMITK, seedsITK3D);
+            auto regionSize = seedsITK3D->GetLargestPossibleRegion().GetSize();
             regionSize[2] = 0; // Only 2D image is needed
             LabelsImageType3D::IndexType regionIndex;
             regionIndex.Fill(0);    
             LabelsImageType3D::RegionType desiredRegion(regionIndex, regionSize);
             auto extractor = itk::ExtractImageFilter< LabelsImageType3D, LabelsImageType2D >::New();
             extractor->SetExtractionRegion(desiredRegion);
-            extractor->SetInput(maskITK3D);
+            extractor->SetInput(seedsITK3D);
             extractor->SetDirectionCollapseToIdentity();
             extractor->Update();
-            maskITK = extractor->GetOutput();
-            maskITK->DisconnectPipeline();
+            seedsITK = extractor->GetOutput();
+            seedsITK->DisconnectPipeline();
         }
 
         // Initialize geodesicTraining
         geodesicTraining->SetInputImages(inputImagesITK);
-        geodesicTraining->SetLabels(maskITK);
+        geodesicTraining->SetLabels(seedsITK);
         geodesicTraining->SetOutputPath(outputPath.toStdString());
         geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
         geodesicTraining->SaveOnlyNormalSegmentation(true, "segmentation");
@@ -192,12 +201,15 @@ void GeodesicTrainingModule::Algorithm()
                 // Initialize the LabelSetImage with the output from the GeodesicTraining
                 segm->InitializeByLabeledImage(segmNormal);
 
-                // Copy the labels from mask image
+                // Copy the labels from seeds image
                 {
                     mitk::LabelSet::Pointer referenceLabelSet =	
-                        mitk::IOUtil::Load<mitk::LabelSetImage>(mask)->GetActiveLabelSet();
-                    
+                        //mitk::IOUtil::Load<mitk::LabelSetImage>(seeds)->GetActiveLabelSet();
+                        seedsMITK->GetActiveLabelSet();
+                        // seedsMITK->GetLabelSet();
+
                     mitk::LabelSet::Pointer outputLabelSet = segm->GetActiveLabelSet();
+                        //segm->GetLabelSet();
 
                     mitk::LabelSet::LabelContainerConstIteratorType itR;
                     mitk::LabelSet::LabelContainerConstIteratorType it;
@@ -218,12 +230,18 @@ void GeodesicTrainingModule::Algorithm()
                         }
                     }
                 }
-                
-                // Save to file
-                mitk::IOUtil::Save(
-		            segm, 
-		            outputPath.toStdString() + std::string("/segmentation.nrrd")
-	            );
+
+                // TODO: Fix this hack (probably needs interactors or something)
+                QString tmpPath = m_DataManager->GetSubjectPath(this->GetUid()) + "tmpGT.nrrd";
+                mitk::IOUtil::Save(segm, tmpPath.toStdString());
+                segm = mitk::IOUtil::Load<mitk::LabelSetImage>(tmpPath.toStdString());
+                // EO Fix this hack
+
+                segm->GetActiveLabelSet()->SetActiveLabel(0);
+                                
+                ds-> AddMitkLabelSetImageToSubject(this->GetUid(), 
+                    segm, outputPath + "segmentation.nrrd", "Segmentation", "<Segmentation>   " 
+                );
             } 
             catch (mitk::Exception& e) {
                 MITK_ERROR << "Exception caught: " << e.GetDescription();
@@ -233,10 +251,10 @@ void GeodesicTrainingModule::Algorithm()
 
             qDebug() << "GeodesicTraining: Saved segmentation";
 
-            this->GetDataManager()->AddDataToSubject(this->GetUid(), 
-                outputPath + QString("/segmentation.nrrd"), "Segmentation", 
-                "Image", "<Segmentation>"
-            );
+            // this->GetDataManager()->AddDataToSubject(this->GetUid(), 
+            //     outputPath + QString("/segmentation.nrrd"), "Segmentation", 
+            //     "Image", "<Segmentation>"
+            // );
         }
         else {
             qDebug() << "GeodesicTraining finished with internal error";
@@ -256,9 +274,9 @@ void GeodesicTrainingModule::Algorithm()
 
         std::unique_lock<std::mutex> ul(*this->GetDataManager()->GetSubjectEditMutexPointer(m_Uid));
         
-        // Convert the images/mask to itk::Image
+        // Convert the images/seeds to itk::Image
         std::vector<typename itk::Image<float, 3>::Pointer> inputImagesITK;
-        typename itk::Image<int, 3>::Pointer maskITK;
+        typename itk::Image<int, 3>::Pointer seedsITK;
 
         for (const mitk::Image::Pointer imageMITK : inputImagesMITK)
         {
@@ -266,10 +284,10 @@ void GeodesicTrainingModule::Algorithm()
             mitk::CastToItkImage(imageMITK, imageITK);
             inputImagesITK.push_back(imageITK);
         }
-        mitk::CastToItkImage(maskMITK, maskITK);
+        mitk::CastToItkImage(seedsMITK, seedsITK);
 
         geodesicTraining->SetInputImages(inputImagesITK);
-        geodesicTraining->SetLabels(maskITK);
+        geodesicTraining->SetLabels(seedsITK);
 
         geodesicTraining->SetOutputPath(outputPath.toStdString());
         geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
@@ -290,12 +308,15 @@ void GeodesicTrainingModule::Algorithm()
                 // Initialize the LabelSetImage with the output from the GeodesicTraining
                 segm->InitializeByLabeledImage(segmNormal);
 
-                // Copy the labels from mask image
+                // Copy the labels from seeds image
                 {
                     mitk::LabelSet::Pointer referenceLabelSet =	
-                        mitk::IOUtil::Load<mitk::LabelSetImage>(mask)->GetActiveLabelSet();
-                    
+                        //mitk::IOUtil::Load<mitk::LabelSetImage>(seeds)->GetActiveLabelSet();
+                        seedsMITK->GetActiveLabelSet();
+                        // seedsMITK->GetLabelSet();
+
                     mitk::LabelSet::Pointer outputLabelSet = segm->GetActiveLabelSet();
+                        // segm->GetLabelSet();
 
                     mitk::LabelSet::LabelContainerConstIteratorType itR;
                     mitk::LabelSet::LabelContainerConstIteratorType it;
@@ -316,12 +337,18 @@ void GeodesicTrainingModule::Algorithm()
                         }
                     }
                 }
+
+                // TODO: Fix this hack (probably needs interactors or something)
+                QString tmpPath = m_DataManager->GetSubjectPath(this->GetUid()) + "tmpGT.nrrd";
+                mitk::IOUtil::Save(segm, tmpPath.toStdString());
+                segm = mitk::IOUtil::Load<mitk::LabelSetImage>(tmpPath.toStdString());
+                // EO Fix this hack
+
+                segm->GetActiveLabelSet()->SetActiveLabel(0);
                 
-                // Save to file
-                mitk::IOUtil::Save(
-		            segm, 
-		            outputPath.toStdString() + std::string("/segmentation.nrrd")
-	            );
+                ds-> AddMitkLabelSetImageToSubject(this->GetUid(), 
+                    segm, outputPath + "segmentation.nrrd", "Segmentation", "<Segmentation>   " 
+                );
             } 
             catch (mitk::Exception& e) {
                 MITK_ERROR << "Exception caught: " << e.GetDescription();
@@ -331,10 +358,10 @@ void GeodesicTrainingModule::Algorithm()
 
             qDebug() << "GeodesicTraining: Saved segmentation";
 
-            this->GetDataManager()->AddDataToSubject(this->GetUid(), 
-                outputPath + QString("/segmentation.nrrd"), "Segmentation", 
-                "Image", "<Segmentation>"
-            );
+            // this->GetDataManager()->AddDataToSubject(this->GetUid(), 
+            //     outputPath + QString("/segmentation.nrrd"), "Segmentation", 
+            //     "Image", "<Segmentation>"
+            // );
         }
         else {
             qDebug() << "GeodesicTraining finished with internal error";

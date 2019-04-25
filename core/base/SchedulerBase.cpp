@@ -2,12 +2,6 @@
 
 #include <QDebug>
 
-SchedulerBase& SchedulerBase::GetInstance()
-{
-    static SchedulerBase instance; // static is initialized only once
-    return instance;
-}
-
 SchedulerBase::~SchedulerBase()
 {
     ClearQueuedAlgorithms();

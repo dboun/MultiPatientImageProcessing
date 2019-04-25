@@ -39,7 +39,9 @@ add_library( ${MODULE_NAME} STATIC
 
 target_link_libraries( ${MODULE_NAME} 
   MpipBase
+  ${NEEDS_MODULES}
   GeodesicTrainingSegmentation
+  
   Qt5::Core
 
   MitkCore 

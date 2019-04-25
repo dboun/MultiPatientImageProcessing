@@ -75,7 +75,7 @@ public:
     /** This should be used to force the updated images to file, 
      *  if an algorithm wants to read the from file. 
      * */
-    void WriteChangesToFileIfNecessaryForAllImagesOfCurrentSubject();
+    void WriteChangesToFileForAllImagesOfCurrentSubject();
 
 public slots:
     /** Slots for DataView */

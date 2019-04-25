@@ -39,16 +39,7 @@ public slots:
   void OnOpenImagesForNewSubject();
   void OnOpenImagesForSelectedSubject();
   void OnCloseAllSubjects();
-  void OnRunPressed();
   void OnTabSelected(int tab);
-  
-  // Slots for Scheduler
-  void OnSchedulerJobFinished(AlgorithmModuleBase* algorithmModuleBase);
-
-  // Slots for AlgorithmModuleBase
-  void OnAlgorithmFinished(AlgorithmModuleBase* algorithmModuleBase);
-  void OnAlgorithmFinishedWithError(AlgorithmModuleBase* algorithmModuleBase, 
-    QString errorMessage);
     
 private:
 
@@ -72,8 +63,6 @@ private:
   GuiModuleBase*   m_GeodesicTrainingGUI;
 
   bool m_IsSegmentationPanelOpen = false;
-  std::set<long> m_SubjectsThatAreRunning;
-
 };
 
 #endif // ! MAINWINDOW_H
