@@ -119,8 +119,7 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, " MLL ");
   //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
   
-  // TODO: Delete this
-  ui->rightSideContainer->findChild<QTabBar *>(QLatin1String("qt_tabwidget_tabbar"))->hide();
+  //ui->rightSideContainer->findChild<QTabBar *>(QLatin1String("qt_tabwidget_tabbar"))->hide();
 #endif
 
 #ifdef BUILD_MODULE_MitkSegmentationToolREMOVETHIS
