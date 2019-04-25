@@ -31,7 +31,7 @@ MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
 
   ui->newLabelPushBtn->hide();
   ui->labelSetWidget->hide();
-  ui->createMaskPushBtn->show();
+  ui->frameCreate->show();
 
   this->m_ToolManager = mitk::ToolManagerProvider::GetInstance()->GetToolManager();
     // mitk::ToolManager::New(nullptr);
@@ -122,7 +122,7 @@ void MitkSegmentationTool::ChangeFocusImage(long iid)
 
   if (!m_AllowMultiple)
   {
-    ui->createMaskPushBtn->hide();
+    ui->frameCreate->hide();
   }
 
   mitk::DataNode::Pointer dataNode = m_DataStorage->GetNamedNode(std::to_string(iid));
@@ -159,7 +159,13 @@ void MitkSegmentationTool::ChangeFocusImage(long iid)
   auto workingImage = dynamic_cast<mitk::LabelSetImage*>(m_LoadedMaskNode->GetData());
   if (workingImage->GetTotalNumberOfLabels() == 1) // 1 means none
   {
-    this->OnAddNewLabelClicked();
+    if (ui->checkBoxAutoLabels->checkState() == Qt::Checked)
+    {
+      this->AutoGenerateLabels();
+    }
+    else {
+      this->OnAddNewLabelClicked();
+    }
   }
 }
 
@@ -174,7 +180,7 @@ void MitkSegmentationTool::RevertToNullState()
   
   ui->newLabelPushBtn->hide();
   ui->labelSetWidget->hide();
-  ui->createMaskPushBtn->show();
+  ui->frameCreate->show();
 
   m_MaskLoadedForThisSubject = false;
   
@@ -208,6 +214,84 @@ void MitkSegmentationTool::SetEnabled(bool enabled)
 void MitkSegmentationTool::SetDataView(DataViewBase* dataView)
 {
   m_DataView = dataView;
+}
+
+void MitkSegmentationTool::AutoGenerateLabels()
+{
+  if (!m_MaskLoadedForThisSubject)
+  {
+    return;
+  }
+
+  m_ToolManager->ActivateTool(-1);
+
+  mitk::DataNode* workingNode = m_ToolManager->GetWorkingData(0);
+  if (!workingNode)
+  {
+    QMessageBox::information(this, 
+      "Drawing Tool", 
+      "Please load and select a patient image before starting some action."
+    );
+    return;
+  }
+
+  mitk::LabelSetImage* workingImage = dynamic_cast<mitk::LabelSetImage*>(workingNode->GetData());
+  if (!workingImage)
+  {
+    QMessageBox::information(
+      this, "New Segmentation Session", "Please load and select a patient image before starting some action.");
+    return;
+  }
+
+  std::vector<QString>     labelNames; 
+  std::vector<mitk::Color> colorNames; // Colors are RGB, float value for each of the 3
+  
+  // Can't push back the color value easily for some reason, but this works
+  labelNames.push_back("Label 1"); 
+  {
+    mitk::Color color; color.SetRed(1.00f); color.SetGreen(0.00f); color.SetBlue(0.00f); 
+    colorNames.push_back(color);
+  }
+  labelNames.push_back("Label 2"); 
+  {
+    mitk::Color color; color.SetRed(1.00f); color.SetGreen(1.00f); color.SetBlue(0.00f); 
+    colorNames.push_back(color);
+  }
+  labelNames.push_back("Label 3"); 
+  {
+    mitk::Color color; color.SetRed(0.00f); color.SetGreen(0.00f); color.SetBlue(1.00f); 
+    colorNames.push_back(color);
+  }
+  labelNames.push_back("Label 4"); 
+  {
+    mitk::Color color; color.SetRed(0.68f); color.SetGreen(0.50f); color.SetBlue(0.65f); 
+    colorNames.push_back(color);
+  }
+  labelNames.push_back("Label 5"); 
+  {
+    mitk::Color color; color.SetRed(0.03f); color.SetGreen(0.37f); color.SetBlue(0.00f); 
+    colorNames.push_back(color);
+  }
+  labelNames.push_back("Background tissue"); 
+  {
+    mitk::Color color; color.SetRed(0.33f); color.SetGreen(0.33f); color.SetBlue(0.33f); 
+    colorNames.push_back(color);
+  }
+
+  for (int i=0; i<labelNames.size(); i++)
+  {
+    workingImage->GetActiveLabelSet()->AddLabel(labelNames[i].toStdString(), colorNames[i]);
+  }
+
+  workingImage->GetActiveLabelSet()->SetActiveLabel(1);
+
+  if (ui->labelSetWidget->isHidden()) { ui->labelSetWidget->show(); }
+  ui->labelSetWidget->ResetAllTableWidgetItems();
+
+  mitk::RenderingManager::GetInstance()->InitializeViews(workingNode->GetData()->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true);
+
+  // Here is another good place to see the clicks on the eye etc
+  //QObjectList widgetList = ui->labelSetWidget->layout()->children();
 }
 
 void MitkSegmentationTool::OnAddNewLabelClicked()
@@ -255,6 +339,15 @@ void MitkSegmentationTool::OnAddNewLabelClicked()
   }
   workingImage->GetActiveLabelSet()->AddLabel(labelsImageName.toStdString(), dialog->GetColor());
 
+  // // DELETE THIS
+  // mitk::Color c = dialog->GetColor();
+  // QMessageBox::information(this, "Color",
+  //   QString::number(c.GetRed()) + "," +
+  //   QString::number(c.GetGreen()) + "," +
+  //   QString::number(c.GetBlue())
+  // );
+  // // EO DELETE THIS
+
   if (ui->labelSetWidget->isHidden()) { ui->labelSetWidget->show(); }
   ui->labelSetWidget->ResetAllTableWidgetItems();
 
@@ -294,7 +387,7 @@ void MitkSegmentationTool::OnCreateNewLabelSetImageClicked()
 
     if (!m_AllowMultiple)
     {
-      ui->createMaskPushBtn->hide();
+      ui->frameCreate->hide();
     }
     
     // m_ProgressDialog = new QProgressDialog(this);

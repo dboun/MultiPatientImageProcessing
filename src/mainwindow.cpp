@@ -126,7 +126,7 @@ MainWindow::MainWindow(QWidget *parent) :
   //ui->rightSideContainer->findChild<QTabBar *>(QLatin1String("qt_tabwidget_tabbar"))->hide();
 #endif
 
-#ifdef BUILD_MODULE_MitkSegmentationTool
+#ifdef BUILD_MODULE_MitkSegmentationToolREMOVED
   auto st = new MitkSegmentationTool(this);
   st->SetDataManager(m_DataManager);
   st->SetDataView(m_DataView);

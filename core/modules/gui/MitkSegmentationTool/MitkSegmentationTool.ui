@@ -58,10 +58,26 @@
     </widget>
    </item>
    <item>
-    <widget class="ActionPushButton" name="createMaskPushBtn">
-     <property name="text">
-      <string>Create new segmentation</string>
-     </property>
+    <widget class="ActionWidget" name="frameCreate">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="ActionPushButton" name="createMaskPushBtn">
+        <property name="text">
+         <string>Create new segmentation</string>
+        </property>
+       </widget>
+      </item>
+      <item alignment="Qt::AlignHCenter">
+       <widget class="QCheckBox" name="checkBoxAutoLabels">
+        <property name="text">
+         <string>Add labels automatically</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item alignment="Qt::AlignLeft|Qt::AlignTop">
@@ -140,6 +156,12 @@
    <class>InfoLabel</class>
    <extends>QLabel</extends>
    <header>InfoLabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ActionWidget</class>
+   <extends>QFrame</extends>
+   <header>ActionWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

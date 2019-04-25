@@ -188,6 +188,7 @@ namespace GeodesicTrainingSegmentation
 
 				// Construct a labeled image using SVM(s)
 				svm<PixelType>(m_input_images, m_labels_image, gtsResult, labelsCountMap, false);
+				if (!gtsResult->ok) { break; }
 
 				// Change labels if necessary
 				changeLabels(gtsResult->labelsImage, m_change_labels_map);
@@ -291,6 +292,7 @@ namespace GeodesicTrainingSegmentation
 
 				// SVM_LABELS
 				svm<PixelType>(m_input_images, m_labels_image, gtsResult, labelsCountMap, false);
+				if (!gtsResult->ok) { break; }
 
 				// Change labels if necessary
 				changeLabels(gtsResult->labelsImage, m_change_labels_map);
@@ -344,6 +346,7 @@ namespace GeodesicTrainingSegmentation
 
 				// SVM_LABELS
 				svm<PixelType>(m_input_images, m_labels_image, gtsResult, labelsCountMap, false);
+				if (!gtsResult->ok) { break; }
 
 				// Change labels if necessary
 				changeLabels(gtsResult->labelsImage, m_change_labels_map);
@@ -364,6 +367,7 @@ namespace GeodesicTrainingSegmentation
 
 				// SVM_PSEUDO
 				svm<PixelType>(m_input_images, m_labels_image, gtsResult, labelsCountMap, true);
+				if (!gtsResult->ok) { break; }
 
 				// AGD
 				AgdImagePointer agdMapPos = agd<PseudoProbPixelType>(gtsResult->posImage, gtsResult->posLabel, true);
@@ -419,6 +423,7 @@ namespace GeodesicTrainingSegmentation
 
 				// SVM_PSEUDO
 				svm<PixelType>(m_input_images, m_labels_image, gtsResult, labelsCountMap, true);
+				if (!gtsResult->ok) { break; }
 
 				// AGD
 				AgdImagePointer agdMapPos = agd<PseudoProbPixelType>(gtsResult->posImage, gtsResult->posLabel, true);
@@ -851,7 +856,15 @@ namespace GeodesicTrainingSegmentation
 			}
 			else {
 				if (m_subsample && data->trainingMat.rows > m_max_samples_svm_subsample) {
-					/*sampleIdx = */CreateBalancedSubsample(data, labelsCountMap, m_max_samples_svm_subsample);
+					// /*sampleIdx = */CreateBalancedSubsample
+					std::string errorMessageIfApplicable;
+					if (!CreateBalancedSubsample(data, errorMessageIfApplicable, labelsCountMap, 
+						m_max_samples_svm_subsample))
+					{
+						gtsResult->ok = false;
+						gtsResult->errorMessage = errorMessageIfApplicable; 
+						return;
+					}
 				}
 			}
 
@@ -1914,7 +1927,9 @@ namespace GeodesicTrainingSegmentation
 			else {
 				// n-classes
 				if (labelsCountMap.size() < 2) {
-					std::string errorMessage = "There should be at least two (non-zero) labels for multiclass modes";
+					std::string errorMessage = 
+						std::string("There should be at least two (non-zero) labels for multiclass modes. ") + 
+						std::string("Please remember to draw a label for the background tissue too.");
 					errorOccured(errorMessage);
 					gtsResult->errorMessage = errorMessage;
 					gtsResult->ok = false;

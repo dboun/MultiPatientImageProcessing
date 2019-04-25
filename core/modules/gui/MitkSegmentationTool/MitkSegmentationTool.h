@@ -50,6 +50,7 @@ public slots:
 	// Internal slots
 	void OnManualTool2DSelected(int);
 	void OnCreateNewLabelSetImageClicked();
+	void AutoGenerateLabels();
 	void OnAddNewLabelClicked();
 	void OnMitkGoToLabel(const mitk::Point3D &);
 	void Refresh();

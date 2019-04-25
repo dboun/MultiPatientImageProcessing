@@ -259,7 +259,12 @@ void GeodesicTrainingModule::Algorithm()
         else {
             qDebug() << "GeodesicTraining finished with internal error";
             emit ProgressUpdateUI(m_Uid, "Error", -1);
-            emit AlgorithmFinishedWithError(this, result->errorMessage.c_str());
+            emit AlgorithmFinishedWithError(this, 
+                QString(result->errorMessage.c_str())
+                + QString("\n\n(Subject: ") 
+                + this->GetDataManager()->GetSubjectName(m_Uid)
+                + QString(")")
+            );
         }
 
         delete geodesicTraining;

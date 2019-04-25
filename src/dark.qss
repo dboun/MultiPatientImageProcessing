@@ -16,6 +16,16 @@ QWidget:item:hover
     color: #FFFFFF;
 }
 
+/*------------------- QFrame -----------------------*/
+ActionWidget {
+    border: 1px solid gray;
+    border-radius: 3px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
 /*---------------- MenuBar Menu --------------------*/
 QMenuBar
 {
