@@ -18,6 +18,7 @@
 #include "SchedulerBase.h"
 #include "DefaultScheduler.h"
 #include "GuiModuleBase.h"
+#include "SideWidget.h"
 #include "DataViewBase.h"
 #include "DataTreeView.h"
 #include "ImageViewerBase.h"
@@ -117,19 +118,20 @@ MainWindow::MainWindow(QWidget *parent) :
   gtGUI->SetAppName(m_AppName);
   gtGUI->SetAppNameShort(m_AppNameShort);
   ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, " MLL ");
-  //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
   
+  //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
   //ui->rightSideContainer->findChild<QTabBar *>(QLatin1String("qt_tabwidget_tabbar"))->hide();
 #endif
 
-#ifdef BUILD_MODULE_MitkSegmentationToolREMOVETHIS
+#ifdef BUILD_MODULE_MitkSegmentationTool
   auto st = new MitkSegmentationTool(this);
   st->SetDataManager(m_DataManager);
   st->SetDataView(m_DataView);
   connect(m_DataView, SIGNAL(SelectedDataChanged(long)), st, SLOT(ChangeFocusImage(long)));
-  ui->rightSideContainer->addTab(st, " Segmentation panel ");
+  SideWidget* sideWidgetSegmentationPanel = new SideWidget(this);
+  sideWidgetSegmentationPanel->AddCustomWidget(st);
+  ui->rightSideContainer->addTab(sideWidgetSegmentationPanel, " Segmentation panel ");
 #endif
-
 
   // Turn on drag and drop
   setAcceptDrops(true); 
@@ -555,8 +557,8 @@ void MainWindow::OnCloseAllSubjects()
 
 void MainWindow::OnTabSelected(int tab)
 {
-  GuiModuleBase* g = (GuiModuleBase*) ui->rightSideContainer->widget(tab);
-  g->SetEnabled(true);
+  // GuiModuleBase* g = (GuiModuleBase*) ui->rightSideContainer->widget(tab);
+  // if (g) { g->SetEnabled(true); } // It might not be GuiModuleBase
 
   // switch (tab)
   // {
