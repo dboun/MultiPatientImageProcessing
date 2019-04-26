@@ -19,6 +19,7 @@
 #include "AlgorithmModuleBase.h"
 #include "InfoLabel.h"
 #include "GeodesicTrainingModule.h"
+#include "GeodesicTrainingWarningImageSize.h"
 
 #include "ui_GeodesicTrainingGUI.h"
 
@@ -62,6 +63,22 @@ void GeodesicTrainingGUI::SetDataManager(DataManager* dataManager)
 {
   m_DataManager = dataManager;
   m_MitkSegmentationTool->SetDataManager(dataManager);
+
+  if (m_DataView)
+  {
+    WarningFunctionBase* w = new GeodesicTrainingWarningImageSize(this);
+    w->SetDataManager(m_DataManager);
+    w->SetDataView(m_DataView);
+    connect(w, SIGNAL(OperationAllowanceChanged(WarningFunctionBase*, bool, QString)),
+      this, SLOT(OnOperationAllowanceChanged(WarningFunctionBase*, bool, QString))
+    );
+    connect(w, SIGNAL(NewWarning(WarningFunctionBase*, QString)), 
+      this, SLOT(OnNewWarning(WarningFunctionBase*, QString))
+    );
+    connect(w, SIGNAL(WarningWasRemoved(WarningFunctionBase*, QString)), 
+      this, SLOT(OnWarningWasRemoved(WarningFunctionBase*, QString))
+    );
+  }
 }
 
 void GeodesicTrainingGUI::SetDataView(DataViewBase* dataView)
@@ -214,4 +231,35 @@ void GeodesicTrainingGUI::OnAlgorithmFinishedWithError(AlgorithmModuleBase* algo
 		algorithmModuleBase->GetAlgorithmName(),
 		errorMessage	
 	);
+}
+
+void GeodesicTrainingGUI::OnOperationAllowanceChanged(WarningFunctionBase* function, bool allow,
+        QString errorMessageIfNotAllowed)
+{
+  // TODO: Delete this
+  if (!allow)
+  {
+    QMessageBox::information(this, function->GetName(), errorMessageIfNotAllowed);
+  }
+  else {
+    QMessageBox::information(this, function->GetName(), "Allowed");
+  }
+}
+
+void GeodesicTrainingGUI::OnNewWarning(WarningFunctionBase* function,
+  QString warning)
+{
+  // TODO: Delete this
+  QMessageBox::information(this, function->GetName(), 
+    QString("New warning: ") + warning
+  );
+}
+
+void GeodesicTrainingGUI::OnWarningWasRemoved(WarningFunctionBase* function,
+  QString warningThatWasRemoved)
+{
+  // TODO: Delete this
+  QMessageBox::information(this, function->GetName(), 
+    QString("Warning was removed: ") + warningThatWasRemoved
+  );
 }

@@ -14,6 +14,7 @@ class DataViewBase;
 class SchedulerBase;
 class MitkSegmentationTool;
 class CustomMitkDataStorage;
+class WarningFunctionBase;
 
 namespace Ui {
 class GeodesicTrainingGUI;
@@ -52,6 +53,17 @@ public slots:
 	void OnAlgorithmFinishedWithError(AlgorithmModuleBase* algorithmModuleBase, 
 		QString errorMessage
 	);
+
+	// Slots for WarningFunction(s)
+	void OnOperationAllowanceChanged(WarningFunctionBase* function, bool allow,
+        QString errorMessageIfNotAllowed
+    );
+	void OnNewWarning(WarningFunctionBase* function,
+        QString warning
+    );
+    void OnWarningWasRemoved(WarningFunctionBase* function,
+        QString warningThatWasRemoved
+    );
 
 signals:
 	void ChangeFocusSeeds(long iid);
