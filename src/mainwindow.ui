@@ -230,7 +230,14 @@
     <addaction name="separator"/>
     <addaction name="actionClose_all_subjects"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionToggle_fullscreen"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuView"/>
   </widget>
   <action name="actionOpen_Dicom">
    <property name="text">
@@ -265,6 +272,11 @@
   <action name="actionClose_all_subjects">
    <property name="text">
     <string>Close all subjects</string>
+   </property>
+  </action>
+  <action name="actionToggle_fullscreen">
+   <property name="text">
+    <string>Toggle fullscreen</string>
    </property>
   </action>
  </widget>

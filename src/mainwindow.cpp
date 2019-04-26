@@ -161,6 +161,9 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(ui->actionClose_all_subjects, SIGNAL(triggered()),
     this, SLOT(OnCloseAllSubjects())
   );
+  connect(ui->actionToggle_fullscreen, SIGNAL(triggered()),
+    this, SLOT(OnToggleFullscreen())
+  );
 }
 
 MainWindow::~MainWindow()
@@ -573,4 +576,22 @@ void MainWindow::OnTabSelected(int tab)
   //   qDebug() << "Segmentation panel tab";
   //   break;
   // }
+}
+
+void MainWindow::OnToggleFullscreen()
+{
+  QString currentState = ui->actionToggle_fullscreen->text();
+  QString toggleFullscreenText = "Toggle fullscreen";
+
+  if (currentState == toggleFullscreenText)
+  {
+    ui->actionToggle_fullscreen->setText("Exit fullscreen");
+    ui->leftPanel->hide();
+    ui->rightPanel->hide();
+  }
+  else {
+    ui->actionToggle_fullscreen->setText(toggleFullscreenText);
+    ui->leftPanel->show();
+    ui->rightPanel->show();
+  }
 }

@@ -40,6 +40,7 @@ public slots:
   void OnOpenImagesForSelectedSubject();
   void OnCloseAllSubjects();
   void OnTabSelected(int tab);
+  void OnToggleFullscreen();
     
 private:
 
