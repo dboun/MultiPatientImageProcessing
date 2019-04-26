@@ -54,21 +54,23 @@ public slots:
 		QString errorMessage
 	);
 
-	// Slots for WarningFunction(s)
-	void OnOperationAllowanceChanged(WarningFunctionBase* function, bool allow,
-        QString errorMessageIfNotAllowed
-    );
-	void OnNewWarning(WarningFunctionBase* function,
-        QString warning
-    );
-    void OnWarningWasRemoved(WarningFunctionBase* function,
-        QString warningThatWasRemoved
-    );
+	// // Slots for WarningFunction(s)
+	// void OnOperationAllowanceChanged(WarningFunctionBase* function, bool allow,
+    //     QString errorMessageIfNotAllowed
+    // );
+	// void OnNewWarning(WarningFunctionBase* function,
+    //     QString warning
+    // );
+    // void OnWarningWasRemoved(WarningFunctionBase* function,
+    //     QString warningThatWasRemoved
+    // );
 
 signals:
 	void ChangeFocusSeeds(long iid);
 
 private:
+	void SetUpWarnings();
+
 	DataViewBase*          m_DataView;
 	CustomMitkDataStorage* m_DataStorage;
 	MitkSegmentationTool*  m_MitkSegmentationTool;

@@ -113,10 +113,11 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifdef BUILD_MODULE_GeodesicTrainingGUI
   m_GeodesicTrainingGUI = new GeodesicTrainingGUI(this);
   auto gtGUI = qobject_cast<GeodesicTrainingGUI*>(m_GeodesicTrainingGUI);
-  gtGUI->SetDataView(m_DataView);
   gtGUI->SetDataManager(m_DataManager);
+  gtGUI->SetDataView(m_DataView);
   gtGUI->SetAppName(m_AppName);
   gtGUI->SetAppNameShort(m_AppNameShort);
+  gtGUI->SetEnabled(true);
   //ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, " MLL ");
   SideWidget* sideWidgetGeodesicTraining = new SideWidget(this);
   sideWidgetGeodesicTraining->AddCustomWidget(m_GeodesicTrainingGUI);

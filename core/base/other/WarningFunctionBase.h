@@ -33,7 +33,7 @@ signals:
 protected:
     // Implementations of this class, should call the below methods to update their state
     void SetOperationAllowed(bool allowed,
-        QString GetErrorMessageIfNotAllowed = ""
+        QString errorMessageIfNotAllowed = ""
     );
     /** This was call WarningWasRemoved if an old warning isn't in newWarnings */
     void UpdateWarnings(QStringList newWarnings);

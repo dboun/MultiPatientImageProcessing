@@ -1,5 +1,7 @@
 #include "WarningFunctionBase.h"
 
+#include <QDebug>
+
 WarningFunctionBase::WarningFunctionBase(QObject* parent) : 
     ObserverBase(parent)
 {
@@ -29,14 +31,16 @@ QString WarningFunctionBase::GetErrorMessageIfNotAllowed()
 void WarningFunctionBase::SetOperationAllowed(bool allowed, 
     QString errorMessageIfNotAllowed)
 {
-    if (allowed) 
-    { 
-        errorMessageIfNotAllowed = ""; 
-    }
+    if (allowed) { errorMessageIfNotAllowed = ""; }
+
+    qDebug() << "WarningFunctionBase::SetOperationAllowed" << this->GetName();
+    qDebug() << "WarningFunctionBase::SetOperationAllowed" 
+             << ((allowed)?"Allowed":"Not allowed") << errorMessageIfNotAllowed;
 
     if (m_OperationAllowed != allowed)
     {
         m_OperationAllowed = allowed;
+        qDebug() << "Emit WarningFunctionBase::OperationAllowanceChanged";
         emit OperationAllowanceChanged(this, 
             m_OperationAllowed, 
             errorMessageIfNotAllowed

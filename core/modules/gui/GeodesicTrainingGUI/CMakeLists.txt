@@ -7,15 +7,18 @@ set(CMAKE_AUTOMOC ON)
 
 set( CPP_FILES
   GeodesicTrainingGUI.cpp
+  GeodesicTrainingWarningGUI.cpp
 ) 
 set( H_FILES
   GeodesicTrainingGUI.h
+  GeodesicTrainingWarningGUI.h
 ) 
 set( UI_FILES
   GeodesicTrainingGUI.ui
 ) 
 set( MOC_H_FILES
   GeodesicTrainingGUI.h
+  GeodesicTrainingWarningGUI.h
 ) 
 
 qt5_wrap_ui( UI_Srcs ${UI_FILES} )

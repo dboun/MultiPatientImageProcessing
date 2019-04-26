@@ -36,11 +36,24 @@
     <number>0</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>7</number>
    </property>
    <property name="rightMargin">
     <number>0</number>
    </property>
+   <item>
+    <widget class="InfoLabel" name="infoLabelGeodesic">
+     <property name="text">
+      <string>Information</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="ActionWidget" name="frameGeodesicWarnings"/>
+   </item>
    <item>
     <widget class="QWidget" name="mitkDrawingToolContainer" native="true"/>
    </item>
@@ -71,6 +84,17 @@
    <class>RunPushButton</class>
    <extends>QPushButton</extends>
    <header>RunPushButton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>InfoLabel</class>
+   <extends>QLabel</extends>
+   <header>InfoLabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ActionWidget</class>
+   <extends>QFrame</extends>
+   <header>ActionWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

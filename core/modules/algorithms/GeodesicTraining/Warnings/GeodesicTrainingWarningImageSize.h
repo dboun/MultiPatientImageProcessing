@@ -7,6 +7,8 @@ class CustomMitkDataStorage;
 
 class GeodesicTrainingWarningImageSize : public WarningFunctionBase
 {
+    Q_OBJECT
+
 public:
     GeodesicTrainingWarningImageSize(QObject* parent = nullptr);
 

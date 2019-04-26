@@ -4,7 +4,7 @@
 
 ImageViewerBase::ImageViewerBase(QWidget *parent) : GuiModuleBase(parent)
 {
-	qDebug() << QString("ViewerBase::ViewerBase()");
+	qDebug() << QString("ImageViewerBase::ImageViewerBase");
 }
 
 void ImageViewerBase::SetDataView(DataViewBase* dataView)

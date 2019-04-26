@@ -14,12 +14,14 @@
 #include "DataViewBase.h"
 #include "SchedulerBase.h"
 #include "DefaultScheduler.h"
+#include "WarningManager.h"
 #include "MitkSegmentationTool.h"
 #include "CustomMitkDataStorage.h"
 #include "AlgorithmModuleBase.h"
 #include "InfoLabel.h"
 #include "GeodesicTrainingModule.h"
 #include "GeodesicTrainingWarningImageSize.h"
+#include "GeodesicTrainingWarningGUI.h"
 
 #include "ui_GeodesicTrainingGUI.h"
 
@@ -36,7 +38,8 @@ GeodesicTrainingGUI::GeodesicTrainingGUI(QWidget *parent) :
   m_MitkSegmentationTool->findChild<QPushButton*>("createMaskPushBtn")->setText(
     "Create seeds image"
   );
-  m_MitkSegmentationTool->findChild<InfoLabel*>("infoLabel")->setText(
+  m_MitkSegmentationTool->findChild<InfoLabel*>("infoLabel")->hide();
+  ui->infoLabelGeodesic->setText(
     QString("<b>1.</b> Create seeds image.<br>") +
     QString("<b>2.</b> Draw with at least two colors.<br>") +
     QString("<b>3.</b> Click run and wait.<br>") +
@@ -45,6 +48,8 @@ GeodesicTrainingGUI::GeodesicTrainingGUI(QWidget *parent) :
     QString(" with the correct color and run again.")
   );
   GuiModuleBase::PlaceWidgetInWidget(m_MitkSegmentationTool, ui->mitkDrawingToolContainer);
+
+  ui->frameGeodesicWarnings->hide();
 
   connect(ui->pushButtonRun, SIGNAL(clicked()), this, SLOT(OnRunClicked()));
   ui->pushButtonRun->hide();
@@ -61,24 +66,8 @@ GeodesicTrainingGUI::~GeodesicTrainingGUI()
 
 void GeodesicTrainingGUI::SetDataManager(DataManager* dataManager)
 {
-  m_DataManager = dataManager;
+  GuiModuleBase::SetDataManager(dataManager);
   m_MitkSegmentationTool->SetDataManager(dataManager);
-
-  if (m_DataView)
-  {
-    WarningFunctionBase* w = new GeodesicTrainingWarningImageSize(this);
-    w->SetDataManager(m_DataManager);
-    w->SetDataView(m_DataView);
-    connect(w, SIGNAL(OperationAllowanceChanged(WarningFunctionBase*, bool, QString)),
-      this, SLOT(OnOperationAllowanceChanged(WarningFunctionBase*, bool, QString))
-    );
-    connect(w, SIGNAL(NewWarning(WarningFunctionBase*, QString)), 
-      this, SLOT(OnNewWarning(WarningFunctionBase*, QString))
-    );
-    connect(w, SIGNAL(WarningWasRemoved(WarningFunctionBase*, QString)), 
-      this, SLOT(OnWarningWasRemoved(WarningFunctionBase*, QString))
-    );
-  }
 }
 
 void GeodesicTrainingGUI::SetDataView(DataViewBase* dataView)
@@ -105,6 +94,7 @@ void GeodesicTrainingGUI::SetScheduler(SchedulerBase* scheduler)
 void GeodesicTrainingGUI::SetEnabled(bool enabled)
 {
   m_MitkSegmentationTool->SetEnabled(enabled);
+  this->SetUpWarnings();
 }
 
 void GeodesicTrainingGUI::SelectedSubjectChangedHandler(long uid)
@@ -233,33 +223,36 @@ void GeodesicTrainingGUI::OnAlgorithmFinishedWithError(AlgorithmModuleBase* algo
 	);
 }
 
-void GeodesicTrainingGUI::OnOperationAllowanceChanged(WarningFunctionBase* function, bool allow,
-        QString errorMessageIfNotAllowed)
+void GeodesicTrainingGUI::SetUpWarnings()
 {
-  // TODO: Delete this
-  if (!allow)
-  {
-    QMessageBox::information(this, function->GetName(), errorMessageIfNotAllowed);
-  }
-  else {
-    QMessageBox::information(this, function->GetName(), "Allowed");
-  }
-}
+  // --- Create Warning Manager ---
+  WarningManager* warningManager = new WarningManager(this);
+  
+  // --- Create Warning GUI ---
+  auto warningGUI = new GeodesicTrainingWarningGUI();
+  warningGUI->SetWidgetContainer(ui->frameGeodesicWarnings);
 
-void GeodesicTrainingGUI::OnNewWarning(WarningFunctionBase* function,
-  QString warning)
-{
-  // TODO: Delete this
-  QMessageBox::information(this, function->GetName(), 
-    QString("New warning: ") + warning
+  // --- Connect warningManager with warningGUI ---
+  connect(warningManager, SIGNAL(NewErrorMessage(QString)),
+    warningGUI, SLOT(OnNewErrorMessage(QString))
   );
-}
+  connect(warningManager, SIGNAL(ErrorMessageWasRemoved(QString)),
+    warningGUI, SLOT(OnErrorMessageWasRemoved(QString))
+  );
+  connect(warningManager, SIGNAL(NewWarning(QString)),
+    warningGUI, SLOT(OnNewWarning(QString))
+  );
+  connect(warningManager, SIGNAL(WarningWasRemoved(QString)),
+    warningGUI, SLOT(OnWarningWasRemoved(QString))
+  );
 
-void GeodesicTrainingGUI::OnWarningWasRemoved(WarningFunctionBase* function,
-  QString warningThatWasRemoved)
-{
-  // TODO: Delete this
-  QMessageBox::information(this, function->GetName(), 
-    QString("Warning was removed: ") + warningThatWasRemoved
-  );
+  // --- Add Warning Functions ---
+  qDebug() << m_DataView->GetCurrentDataID();
+
+  auto wImageSize = new GeodesicTrainingWarningImageSize(warningManager);
+  warningManager->RegisterWarningFunction(wImageSize);
+  wImageSize->SetDataManager(this->GetDataManager());
+  wImageSize->SetDataView(m_DataView);
+  
+  // Add more warnings here if necessary
 }

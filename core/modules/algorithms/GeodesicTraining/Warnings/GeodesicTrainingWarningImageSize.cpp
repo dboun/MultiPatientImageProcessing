@@ -20,23 +20,38 @@ void GeodesicTrainingWarningImageSize::SetDataManager(DataManager* dataManager)
 {
     WarningFunctionBase::SetDataManager(dataManager);
 
-    if (m_DataView)
+    if (m_DataView != nullptr)
     {
+        WarningFunctionBase::SetDataView(m_DataView);
+        
         // In case this was created after data were loaded
         this->SelectedSubjectChangedHandler(m_DataView->GetCurrentSubjectID());
     }
 }
 
 void GeodesicTrainingWarningImageSize::SetDataView(DataViewBase* dataView)
-{
-    WarningFunctionBase::SetDataView(dataView);
+{   
+    m_DataView = dataView;
 
-    // In case this was created after data were loaded
-    this->SelectedSubjectChangedHandler(m_DataView->GetCurrentSubjectID());
+    if (m_DataManager != nullptr)
+    {
+        WarningFunctionBase::SetDataView(dataView);
+        
+        // In case this was created after data were loaded
+        this->SelectedSubjectChangedHandler(m_DataView->GetCurrentSubjectID());
+    }
 }
 
 void GeodesicTrainingWarningImageSize::SelectedSubjectChangedHandler(long uid)
 {
+    qDebug() << "GeodesicTrainingWarningImageSize::SelectedSubjectChangedHandler" << uid;
+
+    if (uid == -1)
+    {
+        this->SetOperationAllowed(false, "No subjects loaded");
+        return;
+    }
+
     auto iids = m_DataManager->GetAllDataIdsOfSubject(uid);
     if (iids.size() == 0) 
     {
@@ -56,7 +71,7 @@ void GeodesicTrainingWarningImageSize::SelectedSubjectChangedHandler(long uid)
 
     if (iid == -1)
     {
-        this->SetOperationAllowed(false, "No images");
+        this->SetOperationAllowed(false, "No actual images");
         return;
     }
 

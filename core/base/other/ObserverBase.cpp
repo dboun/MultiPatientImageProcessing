@@ -1,5 +1,7 @@
 #include "ObserverBase.h"
 
+#include <QDebug>
+
 ObserverBase::ObserverBase(QObject* parent) : 
     QObject(parent),
     m_Name("Observer") // This needs to be set this manually later
@@ -29,6 +31,8 @@ void ObserverBase::SetDataManager(DataManager* dataManager)
 
 void ObserverBase::SetDataView(DataViewBase* dataView)
 {
+    qDebug() << "ObserverBase::SetDataView";
+
     m_DataView = dataView;
 
     connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)), 
@@ -46,6 +50,7 @@ void ObserverBase::SetDataView(DataViewBase* dataView)
 	connect(m_DataView, SIGNAL(DataCheckedStateChanged(long, bool)), 
         this, SLOT(DataCheckedStateChangedHandler(long, bool))
     );
+    qDebug() << "ObserverBase::SetDataView ok";
 }
 
 QString ObserverBase::GetName()
