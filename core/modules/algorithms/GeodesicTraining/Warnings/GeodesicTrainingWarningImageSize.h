@@ -16,6 +16,7 @@ public:
 
     void SetDataManager(DataManager* dataManager) override;
 
+    /** DataManager should be set before DataView */
     void SetDataView(DataViewBase* dataView) override;
 
 public slots:

@@ -19,23 +19,15 @@ GeodesicTrainingWarningImageSize::~GeodesicTrainingWarningImageSize()
 void GeodesicTrainingWarningImageSize::SetDataManager(DataManager* dataManager)
 {
     WarningFunctionBase::SetDataManager(dataManager);
-
-    if (m_DataView != nullptr)
-    {
-        WarningFunctionBase::SetDataView(m_DataView);
-        
-        // In case this was created after data were loaded
-        this->SelectedSubjectChangedHandler(m_DataView->GetCurrentSubjectID());
-    }
 }
 
 void GeodesicTrainingWarningImageSize::SetDataView(DataViewBase* dataView)
 {   
     m_DataView = dataView;
 
-    if (m_DataManager != nullptr)
+    if (m_DataManager)
     {
-        WarningFunctionBase::SetDataView(dataView);
+        WarningFunctionBase::SetDataView(m_DataView);
         
         // In case this was created after data were loaded
         this->SelectedSubjectChangedHandler(m_DataView->GetCurrentSubjectID());
