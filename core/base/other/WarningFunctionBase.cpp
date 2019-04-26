@@ -1,56 +1,14 @@
 #include "WarningFunctionBase.h"
 
 WarningFunctionBase::WarningFunctionBase(QObject* parent) : 
-    QObject(parent),
-    m_Name("Warning Function") // This needs to be set this manually later
+    ObserverBase(parent)
 {
-
+    this->SetName("Warning Function"); // This needs to be set this manually later
 }
 
 WarningFunctionBase::~WarningFunctionBase()
 {
 
-}
-
-void WarningFunctionBase::SetDataManager(DataManager* dataManager)
-{
-    m_DataManager = dataManager;
-
-    connect(m_DataManager, SIGNAL(SubjectAdded(long)), 
-        this, SLOT(SubjectAddedHandler(long))
-    );
-	connect(m_DataManager, SIGNAL(SubjectRemoved(long)), 
-        this, SLOT(SubjectRemovedHandler(long))
-    );
-	connect(m_DataManager, SIGNAL(SubjectDataChanged(long)), 
-        this, SLOT(SubjectDataChangedHandler(long))
-    );
-}
-
-void WarningFunctionBase::SetDataView(DataViewBase* dataView)
-{
-    m_DataView = dataView;
-
-    connect(m_DataView, SIGNAL(SelectedSubjectChanged(long)), 
-        this, SLOT(SelectedSubjectChangedHandler(long))
-    );
-	connect(m_DataView, SIGNAL(SelectedDataChanged(long)), 
-        this, SLOT(SelectedDataChangedHandler(long))
-    );
-	connect(m_DataView, SIGNAL(DataAddedForSelectedSubject(long)), 
-        this, SLOT(DataAddedForSelectedSubjectHandler(long))
-    );
-	connect(m_DataView, SIGNAL(DataRemovedFromSelectedSubject(long)), 
-        this, SLOT(DataRemovedFromSelectedSubjectHandler(long))
-    );
-	connect(m_DataView, SIGNAL(DataCheckedStateChanged(long, bool)), 
-        this, SLOT(DataCheckedStateChangedHandler(long, bool))
-    );
-}
-
-QString WarningFunctionBase::GetName()
-{
-    return m_Name;
 }
 
 bool WarningFunctionBase::IsOperationAllowed()
@@ -66,51 +24,6 @@ QString WarningFunctionBase::GetErrorMessageIfNotAllowed()
         return "";
     }
     return m_ErrorMessage;
-}
-
-void WarningFunctionBase::SelectedSubjectChangedHandler(long uid)
-{
-
-}
-
-void WarningFunctionBase::SelectedDataChangedHandler(long iid)
-{
-
-}
-
-void WarningFunctionBase::DataAddedForSelectedSubjectHandler(long iid)
-{
-
-}
-
-void WarningFunctionBase::DataRemovedFromSelectedSubjectHandler(long iid)
-{
-
-}
-
-void WarningFunctionBase::DataCheckedStateChangedHandler(long iid, bool checkState)
-{
-
-}
-
-void WarningFunctionBase::SubjectAddedHandler(long uid)
-{
-
-}
-
-void WarningFunctionBase::SubjectRemovedHandler(long uid)
-{
-
-}
-
-void WarningFunctionBase::SubjectDataChangedHandler(long uid)
-{
-
-}
-
-void WarningFunctionBase::SetName(QString name)
-{
-    m_Name = name;
 }
 
 void WarningFunctionBase::SetOperationAllowed(bool allowed, 

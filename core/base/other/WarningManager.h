@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include <vector>
+#include <map>
 
 #include "WarningFunctionBase.h"
 
@@ -17,11 +18,13 @@ public:
     ~WarningManager();
 
     /** The WarningManager doesn't check if any have become nullptr.
-     *  GetFunctions might not be useful anyway. */
+     *  GetFunctions might be unsafe. */
     std::vector< WarningFunctionBase* > GetFunctions();
 
     /** Returns true if the operation is allowed by all registered functions */
     bool IsOperationAllowed();
+
+    QStringList GetAllErrorMessages();
 
     void RegisterWarningFunction(WarningFunctionBase* function);
     void UnregisterWarningFunction(WarningFunctionBase* function);
@@ -33,15 +36,41 @@ public slots:
     virtual void OnWarningFunctionAboutToBeRemoved(WarningFunctionBase* function);
 
     // Slots for WarningFunction
-    void OnOperationAllowanceChanged(WarningFunctionBase* function, bool allow);
+    void OnOperationAllowanceChanged(WarningFunctionBase* function, bool allow,
+        QString errorMessageIfNotAllowed
+    );
+    void OnNewWarning(WarningFunctionBase* function, QString warning);
+    void OnWarningWasRemoved(WarningFunctionBase* function, QString warningThatWasRemoved);
 
 signals:
+    void OperationAllowanceChanged(bool allow);
+    void NewErrorMessage(QString errorMessage);
+    void ErrorMessageWasRemoved(QString errorMessage);
+
+    void NewWarning(QString warning);
+    void WarningWasRemoved(QString warningThatWasRemoved);
+
     void NewWarningFunctionAdded(WarningFunctionBase* function);
     void WarningFunctionAboutToBeRemoved(WarningFunctionBase* function);
-    void OperationAllowanceChanged(bool allow);
 
 private:
+    template<class T, class U>
+	std::vector<T> IdsOfMap(std::map<T, U>& map)
+	{
+		std::vector<T> keys;
+		keys.reserve(map.size());
+		for (auto const& imap : map) {
+			keys.push_back(imap.first);
+		}
+		return keys;
+	}
+
     std::vector< WarningFunctionBase* > m_Functions;
+
+    // The map always has at least an empty QString() set 
+    std::map< WarningFunctionBase*, QString > m_ErrorMessageMap;
+
+    QStringList m_WarningMessages;
 
     WarningFunctionBase* m_CurrentRunningFunction;
 };
