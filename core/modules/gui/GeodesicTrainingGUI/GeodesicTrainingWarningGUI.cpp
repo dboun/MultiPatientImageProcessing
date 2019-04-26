@@ -3,6 +3,9 @@
 #include <QVBoxLayout>
 
 #include "InfoLabel.h"
+#include "WarningInformation.h"
+#include "WarningImportant.h"
+#include "WarningCritical.h"
 
 GeodesicTrainingWarningGUI::GeodesicTrainingWarningGUI(QWidget* parent) : QWidget(parent)
 {
@@ -30,11 +33,17 @@ void GeodesicTrainingWarningGUI::OnNewErrorMessage(QString errorMessage)
 
     if (m_Widgets.find(errorMessage) == m_Widgets.end())
     {
-        InfoLabel* widget = new InfoLabel(this);
-        widget->setWordWrap(true);
-        widget->setText(errorMessage);
-        this->layout()->addWidget(widget);
-        m_Widgets[errorMessage] = widget;
+        // InfoLabel* widget = new InfoLabel(this);
+        // widget->setWordWrap(true);
+        // widget->setText(errorMessage);
+        // this->layout()->addWidget(widget);
+        // m_Widgets[errorMessage] = widget;
+        WarningImportant* w = new WarningImportant(this);
+        w->ShowText(true, errorMessage);
+        //w->ShowButton(true, "OK");
+        w->ShowButton(false);
+        this->layout()->addWidget(w);
+        m_Widgets[errorMessage] = w;
     }
 }
 
@@ -65,11 +74,18 @@ void GeodesicTrainingWarningGUI::OnNewWarning(QString warning)
 
     if (m_Widgets.find(warning) == m_Widgets.end())
     {
-        InfoLabel* widget = new InfoLabel(this);
-        widget->setWordWrap(true);
-        widget->setText(warning);
-        this->layout()->addWidget(widget);
-        m_Widgets[warning] = widget;
+        // InfoLabel* widget = new InfoLabel(this);
+        // widget->setWordWrap(true);
+        // widget->setText(warning);
+        // this->layout()->addWidget(widget);
+        // m_Widgets[warning] = widget;
+
+        WarningCritical* w = new WarningCritical(this);
+        w->ShowText(true, warning);
+        //w->ShowButton(true, "OK");
+        w->ShowButton(false);
+        this->layout()->addWidget(w);
+        m_Widgets[warning] = w;
     }
 }
 

@@ -52,7 +52,7 @@
     </widget>
    </item>
    <item>
-    <widget class="ActionWidget" name="frameGeodesicWarnings"/>
+    <widget class="QWidget" name="geodesicWarnings" native="true"/>
    </item>
    <item>
     <widget class="QWidget" name="mitkDrawingToolContainer" native="true"/>
@@ -89,12 +89,6 @@
    <class>InfoLabel</class>
    <extends>QLabel</extends>
    <header>InfoLabel.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ActionWidget</class>
-   <extends>QFrame</extends>
-   <header>ActionWidget.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

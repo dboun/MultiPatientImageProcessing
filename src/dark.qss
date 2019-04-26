@@ -16,6 +16,35 @@ QWidget:item:hover
     color: #FFFFFF;
 }
 
+/*----------------- Warnings ----------------------*/
+
+/*WarningInformation*/
+#warningInfoLabel {
+    font: italic;
+}
+
+#warningInfoPushButton {
+    font-size:17px; 
+    border-color: #172d44; 
+    background-color: #26190d;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+WarningImportant
+{
+    color: #000000;
+    background-color: #bf360c;
+}
+
+WarningCritical
+{
+    color: #000000;
+    background-color: #b71c1c;
+}
+
 /*------------------- QFrame -----------------------*/
 ActionWidget {
     border: 1px solid gray;
@@ -24,6 +53,7 @@ ActionWidget {
     padding-right: 5px;
     padding-top: 1px;
     padding-bottom: 1px;
+    background: transparent;
 }
 
 /*---------------- MenuBar Menu --------------------*/

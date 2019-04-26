@@ -49,7 +49,7 @@ GeodesicTrainingGUI::GeodesicTrainingGUI(QWidget *parent) :
   );
   GuiModuleBase::PlaceWidgetInWidget(m_MitkSegmentationTool, ui->mitkDrawingToolContainer);
 
-  ui->frameGeodesicWarnings->hide();
+  ui->geodesicWarnings->hide();
 
   connect(ui->pushButtonRun, SIGNAL(clicked()), this, SLOT(OnRunClicked()));
   ui->pushButtonRun->hide();
@@ -230,7 +230,7 @@ void GeodesicTrainingGUI::SetUpWarnings()
   
   // --- Create Warning GUI ---
   auto warningGUI = new GeodesicTrainingWarningGUI();
-  warningGUI->SetWidgetContainer(ui->frameGeodesicWarnings);
+  warningGUI->SetWidgetContainer(ui->geodesicWarnings);
 
   // --- Connect warningManager with warningGUI ---
   connect(warningManager, SIGNAL(NewErrorMessage(QString)),
