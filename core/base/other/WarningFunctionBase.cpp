@@ -37,14 +37,29 @@ void WarningFunctionBase::SetOperationAllowed(bool allowed,
     qDebug() << "WarningFunctionBase::SetOperationAllowed" 
              << ((allowed)?"Allowed":"Not allowed") << errorMessageIfNotAllowed;
 
+    if (errorMessageIfNotAllowed != m_ErrorMessage)
+    {
+        QString oldErrorMessage = m_ErrorMessage;
+        m_ErrorMessage = errorMessageIfNotAllowed;
+
+        if (oldErrorMessage != "")
+        {
+            qDebug() << "Emit WarningFunctionBase::ErrorWasRemoved";
+            emit ErrorMessageWasRemoved(this, oldErrorMessage);
+        }
+
+        if (errorMessageIfNotAllowed != "")
+        {
+            qDebug() << "Emit WarningFunctionBase::NewError";
+            emit NewErrorMessage(this, errorMessageIfNotAllowed);
+        }
+    }
+
     if (m_OperationAllowed != allowed)
     {
         m_OperationAllowed = allowed;
         qDebug() << "Emit WarningFunctionBase::OperationAllowanceChanged";
-        emit OperationAllowanceChanged(this, 
-            m_OperationAllowed, 
-            errorMessageIfNotAllowed
-        );
+        emit OperationAllowanceChanged(this, m_OperationAllowed);
     }
 }
 

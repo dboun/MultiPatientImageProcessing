@@ -36,16 +36,7 @@ bool WarningManager::IsOperationAllowed()
 
 QStringList WarningManager::GetAllErrorMessages()
 {
-    QStringList errorMessages;
-    for (auto* function : IdsOfMap<WarningFunctionBase*, QString>(m_ErrorMessageMap))
-    {
-        if (!function) { continue; }
-        if (m_ErrorMessageMap[function] != "")
-        {
-            errorMessages.push_back(m_ErrorMessageMap[function]);
-        }
-    }
-    return errorMessages;
+    return m_ErrorMessages;
 }
 
 void WarningManager::RegisterWarningFunction(WarningFunctionBase* function)
@@ -56,13 +47,17 @@ void WarningManager::RegisterWarningFunction(WarningFunctionBase* function)
     {
         // m_Functions does not contain function
         m_Functions.push_back(function);
-        m_ErrorMessageMap[function] = QString();
 
         // Connect signals/slots
-        bool ok = connect(function, SIGNAL(OperationAllowanceChanged(WarningFunctionBase*, bool, QString)),
+        connect(function, SIGNAL(OperationAllowanceChanged(WarningFunctionBase*, bool, QString)),
             this, SLOT(OnOperationAllowanceChanged(WarningFunctionBase*, bool, QString))
         );
-        if (ok) { qDebug() << "ok"; }
+        connect(function, SIGNAL(NewErrorMessage(WarningFunctionBase*, QString)), 
+            this, SLOT(OnNewErrorMessage(WarningFunctionBase*, QString))
+        );
+        connect(function, SIGNAL(ErrorMessageWasRemoved(WarningFunctionBase*, QString)), 
+            this, SLOT(OnErrorMessageWasRemoved(WarningFunctionBase*, QString))
+        );
         connect(function, SIGNAL(NewWarning(WarningFunctionBase*, QString)), 
             this, SLOT(OnNewWarning(WarningFunctionBase*, QString))
         );
@@ -88,14 +83,21 @@ void WarningManager::UnregisterWarningFunction(WarningFunctionBase* function)
             std::remove(m_Functions.begin(), m_Functions.end(), function), 
             m_Functions.end()
         );
-        std::map<WarningFunctionBase*, QString>::iterator eIter = m_ErrorMessageMap.find(function);
-        if( eIter != m_ErrorMessageMap.end() ) {
-            m_ErrorMessageMap.erase( eIter );
+        
+        if (function->GetErrorMessageIfNotAllowed() != "")
+        {
+            m_ErrorMessages.removeOne(function->GetErrorMessageIfNotAllowed());
         }
 
         // Disonnect signals/slots
         disconnect(function, SIGNAL(OperationAllowanceChanged(WarningFunctionBase*, bool, QString)),
             this, SLOT(OnOperationAllowanceChanged(WarningFunctionBase*, bool, QString))
+        );
+        disconnect(function, SIGNAL(NewErrorMessage(WarningFunctionBase*, QString)), 
+            this, SLOT(OnNewErrorMessage(WarningFunctionBase*, QString))
+        );
+        disconnect(function, SIGNAL(ErrorMessageWasRemoved(WarningFunctionBase*, QString)), 
+            this, SLOT(OnErrorMessageWasRemoved(WarningFunctionBase*, QString))
         );
         disconnect(function, SIGNAL(NewWarning(WarningFunctionBase*, QString)), 
             this, SLOT(OnNewWarning(WarningFunctionBase*, QString))
@@ -136,28 +138,11 @@ void WarningManager::OnWarningFunctionAboutToBeRemoved(WarningFunctionBase* func
 
 }
 
-void WarningManager::OnOperationAllowanceChanged(WarningFunctionBase* function, bool allow,
-        QString errorMessageIfNotAllowed)
+void WarningManager::OnOperationAllowanceChanged(WarningFunctionBase* function, bool allow)
 {
     qDebug() << "WarningManager::OnOperationAllowanceChanged" << function->GetName();
     qDebug() << "WarningManager::OnOperationAllowanceChanged" 
-             << ((allow)?"Allowed":"Not allowed") << errorMessageIfNotAllowed;
-
-    QString oldErrorMessage = m_ErrorMessageMap[function];
-    m_ErrorMessageMap[function] = errorMessageIfNotAllowed;
-    
-    if (oldErrorMessage != "") 
-    {  
-        qDebug() << "emit WarningManager::ErrorMessageWasRemoved" << oldErrorMessage;
-        emit ErrorMessageWasRemoved(oldErrorMessage);
-    }
-    else {
-        if (!allow)
-        {
-            qDebug() << "emit WarningManager::NewErrorMessage" << errorMessageIfNotAllowed;
-            emit NewErrorMessage(errorMessageIfNotAllowed);
-        }
-    }
+             << ((allow)?"Allowed":"Not allowed");
     
     // See if another function is false
     bool foundAnotherFalse = false;
@@ -181,6 +166,25 @@ void WarningManager::OnOperationAllowanceChanged(WarningFunctionBase* function, 
     }
 }
 
+void WarningManager::OnNewErrorMessage(WarningFunctionBase* function, QString errorMessage)
+{
+    if (!m_ErrorMessages.contains(errorMessage))
+    {
+        m_ErrorMessages.push_back(errorMessage);
+        emit NewErrorMessage(errorMessage);
+    }
+}
+
+void WarningManager::OnErrorMessageWasRemoved(WarningFunctionBase* function, 
+    QString errorMessageThatWasRemoved)
+{
+    if (m_ErrorMessages.contains(errorMessageThatWasRemoved))
+    {
+        m_ErrorMessages.removeOne(errorMessageThatWasRemoved);
+        emit ErrorMessageWasRemoved(errorMessageThatWasRemoved);
+    }
+}
+
 void WarningManager::OnNewWarning(WarningFunctionBase* function, QString warning)
 {
     if (!m_WarningMessages.contains(warning))
@@ -196,7 +200,7 @@ void WarningManager::OnWarningWasRemoved(WarningFunctionBase* function,
 {
     if (m_WarningMessages.contains(warningThatWasRemoved))
     {
-        m_WarningMessages.removeAll(warningThatWasRemoved);
+        m_WarningMessages.removeOne(warningThatWasRemoved);
         qDebug() << "Emit WarningManager::WarningWasRemoved" << warningThatWasRemoved;
         emit WarningWasRemoved(warningThatWasRemoved);
     }

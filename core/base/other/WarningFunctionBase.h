@@ -24,9 +24,9 @@ public:
     QString GetErrorMessageIfNotAllowed();
 
 signals:
-    void OperationAllowanceChanged(WarningFunctionBase* function, bool allow,
-        QString errorMessageIfNotAllowed
-    );
+    void OperationAllowanceChanged(WarningFunctionBase* function, bool allow);
+    void NewErrorMessage(WarningFunctionBase* function, QString errorMessage);
+    void ErrorMessageWasRemoved(WarningFunctionBase* function, QString errorMessageThatWasRemoved);
     void NewWarning(WarningFunctionBase* function, QString warning);
     void WarningWasRemoved(WarningFunctionBase* function, QString warningThatWasRemoved);
 

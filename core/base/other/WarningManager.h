@@ -17,7 +17,7 @@ public:
 
     ~WarningManager();
 
-    /** The WarningManager doesn't check if any have become nullptr.
+    /** The WarningManager doesn't check if any have are null.
      *  GetFunctions might be unsafe. */
     std::vector< WarningFunctionBase* > GetFunctions();
 
@@ -36,9 +36,9 @@ public slots:
     virtual void OnWarningFunctionAboutToBeRemoved(WarningFunctionBase* function);
 
     // Slots for WarningFunction
-    void OnOperationAllowanceChanged(WarningFunctionBase* function, bool allow,
-        QString errorMessageIfNotAllowed
-    );
+    void OnOperationAllowanceChanged(WarningFunctionBase* function, bool allow);
+    void OnNewErrorMessage(WarningFunctionBase* function, QString errorMessage);
+    void OnErrorMessageWasRemoved(WarningFunctionBase* function, QString errorMessageThatWasRemoved);
     void OnNewWarning(WarningFunctionBase* function, QString warning);
     void OnWarningWasRemoved(WarningFunctionBase* function, QString warningThatWasRemoved);
 
@@ -68,8 +68,7 @@ private:
     std::vector< WarningFunctionBase* > m_Functions;
 
     // The map always has at least an empty QString() set 
-    std::map< WarningFunctionBase*, QString > m_ErrorMessageMap;
-
+    QStringList m_ErrorMessages;
     QStringList m_WarningMessages;
 
     WarningFunctionBase* m_CurrentRunningFunction;
