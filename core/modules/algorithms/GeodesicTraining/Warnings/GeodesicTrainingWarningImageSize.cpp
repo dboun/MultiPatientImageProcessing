@@ -52,14 +52,18 @@ void GeodesicTrainingWarningImageSize::SelectedSubjectChangedHandler(long uid)
 
     if (uid == -1)
     {
-        this->SetOperationAllowed(false, "No subjects loaded");
+        this->SetOperationAllowed(false, 
+            QString("No subjects loaded. ") +
+            QString("Drag and drop files or folders (one for each subject), ") + 
+            QString("or use the \'File\' menu.")
+        );
         return;
     }
 
     auto iids = m_DataManager->GetAllDataIdsOfSubject(uid);
     if (iids.size() == 0) 
     {
-        this->SetOperationAllowed(false, "No images");
+        this->SetOperationAllowed(false, "No patient images");
         return;
     }
 
@@ -75,7 +79,7 @@ void GeodesicTrainingWarningImageSize::SelectedSubjectChangedHandler(long uid)
 
     if (iid == -1)
     {
-        this->SetOperationAllowed(false, "No actual images");
+        this->SetOperationAllowed(false, "No patient images");
         return;
     }
 
@@ -162,13 +166,13 @@ void GeodesicTrainingWarningImageSize::InspectImage(long iid)
         {
             warnings.push_back(
                 QString("Image is too large and the algorithm will probably take too long. ") + 
-                QString("Consider subsampling it first.")
+                QString("Consider subsampling it first. You can still use the tool.")
             );            
         }
         else {
             warnings.push_back(
                 QString("Images are too large and the algorithm will probably take too long. ") + 
-                QString("Consider subsampling them first.")
+                QString("Consider subsampling them first. You can still use the tool.")
             );
         }
 

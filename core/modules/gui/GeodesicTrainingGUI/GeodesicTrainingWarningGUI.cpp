@@ -4,7 +4,6 @@
 
 #include "InfoLabel.h"
 #include "WarningInformation.h"
-#include "WarningImportant.h"
 #include "WarningCritical.h"
 
 GeodesicTrainingWarningGUI::GeodesicTrainingWarningGUI(QWidget* parent) : QWidget(parent)
@@ -35,17 +34,7 @@ void GeodesicTrainingWarningGUI::OnNewErrorMessage(QString errorMessage)
 
     if (m_Widgets.find(errorMessage) == m_Widgets.end())
     {
-        // InfoLabel* widget = new InfoLabel(this);
-        // widget->setWordWrap(true);
-        // widget->setText(errorMessage);
-        // this->layout()->addWidget(widget);
-        // m_Widgets[errorMessage] = widget;
-        WarningImportant* w = new WarningImportant(this);
-        w->ShowText(true, /*"<b>Critical: </b>" + */errorMessage);
-        //w->ShowButton(true, "OK");
-        w->ShowButton(false);
-        this->layout()->addWidget(w);
-        m_Widgets[errorMessage] = w;
+        HandleMessage(errorMessage);
     }
 }
 
@@ -76,18 +65,7 @@ void GeodesicTrainingWarningGUI::OnNewWarning(QString warning)
 
     if (m_Widgets.find(warning) == m_Widgets.end())
     {
-        // InfoLabel* widget = new InfoLabel(this);
-        // widget->setWordWrap(true);
-        // widget->setText(warning);
-        // this->layout()->addWidget(widget);
-        // m_Widgets[warning] = widget;
-
-        WarningCritical* w = new WarningCritical(this);
-        w->ShowText(true, warning);
-        //w->ShowButton(true, "OK");
-        w->ShowButton(false);
-        this->layout()->addWidget(w);
-        m_Widgets[warning] = w;
+        HandleMessage(warning);
     }
 }
 
@@ -109,4 +87,35 @@ void GeodesicTrainingWarningGUI::OnWarningWasRemoved(QString warningThatWasRemov
     {
         m_Container->hide();
     }
+}
+
+void GeodesicTrainingWarningGUI::HandleMessage(QString message)
+{
+    QWidget* widget;
+
+    if (message.startsWith("No subjects loaded"))
+    {
+        WarningInformation* w = new WarningInformation(this);
+        w->ShowText(true, message);
+        w->ShowButton(false);
+        widget = w;
+    }
+    else if (message == "No patient images")
+    {
+        WarningInformation* w = new WarningInformation(this);
+        w->ShowText(true, message);
+        w->ShowButton(false);
+        widget = w;
+    }
+    else {
+        // Default case
+        WarningCritical* w = new WarningCritical(this);
+        w->ShowText(true, message);
+        w->ShowButton(false);
+        widget = w;
+    }
+
+    /*"<b>Critical: </b>" + */
+    this->layout()->addWidget(widget);
+    m_Widgets[message] = widget;
 }

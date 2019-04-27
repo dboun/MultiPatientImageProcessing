@@ -39,7 +39,7 @@ QPushButton* WarningInformation::ShowButton(bool showButton, QString buttonText)
     }
     else {
         ui->warningInfoPushButton->hide();
-        ui->warningFrame->layout()->setSpacing(0);
+        ui->warningInfoFrame->layout()->setSpacing(0);
     }
 
     // There is a weird space left so this is a workaround.
@@ -51,5 +51,5 @@ QPushButton* WarningInformation::ShowButton(bool showButton, QString buttonText)
 
 QLayout* WarningInformation::GetLayout()
 {
-    return ui->warningFrame->layout();
+    return ui->warningInfoFrame->layout();
 }

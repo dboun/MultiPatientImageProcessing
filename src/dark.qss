@@ -19,20 +19,20 @@ QWidget:item:hover
 /*----------------- Warnings ----------------------*/
 
 /*WarningInformation*/
-WarningInformation {
+/*WarningInformation {
     background-color: #bf360c;    
 }
 
-#warningFrame {
+#warningInfoFrame {
     background-color: #bf360c;
-}
+}*/
 
 #warningInfoLabel {
-    background-color: #bf360c;
-    color: #ffffff;
     font: italic;
     font-size:13px;
 }
+/*background-color: #bf360c;
+color: #ffffff;*/
 
 #warningInfoPushButton {
     font-size:17px; 
@@ -44,16 +44,30 @@ WarningInformation {
     padding-bottom: 5px;
 }
 
-WarningImportant
-{
-    color: #000000;
+/*WarningCritical*/
+WarningCritical {
+    background-color: #bf360c;    
+}
+
+#warningCriticalFrame {
     background-color: #bf360c;
 }
 
-WarningCritical
-{
-    color: #000000;
-    background-color: #b71c1c;
+#warningCriticalLabel {
+    background-color: #bf360c;
+    color: #ffffff;
+    font: italic;
+    font-size:13px;
+}
+
+#warningCriticalPushButton {
+    font-size:17px; 
+    border-color: #172d44; 
+    background-color: #26190d;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 /*------------------- QFrame -----------------------*/

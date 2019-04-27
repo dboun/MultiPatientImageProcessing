@@ -1,13 +1,33 @@
 #ifndef WARNING_CRITICAL_H
 #define WARNING_CRITICAL_H
 
-#include "WarningInformation.h"
+#include <QString>
+#include <QWidget>
+#include <QPushButton>
+#include <QLayout>
 
-class WarningCritical : public WarningInformation
+namespace Ui {
+class WarningCritical;
+}
+
+class WarningCritical : public QWidget
 {
     Q_OBJECT
+
 public:
-    using WarningInformation::WarningInformation;
+    explicit WarningCritical(QWidget* parent = nullptr);
+
+    ~WarningCritical();
+
+    void ShowText(bool showText, QString text = "");
+    
+    QPushButton* ShowButton(bool showButton, QString buttonText = "");
+    
+    QLayout* GetLayout();
+
+private:
+    Ui::WarningCritical *ui;
+
 };
 
 #endif // ! WARNING_CRITICAL_H

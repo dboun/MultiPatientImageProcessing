@@ -23,6 +23,8 @@ public slots:
     void OnWarningWasRemoved(QString warningThatWasRemoved);
 
 private:
+    void HandleMessage(QString message);
+
     QWidget* m_Container;
     std::map< QString, QWidget* > m_Widgets;
 };

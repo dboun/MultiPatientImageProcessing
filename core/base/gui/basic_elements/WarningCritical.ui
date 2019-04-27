@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>WarningInformation</class>
- <widget class="QWidget" name="WarningInformation">
+ <class>WarningCritical</class>
+ <widget class="QWidget" name="WarningCritical">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -36,7 +36,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="ActionWidget" name="warningInfoFrame">
+    <widget class="ActionWidget" name="warningCriticalFrame">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
        <horstretch>0</horstretch>
@@ -69,7 +69,7 @@
        <number>4</number>
       </property>
       <item>
-       <widget class="QLabel" name="warningInfoLabel">
+       <widget class="QLabel" name="warningCriticalLabel">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -88,7 +88,7 @@
        </widget>
       </item>
       <item alignment="Qt::AlignHCenter|Qt::AlignTop">
-       <widget class="QPushButton" name="warningInfoPushButton">
+       <widget class="QPushButton" name="warningCriticalPushButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
           <horstretch>0</horstretch>
