@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QMessageBox>
+#include <QThread>
 
 #include <mitkImage.h>
 #include <mitkLabelSetImage.h>
@@ -37,6 +38,11 @@ void GeodesicTrainingModule::GeodesicTrainingProgressUpdateHandler(QString messa
 
 void GeodesicTrainingModule::Algorithm()
 {
+    // TODO: Delete this
+    emit ProgressUpdateUI(m_Uid, "Error", 1);
+    QThread::sleep(70);
+    // EO Delete this
+
     if (m_Uid == -1)
     {
         // Other checks also happen in AlgorithmModuleBase::Run()
@@ -46,6 +52,16 @@ void GeodesicTrainingModule::Algorithm()
     }
 
     DataManager* dm = this->GetDataManager();
+
+	auto uids = this->GetDataManager()->GetAllSubjectIds();
+
+	if(std::find(uids.begin(), uids.end(), m_Uid) == uids.end()) {
+    	// uid has been removed
+		emit ProgressUpdateUI(m_Uid, "Error", -1);
+        emit AlgorithmFinishedWithError(this, QString("Subject has been removed"));
+        return;
+	}
+
     CustomMitkDataStorage* ds = CustomMitkDataStorage::GetInstance();
 
     int numberOfImages = 0, numberOfSeedsImages = 0;
@@ -108,6 +124,7 @@ void GeodesicTrainingModule::Algorithm()
                 ds->GetImage(iid)
             );
         } catch (...) {
+            emit ProgressUpdateUI(m_Uid, "Error", -1);
             emit AlgorithmFinishedWithError(this, "Can't read image(s)");
             return;
         }
@@ -118,6 +135,7 @@ void GeodesicTrainingModule::Algorithm()
     try {
         seedsMITK = ds->GetLabelSetImage(seedsID);
     } catch (...) {
+        emit ProgressUpdateUI(m_Uid, "Error", -1);
         emit AlgorithmFinishedWithError(this, "Can't read seeds image(s)");
         return;
     }
@@ -245,6 +263,7 @@ void GeodesicTrainingModule::Algorithm()
             } 
             catch (mitk::Exception& e) {
                 MITK_ERROR << "Exception caught: " << e.GetDescription();
+                emit ProgressUpdateUI(m_Uid, "Error", -1);
                 emit AlgorithmFinishedWithError(this, "Could not initialize output segmentation image.");
                 return;
             }
@@ -357,6 +376,7 @@ void GeodesicTrainingModule::Algorithm()
             } 
             catch (mitk::Exception& e) {
                 MITK_ERROR << "Exception caught: " << e.GetDescription();
+                emit ProgressUpdateUI(m_Uid, "Error", -1);
                 emit AlgorithmFinishedWithError(this, "Could not initialize output segmentation image.");
                 return;
             }
