@@ -34,11 +34,13 @@ public:
     /** DataViewBase should be connected with this before connecting with anything else */
     void SetDataView(DataViewBase* dataView);
 
+    /** If the uid doesn't exist, the image will not be added */
     long AddMitkImageToSubject(long uid, mitk::Image::Pointer mitkImage, 
         QString path = QString(), QString specialRole = QString(), 
         QString name = QString(), bool external = false, bool visibleInDataView = true 
     );
 
+    /** If the uid doesn't exist, the image will not be added */
     long AddMitkLabelSetImageToSubject(long uid, mitk::LabelSetImage::Pointer mitkImage, 
         QString path = QString(), QString specialRole = QString(), 
         QString name = QString(), bool external = false, bool visibleInDataView = true 

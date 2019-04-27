@@ -588,6 +588,13 @@ long CustomMitkDataStorage::AddMitkNodeToSubject(long uid, mitk::DataNode::Point
     QString path, QString specialRole, QString type, QString name,
     bool external, bool visibleInDataView )
 {
+    auto uids = m_DataManager->GetAllSubjectIds();
+
+	if(std::find(uids.begin(), uids.end(), uid) == uids.end()) {
+    	// uid has been removed (dataNode will be deleted automatically (hopefully))
+		return -1;
+	}
+
     if (uid == m_CurrentSubjectID)
     {
         dataNode->GetData()->Modified();
@@ -603,7 +610,7 @@ long CustomMitkDataStorage::AddMitkNodeToSubject(long uid, mitk::DataNode::Point
 		    path.toStdString()
 	    );
         
-        m_DataManager->AddDataToSubject(uid, 
+        return m_DataManager->AddDataToSubject(uid, 
             path, specialRole, type, name, external, visibleInDataView
         );
     }
