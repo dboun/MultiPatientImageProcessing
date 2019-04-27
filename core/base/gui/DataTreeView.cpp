@@ -124,9 +124,10 @@ void DataTreeView::SubjectAddedHandler(long uid)
 	
 	// Add progress bar + progress text to container
 	// QStackedLayout* progressLayout = new QStackedLayout();
-	QGridLayout* progressLayout = new QGridLayout();
+	QStackedLayout* progressLayout = new QStackedLayout();
+	progressLayout->setStackingMode(QStackedLayout::StackingMode::StackAll);
 	progressLayout->setContentsMargins(0,0,0,0);
-	// progressLayout->addWidget(progressText);
+	progressLayout->addWidget(progressText);
 	progressLayout->addWidget(progressBar);
 	progressBarAndText->setLayout(progressLayout);
 	
@@ -145,7 +146,8 @@ void DataTreeView::SubjectAddedHandler(long uid)
 
 	// Setup a layout for everything
 	QHBoxLayout* hLayout = new QHBoxLayout();
-	hLayout->setContentsMargins(7,3,7,3);
+	hLayout->setContentsMargins(7,9,7,9);
+	hLayout->setSpacing(15);
 	hLayout->addWidget(subjectNameLabel, Qt::AlignLeft);
 	hLayout->addWidget(progressBarAndText, Qt::AlignRight);
 	allTogether->setLayout(hLayout);
@@ -371,23 +373,25 @@ void DataTreeView::UpdateProgressHandler(long uid, QString message, int progress
 		QString("ProgressBar") + QString::number(uid)
 	);
 
-	// QLabel *progressText = m_TreeWidget->findChild<QLabel*>(
-	// 	QString("ProgressText") + QString::number(uid)
-	// );
+	QLabel *progressText = m_TreeWidget->findChild<QLabel*>(
+		QString("ProgressText") + QString::number(uid)
+	);
 
-	// if (message == "Queued")
-	// {
-	// 	progressBar->setValue(0);	
-	// 	progressBar->hide();
+	if (message == "Queued")
+	{
+		qDebug() << "DataTreeView::UpdateProgressHandler" << "Queued";
+
+		progressBar->setValue(0);	
+		progressBar->hide();
 		
-	// 	progressText->setText(message);
-	// 	progressText->show();
+		progressText->setText("<i>" + message + "</i>");
+		progressText->show();
 	
-	// 	return;
-	// }
+		return;
+	}
 	
-	// progressText->setText("");
-	// progressText->hide();
+	progressText->setText("");
+	progressText->hide();
 	
 	if (progress == -1)
 	{

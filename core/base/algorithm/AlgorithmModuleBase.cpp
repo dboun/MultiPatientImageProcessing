@@ -15,6 +15,7 @@ void AlgorithmModuleBase::SetDataManager(DataManager* dataManager)
 
 void AlgorithmModuleBase::SetDataView(DataViewBase* dataView)
 {
+    qDebug() << "AlgorithmModuleBase::SetDataView";
     m_DataView = dataView;
 
     connect(this, SIGNAL(ProgressUpdateUI(long, QString, int)),
@@ -25,6 +26,7 @@ void AlgorithmModuleBase::SetDataView(DataViewBase* dataView)
 
 void AlgorithmModuleBase::SetUid(long uid)
 {
+    qDebug() << "AlgorithmModuleBase::SetUid";
     m_Uid = uid;
     emit ProgressUpdateUI(m_Uid, "Queued", 0);
 }

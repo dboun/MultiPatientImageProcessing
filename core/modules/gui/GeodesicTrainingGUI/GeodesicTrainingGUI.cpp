@@ -200,12 +200,13 @@ void GeodesicTrainingGUI::OnRunClicked()
 
   algorithm->SetDataManager(m_DataManager);
   algorithm->SetUid(uid);
+  algorithm->SetDataView(m_DataView);
   algorithm->SetAppName(m_AppName);
   algorithm->SetAppNameShort(m_AppNameShort);
 
-  connect(algorithm, SIGNAL(ProgressUpdateUI(long, QString, int)), 
-    m_DataView, SLOT(UpdateProgressHandler(long, QString, int))
-  );
+  // connect(algorithm, SIGNAL(ProgressUpdateUI(long, QString, int)), 
+  //   m_DataView, SLOT(UpdateProgressHandler(long, QString, int))
+  // );
   connect(algorithm, SIGNAL(AlgorithmFinished(AlgorithmModuleBase*)),
     this, SLOT(OnAlgorithmFinished(AlgorithmModuleBase*))
   );
