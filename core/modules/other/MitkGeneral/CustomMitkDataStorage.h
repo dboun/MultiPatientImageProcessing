@@ -1,6 +1,12 @@
 #ifndef CUSTOM_MITK_DATA_STORAGE_H
 #define CUSTOM_MITK_DATA_STORAGE_H
 
+#ifdef EXPORTING
+#define DECLSPEC __declspec(dllexport)
+#else
+#define DECLSPEC __declspec(dllimport)
+#endif
+
 #include <QObject>
 
 #include <mitkStandaloneDataStorage.h>
@@ -16,7 +22,7 @@
 *     It can also be used transparently to get/save the images from/to file
 *     and update DataManager if the data doesn't belong to the current subject. 
 */
-class MITKCORE_EXPORT CustomMitkDataStorage : public QObject, public mitk::StandaloneDataStorage
+class /*MITKCORE_EXPORT*//*DECLSPEC*/ CustomMitkDataStorage : public QObject, public mitk::StandaloneDataStorage
 {
 	Q_OBJECT
 

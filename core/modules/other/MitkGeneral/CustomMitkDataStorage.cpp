@@ -1,3 +1,4 @@
+#define EXPORTING
 #include "CustomMitkDataStorage.h"
 
 #include <QDebug>
