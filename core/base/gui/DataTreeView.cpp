@@ -303,7 +303,14 @@ void DataTreeView::SubjectDataChangedHandler(long uid)
 void DataTreeView::UpdateProgressHandler(long uid, QString message, int progress)
 {
 
-  QProgressBar *progressBar = m_TreeWidget->findChild<QProgressBar*>(
+	auto uids = this->GetDataManager()->GetAllSubjectIds();
+
+	if(std::find(uids.begin(), uids.end(), uid) == uids.end()) {
+    	// uid has been removed
+		return;
+	}
+
+  	QProgressBar *progressBar = m_TreeWidget->findChild<QProgressBar*>(
 		QString("ProgressBar") + QString::number(uid)
 	);
 	if (progress == -1)
