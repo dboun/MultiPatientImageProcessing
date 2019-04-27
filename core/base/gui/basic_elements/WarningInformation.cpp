@@ -39,12 +39,17 @@ QPushButton* WarningInformation::ShowButton(bool showButton, QString buttonText)
     }
     else {
         ui->warningInfoPushButton->hide();
+        ui->warningFrame->layout()->setSpacing(0);
     }
+
+    // There is a weird space left so this is a workaround.
+    // But can't really use the button
+    // ui->warningFrame->layout()->removeWidget(ui->warningInfoPushButton);
 
     return ui->warningInfoPushButton;
 }
 
 QLayout* WarningInformation::GetLayout()
 {
-    return ui->frame->layout();
+    return ui->warningFrame->layout();
 }

@@ -29,6 +29,9 @@
    <property name="leftMargin">
     <number>0</number>
    </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
    <property name="rightMargin">
     <number>0</number>
    </property>
@@ -137,6 +140,17 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>ActionWidget</class>
+   <extends>QFrame</extends>
+   <header>ActionWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>InfoLabel</class>
+   <extends>QLabel</extends>
+   <header>InfoLabel.h</header>
+  </customwidget>
+  <customwidget>
    <class>ActionPushButton</class>
    <extends>QPushButton</extends>
    <header>ActionPushButton.h</header>
@@ -150,17 +164,6 @@
    <class>QmitkLabelSetWidget</class>
    <extends>QWidget</extends>
    <header location="global">Qmitk/QmitkLabelSetWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>InfoLabel</class>
-   <extends>QLabel</extends>
-   <header>InfoLabel.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ActionWidget</class>
-   <extends>QFrame</extends>
-   <header>ActionWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

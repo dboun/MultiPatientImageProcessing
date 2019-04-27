@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
+   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -21,7 +21,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
-    <number>6</number>
+    <number>0</number>
    </property>
    <property name="leftMargin">
     <number>0</number>
@@ -36,7 +36,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="ActionWidget" name="frame">
+    <widget class="ActionWidget" name="warningFrame">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
        <horstretch>0</horstretch>
@@ -60,18 +60,18 @@
        <number>0</number>
       </property>
       <property name="topMargin">
-       <number>6</number>
+       <number>4</number>
       </property>
       <property name="rightMargin">
        <number>0</number>
       </property>
       <property name="bottomMargin">
-       <number>6</number>
+       <number>4</number>
       </property>
-      <item alignment="Qt::AlignTop">
+      <item>
        <widget class="QLabel" name="warningInfoLabel">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>

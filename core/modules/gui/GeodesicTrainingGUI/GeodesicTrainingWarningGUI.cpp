@@ -10,6 +10,7 @@
 GeodesicTrainingWarningGUI::GeodesicTrainingWarningGUI(QWidget* parent) : QWidget(parent)
 {
     QVBoxLayout* layout = new QVBoxLayout();
+    layout->setContentsMargins(0,0,0,0);
     this->setLayout(layout);
 }
 
@@ -21,9 +22,10 @@ GeodesicTrainingWarningGUI::~GeodesicTrainingWarningGUI()
 void GeodesicTrainingWarningGUI::SetWidgetContainer(QWidget* container)
 {
     m_Container = container;
-    m_Container->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+    m_Container->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 	QGridLayout *layout = new QGridLayout(m_Container);
 	layout->addWidget(this, 0, 0);
+    layout->setContentsMargins(0,0,0,0);
 	m_Container->setLayout(layout);
 }
 
@@ -39,7 +41,7 @@ void GeodesicTrainingWarningGUI::OnNewErrorMessage(QString errorMessage)
         // this->layout()->addWidget(widget);
         // m_Widgets[errorMessage] = widget;
         WarningImportant* w = new WarningImportant(this);
-        w->ShowText(true, errorMessage);
+        w->ShowText(true, "<b>Critical: </b>" + errorMessage);
         //w->ShowButton(true, "OK");
         w->ShowButton(false);
         this->layout()->addWidget(w);

@@ -38,6 +38,7 @@ void GuiModuleBase::PlaceWidgetInWidget(QWidget* top, QWidget* bottom)
 {
     top->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	QGridLayout *layout = new QGridLayout(bottom);
+    layout->setContentsMargins(0, 0, 0, 0);
 	layout->addWidget(top, 0, 0);
 	bottom->setLayout(layout);
 }
