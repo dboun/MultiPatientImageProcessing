@@ -28,6 +28,11 @@ QString WarningFunctionBase::GetErrorMessageIfNotAllowed()
     return m_ErrorMessage;
 }
 
+QStringList WarningFunctionBase::GetWarnings()
+{
+    return m_Warnings;
+}
+
 void WarningFunctionBase::SetOperationAllowed(bool allowed, 
     QString errorMessageIfNotAllowed)
 {

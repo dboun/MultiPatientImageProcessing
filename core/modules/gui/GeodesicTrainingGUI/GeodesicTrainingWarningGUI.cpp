@@ -41,7 +41,7 @@ void GeodesicTrainingWarningGUI::OnNewErrorMessage(QString errorMessage)
         // this->layout()->addWidget(widget);
         // m_Widgets[errorMessage] = widget;
         WarningImportant* w = new WarningImportant(this);
-        w->ShowText(true, "<b>Critical: </b>" + errorMessage);
+        w->ShowText(true, /*"<b>Critical: </b>" + */errorMessage);
         //w->ShowButton(true, "OK");
         w->ShowButton(false);
         this->layout()->addWidget(w);

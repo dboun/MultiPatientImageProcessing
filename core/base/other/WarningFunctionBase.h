@@ -22,6 +22,7 @@ public:
     bool IsOperationAllowed();
 
     QString GetErrorMessageIfNotAllowed();
+    QStringList GetWarnings();
 
 signals:
     void OperationAllowanceChanged(WarningFunctionBase* function, bool allow);

@@ -38,6 +38,18 @@ void GeodesicTrainingWarningImageSize::SelectedSubjectChangedHandler(long uid)
 {
     qDebug() << "GeodesicTrainingWarningImageSize::SelectedSubjectChangedHandler" << uid;
 
+    // Clean up
+    if (this->GetErrorMessageIfNotAllowed() != "")
+    {
+        emit ErrorMessageWasRemoved(this, this->GetErrorMessageIfNotAllowed());
+    }
+    for (const QString& warning : this->GetWarnings())
+    {
+        emit WarningWasRemoved(this, warning);
+    }
+
+    // Operations
+
     if (uid == -1)
     {
         this->SetOperationAllowed(false, "No subjects loaded");
@@ -146,10 +158,20 @@ void GeodesicTrainingWarningImageSize::InspectImage(long iid)
 
     if (numberOfPixels > 10000000)
     {
-        warnings.push_back(
-            QString("Images are too large and the algorithm will probably take too long. ") + 
-            QString("Consider subsampling them first.")
-        );
+        if (iids.size() == 1)
+        {
+            warnings.push_back(
+                QString("Image is too large and the algorithm will probably take too long. ") + 
+                QString("Consider subsampling it first.")
+            );            
+        }
+        else {
+            warnings.push_back(
+                QString("Images are too large and the algorithm will probably take too long. ") + 
+                QString("Consider subsampling them first.")
+            );
+        }
+
     }
 
     this->UpdateWarnings(warnings);
