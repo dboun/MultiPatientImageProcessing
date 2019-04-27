@@ -8,6 +8,8 @@
 #include <QVariant>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QStackedLayout>
+#include <QHeaderView>
 
 #include <algorithm>
 
@@ -15,6 +17,7 @@ DataTreeView::DataTreeView(QWidget *parent) : DataViewBase(parent)
 {
 	// Set the QTreeWidget
 	m_TreeWidget = new QTreeWidget(this);
+	m_TreeWidget->header()->setSectionResizeMode(QHeaderView::Fixed);
 	GuiModuleBase::PlaceWidgetInWidget(m_TreeWidget, this);
 
 	// TreeWidget columns
@@ -75,40 +78,94 @@ void DataTreeView::SetDataCheckedState(long iid, bool checkState, bool imitateCl
 
 void DataTreeView::SubjectAddedHandler(long uid)
 {
+	// Create subject item
 	QTreeWidgetItem* subjectToAdd = new QTreeWidgetItem(m_TreeWidget);
 	subjectToAdd->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 	subjectToAdd->setSelected(false);
-	//subjectToAdd->setText(0, m_DataManager->GetSubjectName(uid));
-    subjectToAdd->setData(0, ID, QVariant(static_cast<long long int>(uid) ));
+    subjectToAdd->setData( 0, ID, QVariant(static_cast<long long int>(uid)) );
 
-	QProgressBar *progressBar = new QProgressBar(this);
+	// Setup subject name label
+	QLabel* subjectNameLabel = new QLabel(m_DataManager->GetSubjectName(uid));
+	subjectNameLabel->setObjectName(QString("SubjectName") + QString::number(uid));
+	subjectNameLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	// subjectNameLabel->setMinimumHeight(35);
+	// subjectNameLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+	// subjectNameLabel->setAlignment(Qt::AlignHCenter);
+
+	// Setup progress bar
+	QProgressBar* progressBar = new QProgressBar(this);
     progressBar->setObjectName(QString("ProgressBar") + QString::number(uid));
-	progressBar->setVisible(false);
+	progressBar->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 	progressBar->setMinimum(0);
 	progressBar->setMaximum(100);
 	progressBar->setValue(0);
-    progressBar->setAlignment(Qt::AlignCenter);
-	progressBar->setMinimumWidth(30);
-	progressBar->setMaximumWidth(40);
-	progressBar->setMaximumHeight(20);
+    // progressBar->setMinimumWidth(10);
+	// progressBar->setMinimumHeight(10);
+	// progressBar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	progressBar->setAlignment(Qt::AlignCenter);
 
-	QLabel *label = new QLabel(m_DataManager->GetSubjectName(uid));
-	label->setMaximumHeight(20);
-	label->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	// Setup progress text
+	QLabel* progressText = new QLabel(this);
+    progressText->setObjectName(QString("ProgressText") + QString::number(uid));
+	progressText->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	// progressText->setMinimumWidth(30);
+	// progressText->setMinimumHeight(20);
+	// progressText->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	progressText->setAlignment(Qt::AlignCenter);
 
-	QWidget *labelAndProgress = new QWidget();
-	//labelAndProgress->setAutoFillBackground(true);
-	labelAndProgress->setStyleSheet("background-color: none;");
-	labelAndProgress->setMaximumHeight(35);
-	QHBoxLayout *hLayout = new QHBoxLayout();
-	hLayout->addWidget(label, Qt::AlignLeft);
-	hLayout->addWidget(progressBar, Qt::AlignRight);
-	labelAndProgress->setLayout(hLayout);
-	labelAndProgress->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	// Setup progress bar + progress text container
+	QWidget* progressBarAndText = new QWidget();
+	progressBarAndText->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	// progressBarAndText->setMinimumWidth(10);
+	// progressBarAndText->setMinimumHeight(10);
+	// progressBarAndText->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	progressBarAndText->setFixedSize(/*w*/45, /*h*/20);
+	progressBarAndText->setStyleSheet("background-color: none;");
+	
+	// Add progress bar + progress text to container
+	// QStackedLayout* progressLayout = new QStackedLayout();
+	QGridLayout* progressLayout = new QGridLayout();
+	progressLayout->setContentsMargins(0,0,0,0);
+	// progressLayout->addWidget(progressText);
+	progressLayout->addWidget(progressBar);
+	progressBarAndText->setLayout(progressLayout);
+	
+	// Hide progress information (for now)
+	progressText->hide();
+	progressBar->hide();
 
-	m_TreeWidget->setItemWidget(subjectToAdd, 0, labelAndProgress);
+	// Setup a container for everything
+	QWidget* allTogether = new QWidget();
+	allTogether->setStyleSheet("background-color: none;");
+		// allTogether->setAutoFillBackground(true);
+	allTogether->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	allTogether->setMinimumHeight(35);
+	allTogether->setMinimumWidth(m_TreeWidget->header()->sectionSize(0) - 20);
+	allTogether->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+	// Setup a layout for everything
+	QHBoxLayout* hLayout = new QHBoxLayout();
+	hLayout->setContentsMargins(7,3,7,3);
+	hLayout->addWidget(subjectNameLabel, Qt::AlignLeft);
+	hLayout->addWidget(progressBarAndText, Qt::AlignRight);
+	allTogether->setLayout(hLayout);
+
+	// Add container to widget
+	m_TreeWidget->setItemWidget(subjectToAdd, 0, allTogether);
+
+	// For text overflow in the subject name
+	// https://stackoverflow.com/questions/7381100/text-overflow-for-a-qlabel-s-text-rendering-in-qt
+	// (Doesn't work)
+	// QFontMetrics metrics(subjectNameLabel->font());
+	// int eWidth = subjectNameLabel->width() - 2;
+	// QString clippedText = metrics.elidedText(subjectNameLabel->text(), Qt::ElideRight, eWidth);
+	// qDebug() << "Clipped text" << clippedText;
+	// subjectNameLabel->setText(clippedText);
+
+	// Add to subjects map
 	m_Subjects[uid] = subjectToAdd;
+
+	// See whether to emit SelectedSubjectChanged
 
 	auto allUids = m_DataManager->GetAllSubjectIds();
 	bool currentSubjectIdExists = false;
@@ -313,14 +370,33 @@ void DataTreeView::UpdateProgressHandler(long uid, QString message, int progress
   	QProgressBar *progressBar = m_TreeWidget->findChild<QProgressBar*>(
 		QString("ProgressBar") + QString::number(uid)
 	);
+
+	// QLabel *progressText = m_TreeWidget->findChild<QLabel*>(
+	// 	QString("ProgressText") + QString::number(uid)
+	// );
+
+	// if (message == "Queued")
+	// {
+	// 	progressBar->setValue(0);	
+	// 	progressBar->hide();
+		
+	// 	progressText->setText(message);
+	// 	progressText->show();
+	
+	// 	return;
+	// }
+	
+	// progressText->setText("");
+	// progressText->hide();
+	
 	if (progress == -1)
 	{
 		progressBar->setValue(0);
-		progressBar->setVisible(false);
+		progressBar->hide();
 	}
 	else {
-		progressBar->setVisible(true);
 		progressBar->setValue(progress);
+		progressBar->show();
 	}
 }
 

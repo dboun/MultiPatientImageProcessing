@@ -20,11 +20,13 @@ void AlgorithmModuleBase::SetDataView(DataViewBase* dataView)
     connect(this, SIGNAL(ProgressUpdateUI(long, QString, int)),
         dataView, SLOT(UpdateProgressHandler(long, QString, int))
     );
+    emit ProgressUpdateUI(m_Uid, "Queued", 0);
 }
 
 void AlgorithmModuleBase::SetUid(long uid)
 {
     m_Uid = uid;
+    emit ProgressUpdateUI(m_Uid, "Queued", 0);
 }
 
 long AlgorithmModuleBase::GetUid()
