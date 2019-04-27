@@ -38,15 +38,15 @@ void GeodesicTrainingWarningImageSize::SelectedSubjectChangedHandler(long uid)
 {
     qDebug() << "GeodesicTrainingWarningImageSize::SelectedSubjectChangedHandler" << uid;
 
-    // Clean up
-    if (this->GetErrorMessageIfNotAllowed() != "")
-    {
-        emit ErrorMessageWasRemoved(this, this->GetErrorMessageIfNotAllowed());
-    }
-    for (const QString& warning : this->GetWarnings())
-    {
-        emit WarningWasRemoved(this, warning);
-    }
+    // // Clean up
+    // if (this->GetErrorMessageIfNotAllowed() != "")
+    // {
+    //     emit ErrorMessageWasRemoved(this, this->GetErrorMessageIfNotAllowed());
+    // }
+    // for (const QString& warning : this->GetWarnings())
+    // {
+    //     emit WarningWasRemoved(this, warning);
+    // }
 
     // Operations
 
@@ -57,6 +57,7 @@ void GeodesicTrainingWarningImageSize::SelectedSubjectChangedHandler(long uid)
             QString("Drag and drop files or folders (one for each subject), ") + 
             QString("or use the \'File\' menu.")
         );
+        this->UpdateWarnings(QStringList());
         return;
     }
 
@@ -64,6 +65,7 @@ void GeodesicTrainingWarningImageSize::SelectedSubjectChangedHandler(long uid)
     if (iids.size() == 0) 
     {
         this->SetOperationAllowed(false, "No patient images");
+        this->UpdateWarnings(QStringList());
         return;
     }
 
@@ -80,6 +82,7 @@ void GeodesicTrainingWarningImageSize::SelectedSubjectChangedHandler(long uid)
     if (iid == -1)
     {
         this->SetOperationAllowed(false, "No patient images");
+        this->UpdateWarnings(QStringList());
         return;
     }
 
@@ -110,6 +113,7 @@ void GeodesicTrainingWarningImageSize::InspectImage(long iid)
         this->SetOperationAllowed(false, 
             "Only 2D and 3D images are supported"
         );
+        this->UpdateWarnings(QStringList());
         return;
     }
 
@@ -130,6 +134,7 @@ void GeodesicTrainingWarningImageSize::InspectImage(long iid)
             this->SetOperationAllowed(false, 
                 "Not all images have the same number of dimensions"
             );
+            this->UpdateWarnings(QStringList());
             return;
         }
 
@@ -142,6 +147,7 @@ void GeodesicTrainingWarningImageSize::InspectImage(long iid)
                 this->SetOperationAllowed(false, 
                     "Not all images have the same size"
                 );
+                this->UpdateWarnings(QStringList());
                 return;      
             }
         }

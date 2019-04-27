@@ -36,6 +36,7 @@ public:
 
 	void SetEnabled(bool enabled) override;
 
+
 public slots:
 	// Slots for DataViewBase
 	void SelectedSubjectChangedHandler(long uid);
@@ -54,6 +55,8 @@ public slots:
 		QString errorMessage
 	);
 
+	void AllowCreatingSeeds(bool allow);
+	
 	// // Slots for WarningFunction(s)
 	// void OnOperationAllowanceChanged(WarningFunctionBase* function, bool allow,
     //     QString errorMessageIfNotAllowed

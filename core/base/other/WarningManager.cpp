@@ -49,8 +49,8 @@ void WarningManager::RegisterWarningFunction(WarningFunctionBase* function)
         m_Functions.push_back(function);
 
         // Connect signals/slots
-        connect(function, SIGNAL(OperationAllowanceChanged(WarningFunctionBase*, bool, QString)),
-            this, SLOT(OnOperationAllowanceChanged(WarningFunctionBase*, bool, QString))
+        connect(function, SIGNAL(OperationAllowanceChanged(WarningFunctionBase*, bool)),
+            this, SLOT(OnOperationAllowanceChanged(WarningFunctionBase*, bool))
         );
         connect(function, SIGNAL(NewErrorMessage(WarningFunctionBase*, QString)), 
             this, SLOT(OnNewErrorMessage(WarningFunctionBase*, QString))
@@ -90,8 +90,8 @@ void WarningManager::UnregisterWarningFunction(WarningFunctionBase* function)
         }
 
         // Disonnect signals/slots
-        disconnect(function, SIGNAL(OperationAllowanceChanged(WarningFunctionBase*, bool, QString)),
-            this, SLOT(OnOperationAllowanceChanged(WarningFunctionBase*, bool, QString))
+        disconnect(function, SIGNAL(OperationAllowanceChanged(WarningFunctionBase*, bool)),
+            this, SLOT(OnOperationAllowanceChanged(WarningFunctionBase*, bool))
         );
         disconnect(function, SIGNAL(NewErrorMessage(WarningFunctionBase*, QString)), 
             this, SLOT(OnNewErrorMessage(WarningFunctionBase*, QString))
@@ -156,12 +156,21 @@ void WarningManager::OnOperationAllowanceChanged(WarningFunctionBase* function, 
         }
     }
 
+    if (m_Functions.size() == 1)
+    {
+        qDebug() << "Emit OperationAllowanceChanged" << ((allow)?"yes":"no");
+        emit OperationAllowanceChanged(allow);
+        return;
+    }
+
     if (allow && !foundAnotherFalse)
     {
+        qDebug() << "Emit OperationAllowanceChanged" << ((allow)?"yes":"no");
         emit OperationAllowanceChanged(true);
     }
     if (!allow && !foundAnotherFalse) 
     {
+        qDebug() << "Emit OperationAllowanceChanged" << ((allow)?"yes":"no");
         emit OperationAllowanceChanged(false);
     }
 }

@@ -5,6 +5,8 @@
 
 #include <map>
 
+#include "WarningFunctionBase.h"
+
 class GeodesicTrainingWarningGUI : public QWidget
 {
     Q_OBJECT
@@ -21,6 +23,12 @@ public slots:
 
     void OnNewWarning(QString warning);
     void OnWarningWasRemoved(QString warningThatWasRemoved);
+
+    void OnNewWarningFunctionAdded(WarningFunctionBase* function);
+    void OnImageSizeWarningFunctionAllowanceChanged(WarningFunctionBase* function, bool allow);
+
+signals:
+    void CreatingSeedsAllowance(bool allow);
 
 private:
     void HandleMessage(QString message);

@@ -1,6 +1,7 @@
 #include "GeodesicTrainingWarningGUI.h"
 
 #include <QVBoxLayout>
+#include <QDebug>
 
 #include "InfoLabel.h"
 #include "WarningInformation.h"
@@ -87,6 +88,25 @@ void GeodesicTrainingWarningGUI::OnWarningWasRemoved(QString warningThatWasRemov
     {
         m_Container->hide();
     }
+}
+
+void GeodesicTrainingWarningGUI::OnNewWarningFunctionAdded(WarningFunctionBase* function)
+{
+    qDebug() << "GeodesicTrainingWarningGUI::OnNewWarningFunctionAdded" << function->GetName();
+    if (function->GetName() == "Image size")
+    {
+        connect(function, SIGNAL(OperationAllowanceChanged(WarningFunctionBase*, bool)),
+            this, SLOT(OnImageSizeWarningFunctionAllowanceChanged(WarningFunctionBase*, bool))
+        );
+        qDebug() << "Found function" << function->GetName();
+    }
+}
+
+void GeodesicTrainingWarningGUI::OnImageSizeWarningFunctionAllowanceChanged(
+    WarningFunctionBase* function, bool allow)
+{
+    qDebug() << "GeodesicTrainingWarningGUI::OnImageSizeWarningFunctionAllowanceChanged";
+    emit CreatingSeedsAllowance(allow);
 }
 
 void GeodesicTrainingWarningGUI::HandleMessage(QString message)

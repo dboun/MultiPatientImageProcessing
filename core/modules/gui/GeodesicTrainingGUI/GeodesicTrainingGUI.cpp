@@ -97,6 +97,28 @@ void GeodesicTrainingGUI::SetEnabled(bool enabled)
   this->SetUpWarnings();
 }
 
+void GeodesicTrainingGUI::AllowCreatingSeeds(bool allow)
+{
+  qDebug() << "GeodesicTrainingGUI::AllowCreatingSeeds" << ((allow)?"yes":"no");
+
+  auto seeds = this->GetDataManager()->GetAllDataIdsOfSubjectWithSpecialRole(
+    m_DataView->GetCurrentSubjectID(), "Seeds"
+  );
+
+  bool noOtherSeeds = (seeds.size() == 0);
+
+  if (allow && noOtherSeeds)
+  {
+    this->findChild<QFrame*>("frameCreate")->show();
+  }
+
+  if (!allow)
+  {
+    for (const long& seed : seeds) { this->GetDataManager()->RemoveData(seed); }
+    this->findChild<QFrame*>("frameCreate")->hide();
+  }
+}
+
 void GeodesicTrainingGUI::SelectedSubjectChangedHandler(long uid)
 {
   long seed  = -1;
@@ -244,6 +266,12 @@ void GeodesicTrainingGUI::SetUpWarnings()
   );
   connect(warningManager, SIGNAL(WarningWasRemoved(QString)),
     warningGUI, SLOT(OnWarningWasRemoved(QString))
+  );
+  connect(warningManager, SIGNAL(NewWarningFunctionAdded(WarningFunctionBase*)),
+    warningGUI, SLOT(OnNewWarningFunctionAdded(WarningFunctionBase*))
+  );
+  connect(warningGUI, SIGNAL(CreatingSeedsAllowance(bool)),
+    this, SLOT(AllowCreatingSeeds(bool))
   );
 
   // --- Add Warning Functions ---
