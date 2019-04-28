@@ -110,21 +110,25 @@ MainWindow::MainWindow(QWidget *parent) :
 
   connect(ui->rightSideContainer, SIGNAL(currentChanged(int)), this, SLOT(OnTabSelected(int)));
 
+  // Temporary solution
+  ui->rightPanel->layout()->removeWidget(ui->rightSideContainer);
+
 #ifdef BUILD_MODULE_GeodesicTrainingGUI
-  m_GeodesicTrainingGUI = new GeodesicTrainingGUI(this);
+  m_GeodesicTrainingGUI = new GeodesicTrainingGUI(ui->rightPanel);
+  m_GeodesicTrainingGUI->setStyleSheet(ui->rightPanel->styleSheet());
   auto gtGUI = qobject_cast<GeodesicTrainingGUI*>(m_GeodesicTrainingGUI);
   gtGUI->SetDataManager(m_DataManager);
   gtGUI->SetDataView(m_DataView);
   gtGUI->SetAppName(m_AppName);
   gtGUI->SetAppNameShort(m_AppNameShort);
   gtGUI->SetEnabled(true);
-  //ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, " MLL ");
-  SideWidget* sideWidgetGeodesicTraining = new SideWidget(this);
-  sideWidgetGeodesicTraining->AddCustomWidget(m_GeodesicTrainingGUI);
-  ui->rightSideContainer->addTab(sideWidgetGeodesicTraining, " MLL ");
-  
-  //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
-  //ui->rightSideContainer->findChild<QTabBar *>(QLatin1String("qt_tabwidget_tabbar"))->hide();
+  //SideWidget* sideWidgetGeodesicTraining = new SideWidget(this);
+  //sideWidgetGeodesicTraining->AddCustomWidget(m_GeodesicTrainingGUI);
+  //ui->rightSideContainer->addTab(sideWidgetGeodesicTraining, " MLL ");
+
+  //ui->rightPanel->layout()->addWidget(sideWidgetGeodesicTraining);
+  ui->rightPanel->layout()->addWidget(m_GeodesicTrainingGUI);
+
 #endif
 
 #ifdef BUILD_MODULE_MitkSegmentationToolREMOVED

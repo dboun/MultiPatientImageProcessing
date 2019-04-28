@@ -29,9 +29,9 @@ GeodesicTrainingGUI::GeodesicTrainingGUI(QWidget *parent) :
   GuiModuleBase(parent),
   ui(new Ui::GeodesicTrainingGUI),
   m_DataStorage(CustomMitkDataStorage::GetInstance()),
-  m_Scheduler(DefaultScheduler::GetInstance()),
-  m_MitkSegmentationTool(new MitkSegmentationTool(nullptr))
+  m_Scheduler(DefaultScheduler::GetInstance())
 {
+  m_MitkSegmentationTool = new MitkSegmentationTool(ui->mitkDrawingToolContainer);
   ui->setupUi(this);
   m_MitkSegmentationTool->SetSpecialRoleOfInterest("Seeds");
   m_MitkSegmentationTool->SetAllowMultiple(false);

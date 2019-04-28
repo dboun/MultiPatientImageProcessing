@@ -16,6 +16,48 @@ QWidget:item:hover
     color: #FFFFFF;
 }
 
+#rightPanel {
+  background-color: #424242;  
+}
+
+/* Experiments */
+MitkSegmentationTool[accessibleName="mitkSegTool"]
+{
+    background-color: blue;
+}
+
+#GTGUI {
+    background-color: blue;
+}
+
+#GTSegmentationTool {
+    background-color: blue;
+}
+
+/*QTableView {
+    background-color: blue;
+}*/
+
+/*#scrollArea {
+    background-color: #ff0000;
+}
+#contentArea {
+    background-color: #ff0000;
+}
+ScrollArea {
+    background-color: transparent;
+}
+SideWidget {
+    background-color: transparent;
+}
+SideWidget {
+    background-color: transparent;
+}
+#rightPanel {
+  background-color: #424242;  
+}*/
+/*background-color: #424242;*/
+
 /*----------------- Warnings ----------------------*/
 
 /*WarningInformation*/
@@ -378,8 +420,10 @@ QDockWidget::close-button, QDockWidget::float-button {
 /*------------------------ QTabWidget ------------------------*/
 QTabWidget
 {
-	border: 1px black;
+	border: 0px;
+    background-color: red;
 }
+/*border: 1px black;*/
 /*border: 1px transparent black;*/
 
 QTabWidget::pane { /* The tab widget frame */
