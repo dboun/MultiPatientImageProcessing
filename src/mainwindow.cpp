@@ -122,7 +122,7 @@ MainWindow::MainWindow(QWidget *parent) :
   SideWidget* sideWidgetGeodesicTraining = new SideWidget(this);
   sideWidgetGeodesicTraining->AddCustomWidget(m_GeodesicTrainingGUI);
   ui->rightSideContainer->addTab(sideWidgetGeodesicTraining, " MLL ");
-  
+
   //GuiModuleBase::PlaceWidgetInWidget(m_GeodesicTrainingGUI, ui->rightSideContainer);
   //ui->rightSideContainer->findChild<QTabBar *>(QLatin1String("qt_tabwidget_tabbar"))->hide();
 #endif

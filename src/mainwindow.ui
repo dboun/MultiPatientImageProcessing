@@ -64,7 +64,7 @@
         <number>0</number>
        </property>
        <property name="bottomMargin">
-        <number>0</number>
+        <number>2</number>
        </property>
        <item alignment="Qt::AlignHCenter">
         <widget class="QLabel" name="label">
@@ -222,7 +222,7 @@
      <x>0</x>
      <y>0</y>
      <width>986</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="styleSheet">
