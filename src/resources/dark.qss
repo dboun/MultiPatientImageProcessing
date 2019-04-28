@@ -21,7 +21,7 @@ QWidget:item:hover
 }
 
 /* Experiments */
-MitkSegmentationTool[accessibleName="mitkSegTool"]
+/*MitkSegmentationTool[accessibleName="mitkSegTool"]
 {
     background-color: blue;
 }
@@ -32,7 +32,7 @@ MitkSegmentationTool[accessibleName="mitkSegTool"]
 
 #GTSegmentationTool {
     background-color: blue;
-}
+}*/
 
 /*QTableView {
     background-color: blue;
@@ -164,7 +164,6 @@ QMenu::item:hover
 QPushButton {
     border: 1px solid gray;
     border-radius: 3px;
-    padding: 3px;
     font-size:12px;
     padding-left: 6px;
     padding-right: 6px;
@@ -274,9 +273,9 @@ QHeaderView::section {
 
 /*----------------------- QSlider -------------------------*/
 
-QSlider {
+/*QSlider {
 
-}
+}*/
 
 /*
     width:250px;
@@ -298,7 +297,7 @@ QSlider::groove:horizontal {
     border: 1px solid #172d44;
 }
 
-QSlider::handle:horizontal {
+/*QSlider::handle:horizontal {
     background-color: #0277bd;
     border: 1px solid #172d44;
     border-radius: 2px;
@@ -306,7 +305,7 @@ QSlider::handle:horizontal {
     height: 4px;
     width: 11px;
     margin: -8px 2; 
-}
+}*/
 /*border: 1px solid #5c5c5c;*/
 
 /*QSlider::handle:horizontal{
