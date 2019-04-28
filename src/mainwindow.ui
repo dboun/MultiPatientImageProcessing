@@ -58,7 +58,7 @@
         <number>0</number>
        </property>
        <property name="bottomMargin">
-        <number>0</number>
+        <number>9</number>
        </property>
        <item alignment="Qt::AlignHCenter">
         <widget class="QLabel" name="label">
@@ -177,6 +177,9 @@
        <property name="rightMargin">
         <number>9</number>
        </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QTabWidget" name="rightSideContainer">
          <property name="sizePolicy">
@@ -210,7 +213,7 @@
      <x>0</x>
      <y>0</y>
      <width>986</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="styleSheet">

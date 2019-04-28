@@ -147,6 +147,7 @@ MainWindow::MainWindow(QWidget *parent) :
   effect->setYOffset(1);
   effect->setColor(Qt::black);
   ui->dataViewContainer->setGraphicsEffect(effect);
+  ui->rightSideContainer->setGraphicsEffect(effect);
 
   // Signals and Slots
   connect(ui->actionOpen_Subjects, SIGNAL(triggered()), 

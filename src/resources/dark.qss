@@ -123,14 +123,14 @@ QPushButton {
     border: 1px solid gray;
     border-radius: 3px;
     padding: 3px;
+    font-size:12px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 3px;
+    padding-button: 3px;
 }
-
-/* 
-    min-width: 2em;
-	min-height: 1em;    
-    min-width: 4em;
-	min-height: 2em;
-*/
+/* This work:    min-width: 35px;
+    min-height: 35px;*/
 
 QPushButton:hover {
     background-color: #646464;
@@ -185,6 +185,9 @@ QTreeWidget::item:selected {
     background-color: rgb(13,26,38);
     background: rgb(13,26,38);
 }
+QTreeWidget::item:selected:!active {
+    color: #ffffff;
+}
 QTreeWidget::item{ 
     selection-background-color: red
 }
@@ -196,6 +199,7 @@ QTreeWidget::item:selected:active {
 }
 QTreeWidget::item:hover {
     border: 1px solid #0d1a26;
+    color: #ffffff;
 }*/
 QTreeWidget::branch::has-children:selected {
     background-color: rgb(13,26,38);
@@ -205,6 +209,10 @@ QTreeWidget::branch::!has-children:selected {
 }
 
 /*background: transparent;*/
+
+QHeaderView::section {
+    background-color: #2a2a2a;
+}
 
 /*QTreeWidget {
     color: white;
@@ -234,13 +242,40 @@ QSlider {
     margin-right: 12px;
 */
 
-QSlider::handle:horizontal{
+/*QSlider::groove:horizontal {
+    border: 1px solid #999999;
+    height: 8px; 
+    width: 200px;
+    background-color: #2a2a2a;
+    margin: -4px 0;
+}*/
+
+QSlider::groove:horizontal {
+    background-color: #2a2a2a;
+    height: 5px;
+    border: 1px solid #172d44;
+}
+
+QSlider::handle:horizontal {
+    background-color: #0277bd;
+    border: 1px solid #172d44;
+    border-radius: 2px;
+    border-color: black;
+    height: 4px;
+    width: 11px;
+    margin: -8px 2; 
+}
+/*border: 1px solid #5c5c5c;*/
+
+/*QSlider::handle:horizontal{
     width: 12px;
+    height: 12px;
 }
 
 QSlider::groove:horizontal {
     width:200px;
-}
+    background-color: #2a2a2a;
+}*/
 
 /*QSlider::groove:horizontal{
     border: 1px solid #9f0000;
@@ -257,6 +292,37 @@ QSlider::handle:horizontal{
 }*/
 
 /*----------------------- QSpinBox ------------------------*/
+
+/*QDoubleSpinBox {
+    background-color: #646464;
+}*/
+
+QDoubleSpinBox::up-button {
+    background-color: #444444;
+    border-image: url(:/baseline_arrow_drop_up_white_18dp.png) 1;
+}
+
+QDoubleSpinBox::up-button:hover {
+    background-color: #545454;
+}
+
+QDoubleSpinBox::up-button:pressed {
+    background-color: #646464;
+}
+
+QDoubleSpinBox::down-button {
+    background-color: #444444;
+    border-image: url(:/baseline_arrow_drop_down_white_18dp.png) 1;
+}
+
+QDoubleSpinBox::down-button:hover {
+    background-color: #545454;
+}
+
+QDoubleSpinBox::down-button:pressed {
+    background-color: #646464;
+}
+
 QSpinBox {
     background-color: #646464;
 }

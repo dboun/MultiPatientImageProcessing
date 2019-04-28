@@ -16,5 +16,5 @@ set( H_FILES
 )
 
 set( RESOURCE_FILE 
-  resource.qrc
+  resources/resource.qrc
 )
