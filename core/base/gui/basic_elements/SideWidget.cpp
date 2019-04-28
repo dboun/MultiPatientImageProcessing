@@ -11,5 +11,6 @@ SideWidget::~SideWidget() {
 }
 
 void SideWidget::AddCustomWidget(QWidget* widget) {
+	ui->contentArea->layout()->setContentsMargins(0, 0, 0, 0);
     ui->contentArea->layout()->addWidget(widget);
 }
