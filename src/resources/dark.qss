@@ -4,7 +4,7 @@ QMainWindow
 	color: #909090;
 	background-color: #212121;
 }
-/*#BFBFBF*/
+/*background-color: #212121;*/
 QWidget
 {
 	color: #909090;
@@ -14,6 +14,39 @@ QWidget:item:hover
 {
     background-color: #5285A6;
     color: #FFFFFF;
+}
+
+/*Experiments*/
+
+#rightPanel {
+    border: 0px;
+}
+#rightPanel QWidget {
+    color: #909090;
+    background-color: #262626;
+}
+#rightPanel QWidget:item:hover {
+    background-color: #5285A6;
+    color: #FFFFFF;
+}
+/*background-color: #272727;*/
+#rightPanel QTabWidget {
+    border: 0px;
+}
+#rightPanel SideWidget {
+    border: 0px;
+}
+#rightPanel GeodesicTrainingGUI {
+    border: 0px;
+}
+#contentArea {
+    border: 0px;
+}
+#leftPanel QTreeWidget {
+    background-color: #272727;
+}
+QScrollView {
+    border: 0px;
 }
 
 /*----------------- Warnings ----------------------*/
@@ -34,7 +67,7 @@ QWidget:item:hover
 /*background-color: #bf360c;
 color: #ffffff;*/
 
-#warningInfoPushButton {
+#rightPanel #warningInfoPushButton {
     font-size:17px; 
     border-color: #172d44; 
     background-color: #26190d;
@@ -45,22 +78,22 @@ color: #ffffff;*/
 }
 
 /*WarningCritical*/
-WarningCritical {
+#rightPanel WarningCritical {
     background-color: #bf360c;    
 }
 
-#warningCriticalFrame {
+#rightPanel #warningCriticalFrame {
     background-color: #bf360c;
 }
 
-#warningCriticalLabel {
+#rightPanel #warningCriticalLabel {
     background-color: #bf360c;
     color: #ffffff;
     font: italic;
     font-size:13px;
 }
 
-#warningCriticalPushButton {
+#rightPanel #warningCriticalPushButton {
     font-size:17px; 
     border-color: #172d44; 
     background-color: #26190d;
@@ -122,7 +155,6 @@ QMenu::item:hover
 QPushButton {
     border: 1px solid gray;
     border-radius: 3px;
-    padding: 3px;
     font-size:12px;
     padding-left: 6px;
     padding-right: 6px;
@@ -139,7 +171,7 @@ QPushButton:pressed {
     background-color: #5285A6;
 }
 
-RunPushButton { 
+#rightPanel RunPushButton { 
     font-size:18px; 
     color: white;
     border-color: #a5d6a7;
@@ -152,7 +184,7 @@ RunPushButton {
     margin-right: 10px;
 }
 
-ActionPushButton {
+#rightPanel ActionPushButton {
     font-size:17px; 
     border-color: #172d44; 
     background-color: #0d1a26; 
@@ -181,6 +213,9 @@ InfoLabel {
 }
 
 /*-------------------- QTreeWidget ------------------------*/
+QTreeWidget {
+    border: 0px;
+}
 QTreeWidget::item:selected {
     background-color: rgb(13,26,38);
     background: rgb(13,26,38);
@@ -232,9 +267,9 @@ QHeaderView::section {
 
 /*----------------------- QSlider -------------------------*/
 
-QSlider {
+/*QSlider {
 
-}
+}*/
 
 /*
     width:250px;
@@ -250,13 +285,28 @@ QSlider {
     margin: -4px 0;
 }*/
 
+QSlider::handle:horizontal { 
+	background-color: #0277bd; 
+	border: 2px solid #0277bd; 
+	width: 12px; 
+	height: 12px; 
+	line-height: 12px; 
+	margin-top: -3px; 
+	margin-bottom: -3px; 
+	border-radius: 7px; 
+}
+
+QSlider::handle:horizontal:hover { 
+	border-radius: 7px;
+}
+
 QSlider::groove:horizontal {
     background-color: #2a2a2a;
     height: 5px;
     border: 1px solid #172d44;
 }
 
-QSlider::handle:horizontal {
+/*QSlider::handle:horizontal {
     background-color: #0277bd;
     border: 1px solid #172d44;
     border-radius: 2px;
@@ -264,7 +314,7 @@ QSlider::handle:horizontal {
     height: 4px;
     width: 11px;
     margin: -8px 2; 
-}
+}*/
 /*border: 1px solid #5c5c5c;*/
 
 /*QSlider::handle:horizontal{
@@ -378,11 +428,13 @@ QDockWidget::close-button, QDockWidget::float-button {
 /*------------------------ QTabWidget ------------------------*/
 QTabWidget
 {
-	border: 1px black;
+	border: 0px;
 }
+/*border: 1px black;*/
 /*border: 1px transparent black;*/
 
 QTabWidget::pane { /* The tab widget frame */
+    border: 0px;
 }
 
 
