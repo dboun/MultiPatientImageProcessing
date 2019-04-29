@@ -80,8 +80,8 @@ private:
 
 	QString m_SpecialRoleOfInterest = "Segmentation";
 	long    m_CurrentFocusImageID     = -1;
-
 	bool    m_AllowMultiple = true;
+	bool    m_IsEnabled = false;
 };
 
 #endif // ! MITK_SEGMENTATION_TOOL_H

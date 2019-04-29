@@ -93,8 +93,14 @@ void GeodesicTrainingGUI::SetScheduler(SchedulerBase* scheduler)
 
 void GeodesicTrainingGUI::SetEnabled(bool enabled)
 {
+  qDebug() << "GeodesicTrainingGUI::SetEnabled" << ((enabled)?"yes":"no");
   m_MitkSegmentationTool->SetEnabled(enabled);
-  this->SetUpWarnings();
+  
+  if (!m_AreWarningsSetUp) 
+  {
+    this->SetUpWarnings();
+    m_AreWarningsSetUp = true;
+  }
 }
 
 void GeodesicTrainingGUI::AllowCreatingSeeds(bool allow)

@@ -80,6 +80,7 @@ private:
 	SchedulerBase*         m_Scheduler;
 
 	std::set<long> m_SubjectsThatAreRunning;
+	bool           m_AreWarningsSetUp = false;
 
 	Ui::GeodesicTrainingGUI *ui;
 };

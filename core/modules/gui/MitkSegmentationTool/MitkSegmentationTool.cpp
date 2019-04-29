@@ -34,6 +34,12 @@ MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
   ui->frameCreate->show();
 
   this->m_ToolManager = mitk::ToolManagerProvider::GetInstance()->GetToolManager();
+  // m_ToolManager = mitk::ToolManager::New(m_DataStorage);
+  // m_ToolManager->RegisterClient();
+  // auto toolManagerProvider = mitk::ToolManagerProvider::GetInstance();
+  // toolManagerProvider->Register();
+  // this->m_ToolManager = toolManagerProvider->GetToolManager();
+  // this->m_ToolManager toolManagerProvider->GetToolManager();
     // mitk::ToolManager::New(nullptr);
   assert(m_ToolManager);
 
@@ -52,7 +58,7 @@ MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
   // connect(pbColor, SIGNAL(clicked()), this, SLOT(Refresh()));
 
   ui->toolSelectionBox->SetToolManager(*m_ToolManager);
-  ui->toolSelectionBox->setEnabled(true);
+  // ui->toolSelectionBox->setEnabled(true);
   ui->toolSelectionBox->SetGenerateAccelerators(true);
   ui->toolSelectionBox->SetDisplayedToolGroups(tr("Add Subtract Correction Paint Erase").toStdString());
   ui->toolSelectionBox->SetLayoutColumns(3);
@@ -93,8 +99,8 @@ MitkSegmentationTool::MitkSegmentationTool(QWidget *parent) :
   m_EmptyImageNode = mitk::DataNode::New();
   m_EmptyImageNode->SetData(emptyLabelSetImage);
   m_EmptyImageNode->SetName(std::to_string(-1));
-  this->m_ToolManager->SetWorkingData(m_EmptyImageNode);
-  this->m_ToolManager->SetReferenceData(m_EmptyImageNode);
+  // this->m_ToolManager->SetWorkingData(m_EmptyImageNode);
+  // this->m_ToolManager->SetReferenceData(m_EmptyImageNode);
 }
 
 MitkSegmentationTool::~MitkSegmentationTool()
@@ -106,10 +112,27 @@ MitkSegmentationTool::~MitkSegmentationTool()
 
 void MitkSegmentationTool::ChangeFocusImage(long iid)
 {
+  if (!m_IsEnabled) { 
+    m_CurrentFocusImageID = iid; // Useful when re-enabling
+    return; 
+  }
+
   qDebug() << "MitkSegmentationTool::ChangeFocusImage" << iid;
   
-  if (m_CurrentFocusImageID == iid) { return; }
-  else { RevertToNullState(); }
+  if (m_CurrentFocusImageID != iid) { RevertToNullState(); }
+  
+  long workingDataID = -1;
+
+  if (m_ToolManager->GetWorkingData().size() > 0)
+  {
+    workingDataID = QString(m_ToolManager->GetWorkingData(0)->GetName().c_str()).toLong();
+  }
+
+  if (m_CurrentFocusImageID == iid && 
+      workingDataID == m_CurrentFocusImageID)
+  { 
+    return; 
+  }
 
   if (iid == -1) { return; }
 
@@ -176,7 +199,7 @@ void MitkSegmentationTool::SetAllowMultiple(bool allowMultiple)
 
 void MitkSegmentationTool::RevertToNullState()
 {
-  m_CurrentFocusImageID = -1;
+  // m_CurrentFocusImageID = -1;
   
   ui->newLabelPushBtn->hide();
   ui->labelSetWidget->hide();
@@ -190,6 +213,7 @@ void MitkSegmentationTool::RevertToNullState()
   m_ToolManager->SetWorkingData(m_EmptyImageNode);
   m_ToolManager->SetReferenceData(m_EmptyImageNode); 
 
+  qDebug() << "Updating Label Set Widget";
   //ui->labelSetWidget->UpdateAllTableWidgetItems();
   ui->labelSetWidget->UpdateControls();
   ui->labelSetWidget->ResetAllTableWidgetItems();
@@ -204,11 +228,18 @@ void MitkSegmentationTool::SetSpecialRoleOfInterest(QString specialRoleOfInteres
 
 void MitkSegmentationTool::SetEnabled(bool enabled)
 {
+  qDebug() << "MitkSegmentationTool::SetEnabled" << ((enabled)?"yes":"no");
+  m_IsEnabled = enabled;
+
   if (enabled)
   {
-    this->m_ToolManager->SetWorkingData(m_LoadedMaskNode);
-    this->m_ToolManager->SetReferenceData(m_LoadedMaskNode);
+    ChangeFocusImage(m_CurrentFocusImageID);
   }
+  else {
+    RevertToNullState();
+  }
+
+  ui->toolSelectionBox->setEnabled(enabled);
 }
 
 void MitkSegmentationTool::SetDataView(DataViewBase* dataView)
@@ -283,6 +314,7 @@ void MitkSegmentationTool::AutoGenerateLabels()
     workingImage->GetActiveLabelSet()->AddLabel(labelNames[i].toStdString(), colorNames[i]);
   }
 
+  workingImage->GetActiveLabelSet()->SetAllLabelsLocked(false);
   workingImage->GetActiveLabelSet()->SetActiveLabel(1);
 
   if (ui->labelSetWidget->isHidden()) { ui->labelSetWidget->show(); }

@@ -117,7 +117,7 @@ MainWindow::MainWindow(QWidget *parent) :
   gtGUI->SetDataView(m_DataView);
   gtGUI->SetAppName(m_AppName);
   gtGUI->SetAppNameShort(m_AppNameShort);
-  gtGUI->SetEnabled(true);
+  // gtGUI->SetEnabled(true);
   //ui->rightSideContainer->addTab(m_GeodesicTrainingGUI, " MLL ");
   SideWidget* sideWidgetGeodesicTraining = new SideWidget(this);
   sideWidgetGeodesicTraining->AddCustomWidget(m_GeodesicTrainingGUI);
@@ -133,12 +133,29 @@ MainWindow::MainWindow(QWidget *parent) :
   st->SetDataView(m_DataView);
   st->SetAppName(m_AppName);
   st->SetAppNameShort(m_AppNameShort);
-  st->SetEnabled(true);
+  // st->SetEnabled(true);
   connect(m_DataView, SIGNAL(SelectedDataChanged(long)), st, SLOT(ChangeFocusImage(long)));
   SideWidget* sideWidgetSegmentationPanel = new SideWidget(this);
   sideWidgetSegmentationPanel->AddCustomWidget(st);
   ui->rightSideContainer->addTab(sideWidgetSegmentationPanel, "  Segmentation panel  ");
 #endif
+
+  // Activate the first widget in the QTabWidget
+  qDebug() << "Tab widget has" << ui->rightSideContainer->count() << "tabs";
+  if (ui->rightSideContainer->count() > 0) 
+  {
+    SideWidget* sw = dynamic_cast<SideWidget*>(ui->rightSideContainer->widget(0));
+
+    if (sw)
+    {
+      GuiModuleBase* g = dynamic_cast<GuiModuleBase*>(sw->GetCustomWidget());
+      if (g) 
+      { 
+        qDebug() << "Found gui module and enabling it";
+        g->SetEnabled(true); 
+      }
+    }
+  }
 
   // Turn on drag and drop
   setAcceptDrops(true); 
@@ -568,18 +585,23 @@ void MainWindow::OnCloseAllSubjects()
 
 void MainWindow::OnTabSelected(int tab)
 {
-  // GuiModuleBase* g = (GuiModuleBase*) ui->rightSideContainer->widget(tab);
-  // if (g) { g->SetEnabled(true); } // It might not be GuiModuleBase
+  qDebug() << "MainWindow::OnTabSelected" << tab;
 
-  // switch (tab)
-  // {
-  // case 0:
-  //   qDebug() << "MLL tab";
-  //   break;
-  // case 1:
-  //   qDebug() << "Segmentation panel tab";
-  //   break;
-  // }
+  int count = ui->rightSideContainer->count(); // How many are there
+
+  for (int i=0; i<count; i++)
+  {
+    if (i != tab)
+    {
+      SideWidget* sw = dynamic_cast<SideWidget*>(ui->rightSideContainer->widget(i));
+      GuiModuleBase* t = dynamic_cast<GuiModuleBase*>(sw->GetCustomWidget());
+      if (t) { t->SetEnabled(false); }
+    }
+  }
+
+  SideWidget* swSelected = dynamic_cast<SideWidget*>(ui->rightSideContainer->widget(tab));
+  GuiModuleBase* selected = dynamic_cast<GuiModuleBase*>(swSelected->GetCustomWidget());
+  if (selected) { selected->SetEnabled(true); }
 }
 
 void MainWindow::OnToggleFullscreen()

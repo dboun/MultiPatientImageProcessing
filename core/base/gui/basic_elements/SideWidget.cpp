@@ -18,4 +18,10 @@ SideWidget::~SideWidget() {
 
 void SideWidget::AddCustomWidget(QWidget* widget) {
     ui->contentArea->layout()->addWidget(widget);
+	m_CustomWidget = widget;
+}
+
+QWidget* SideWidget::GetCustomWidget()
+{
+	return m_CustomWidget;
 }

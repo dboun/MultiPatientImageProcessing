@@ -16,10 +16,11 @@ public:
     ~SideWidget();
 
     void AddCustomWidget(QWidget* widget);
+    QWidget* GetCustomWidget();
 
 private:
     Ui::SideWidget *ui;
-
+    QWidget* m_CustomWidget;
 };
 
 #endif // ! SIDE_WIDGET_H
