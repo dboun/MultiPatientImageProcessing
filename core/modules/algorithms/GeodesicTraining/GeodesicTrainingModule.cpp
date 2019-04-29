@@ -38,10 +38,10 @@ void GeodesicTrainingModule::GeodesicTrainingProgressUpdateHandler(QString messa
 
 void GeodesicTrainingModule::Algorithm()
 {
-    // TODO: Delete this
-    emit ProgressUpdateUI(m_Uid, "Error", 1);
-    QThread::sleep(70);
-    // EO Delete this
+    // // TODO: Delete this
+    // emit ProgressUpdateUI(m_Uid, "Error", 1);
+    // QThread::sleep(70);
+    // // EO Delete this
 
     if (m_Uid == -1)
     {

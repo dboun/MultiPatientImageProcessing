@@ -20,6 +20,7 @@ QWidget:item:hover
 
 #rightPanel {
     border: 0px;
+    margin-left: 2px;
 }
 #rightPanel QWidget {
     color: #909090;
@@ -60,6 +61,10 @@ QScrollView {
 
 /*----------------- Warnings ----------------------*/
 
+#rightPanel InfoLabel {
+    background-color: #1f1f1f;
+}
+
 /*WarningInformation*/
 /*WarningInformation {
     background-color: #bf360c;    
@@ -85,6 +90,22 @@ color: #ffffff;*/
     padding-top: 5px;
     padding-bottom: 5px;
 }
+
+/*WarningInformation*/
+/* #rightPanel WarningInformation {
+    background-color: #151515;
+} */
+
+#rightPanel #warningInfoFrame {
+    background-color: #1f1f1f;
+}
+
+#rightPanel #warningInfoLabel {
+    background-color: #1f1f1f;
+    font: italic;
+    font-size:13px;
+}
+/*color: #ffffff;*/
 
 /*WarningCritical*/
 #rightPanel WarningCritical {
@@ -221,10 +242,10 @@ QPushButton {
 
 #rightPanel QScrollBar:vertical {
     border-color: #424242;
-    border-width: 1px;
+    border-width: 0px;
     border-style: solid;
     background: #151515;
-    background-color: #151515;
+    background-color: #212121;
     width: 13px;
 }
 /*margin: 21px 0 21px 0;*/
@@ -243,7 +264,7 @@ QPushButton {
 
 #rightPanel QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
     height: 0px;
-    background: #151515;
+    background: #212121;
 }
 /*#rightPanel QScrollBar::add-line:vertical {
     border: 2px solid black;
