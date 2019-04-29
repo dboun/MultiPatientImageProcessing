@@ -127,14 +127,17 @@ MainWindow::MainWindow(QWidget *parent) :
   //ui->rightSideContainer->findChild<QTabBar *>(QLatin1String("qt_tabwidget_tabbar"))->hide();
 #endif
 
-#ifdef BUILD_MODULE_MitkSegmentationToolREMOVED
+#ifdef BUILD_MODULE_MitkSegmentationTool
   auto st = new MitkSegmentationTool(this);
   st->SetDataManager(m_DataManager);
   st->SetDataView(m_DataView);
+  st->SetAppName(m_AppName);
+  st->SetAppNameShort(m_AppNameShort);
+  st->SetEnabled(true);
   connect(m_DataView, SIGNAL(SelectedDataChanged(long)), st, SLOT(ChangeFocusImage(long)));
   SideWidget* sideWidgetSegmentationPanel = new SideWidget(this);
   sideWidgetSegmentationPanel->AddCustomWidget(st);
-  ui->rightSideContainer->addTab(sideWidgetSegmentationPanel, " Segmentation panel ");
+  ui->rightSideContainer->addTab(sideWidgetSegmentationPanel, "  Segmentation panel  ");
 #endif
 
   // Turn on drag and drop

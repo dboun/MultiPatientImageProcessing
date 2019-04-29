@@ -603,8 +603,8 @@ QTabBar::tab {
     background: #363636;
     border: 1px transparent black;
     border-bottom-color: #C2C7CB; /* same as the pane color */
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
     min-width: 18ex;
     padding: 3px;
 }
@@ -612,11 +612,15 @@ QTabBar::tab {
 QTabBar::tab:selected, QTabBar::tab:hover {
 	color: #EEEEEE;
     background: #6D6D6D;
+
+    font-size:12px;
 }
 
 QTabBar::tab:!selected {
-   /* margin-top: 2px; /* make non-selected tabs look smaller */
 	background: #363636;
+
+    margin-top: 2px; /* make non-selected tabs look smaller */
+    font-size:11px;
 }
 
 /*------------------------ ComboBox -------------------------------*/
