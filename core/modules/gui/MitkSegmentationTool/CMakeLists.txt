@@ -7,15 +7,19 @@ set(CMAKE_AUTOMOC ON)
 
 set( CPP_FILES
   MitkSegmentationTool.cpp
+  CustomQmitkLabelSetWidget.cpp
 ) 
 set( H_FILES
   MitkSegmentationTool.h
+  CustomQmitkLabelSetWidget.h
 ) 
 set( UI_FILES
   MitkSegmentationTool.ui
+  CustomQmitkLabelSetWidgetControls.ui
 ) 
 set( MOC_H_FILES
   MitkSegmentationTool.h
+  CustomQmitkLabelSetWidget.h
 ) 
 
 qt5_wrap_ui( UI_Srcs ${UI_FILES} )

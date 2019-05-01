@@ -94,7 +94,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QmitkLabelSetWidget" name="labelSetWidget" native="true">
+    <widget class="CustomQmitkLabelSetWidget" name="labelSetWidget" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -161,9 +161,9 @@
    <header location="global">QmitkToolSelectionBox.h</header>
   </customwidget>
   <customwidget>
-   <class>QmitkLabelSetWidget</class>
+   <class>CustomQmitkLabelSetWidget</class>
    <extends>QWidget</extends>
-   <header location="global">Qmitk/QmitkLabelSetWidget.h</header>
+   <header>CustomQmitkLabelSetWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
