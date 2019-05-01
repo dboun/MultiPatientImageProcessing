@@ -170,14 +170,15 @@ void MitkSegmentationTool::ChangeFocusImage(long iid)
     ui->labelSetWidget->show();
   }
   ui->labelSetWidget->ResetAllTableWidgetItems();
+  // ui->labelSetWidget->UpdateAllTableWidgetItems();
 
   ui->toolGUIArea->setVisible(true);
   ui->toolSelectionBox->setVisible(true);
 
-  mitk::RenderingManager::GetInstance()->InitializeViews(
-    m_LoadedMaskNode->GetData()->GetTimeGeometry(), 
-    mitk::RenderingManager::REQUEST_UPDATE_ALL, true
-  );
+  // mitk::RenderingManager::GetInstance()->InitializeViews(
+  //   m_LoadedMaskNode->GetData()->GetTimeGeometry(), 
+  //   mitk::RenderingManager::REQUEST_UPDATE_ALL, true
+  // );
 
   auto workingImage = dynamic_cast<mitk::LabelSetImage*>(m_LoadedMaskNode->GetData());
   if (workingImage->GetTotalNumberOfLabels() == 1) // 1 means none
@@ -369,21 +370,19 @@ void MitkSegmentationTool::OnAddNewLabelClicked()
   {
     labelsImageName = "Unnamed";
   }
-  workingImage->GetActiveLabelSet()->AddLabel(labelsImageName.toStdString(), dialog->GetColor());
-
-  // // DELETE THIS
-  // mitk::Color c = dialog->GetColor();
-  // QMessageBox::information(this, "Color",
-  //   QString::number(c.GetRed()) + "," +
-  //   QString::number(c.GetGreen()) + "," +
-  //   QString::number(c.GetBlue())
-  // );
-  // // EO DELETE THIS
+  //workingImage->GetActiveLabelSet()->AddLabel(labelsImageName.toStdString(), dialog->GetColor());
+  mitk::Label::Pointer label = mitk::Label::New();
+  label->SetColor(dialog->GetColor());
+  label->SetName(labelsImageName.toStdString());
+  label->SetLocked(false);
+  workingImage->GetActiveLabelSet()->AddLabel(label);
 
   if (ui->labelSetWidget->isHidden()) { ui->labelSetWidget->show(); }
   ui->labelSetWidget->ResetAllTableWidgetItems();
 
-  mitk::RenderingManager::GetInstance()->InitializeViews(workingNode->GetData()->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true);
+  // mitk::RenderingManager::GetInstance()->InitializeViews(
+  //   workingNode->GetData()->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true
+  // );
 
   // Here is good place to see the clicks on the eye etc
   //QObjectList widgetList = ui->labelSetWidget->layout()->children();
