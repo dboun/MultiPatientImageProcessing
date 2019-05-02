@@ -255,8 +255,10 @@ void GeodesicTrainingModule::Algorithm()
                 segm = mitk::IOUtil::Load<mitk::LabelSetImage>(tmpPath.toStdString());
                 // EO Fix this hack
 
+                // segm->GetActiveLabelSet()->SetActiveLabel(0);
+                segm->GetActiveLabelSet()->SetAllLabelsLocked(false);
                 segm->GetActiveLabelSet()->SetActiveLabel(0);
-                                
+                
                 ds-> AddMitkLabelSetImageToSubject(this->GetUid(), 
                     segm, outputPath + "segmentation.nrrd", "Segmentation", "<Segmentation>   " 
                 );
@@ -368,6 +370,8 @@ void GeodesicTrainingModule::Algorithm()
                 segm = mitk::IOUtil::Load<mitk::LabelSetImage>(tmpPath.toStdString());
                 // EO Fix this hack
 
+                // segm->GetActiveLabelSet()->SetActiveLabel(0);
+                segm->GetActiveLabelSet()->SetAllLabelsLocked(false);
                 segm->GetActiveLabelSet()->SetActiveLabel(0);
                 
                 ds-> AddMitkLabelSetImageToSubject(this->GetUid(), 
