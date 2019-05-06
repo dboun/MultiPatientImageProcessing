@@ -195,8 +195,8 @@ void GeodesicTrainingModule::Algorithm()
         geodesicTraining->SetInputImages(inputImagesITK);
         geodesicTraining->SetLabels(seedsITK);
         geodesicTraining->SetOutputPath(outputPath.toStdString());
+        // geodesicTraining->SaveOnlyNormalSegmentation(true, "segmentation");
         geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
-        geodesicTraining->SaveOnlyNormalSegmentation(true, "segmentation");
         geodesicTraining->SetVerbose(true);
 
         // Unlock edit mutex and run
@@ -319,6 +319,14 @@ void GeodesicTrainingModule::Algorithm()
         geodesicTraining->SetNumberOfThreads(m_IdealNumberOfThreads);
         //geodesicTraining->SaveOnlyNormalSegmentation(true, "segmentation");
         geodesicTraining->SetVerbose(true);
+
+        // DELETE THIS (but keep saveonlynormalsegmentation)
+        qDebug() << "Should delete Save All in GeodesicTraining!!";
+        geodesicTraining->SetSaveAll(true);
+        geodesicTraining->SetTimerEnabled(true);
+        geodesicTraining->SetOutputPath("/home/dimitris/Desktop/gt_output");
+        // EO DELETE THIS
+
         
         ul.unlock();
         auto result = geodesicTraining->Execute();
