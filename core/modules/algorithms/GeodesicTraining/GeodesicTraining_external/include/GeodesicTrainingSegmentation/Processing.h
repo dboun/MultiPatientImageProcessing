@@ -1,7 +1,11 @@
 #ifndef H_CBICA_PROCESSING
 #define H_CBICA_PROCESSING
 
+#include <itkImageRegionIteratorWithIndex.h>
+#include <itkNeighborhoodIterator.h>
+
 #include <vector>
+#include <set>
 
 #include "cbicaITKSafeImageIO.h"
 #include "cbicaITKImageInfo.h"
@@ -102,6 +106,10 @@ namespace GeodesicTrainingSegmentation
 			}
 			avgSpacing /= InputImageType::ImageDimension;
 
+			// This variable holds the normal image size if spacing will not be changed,
+			// or it will hold the value of the new size that will result from changing the spacing.
+			typename InputImageType::SizeType tSize = m_original_input_image_size;
+
 			// Find if spacing should be normalized (i.e. there is a big difference across dimensions)
 			bool shouldNormalizeSpacing = false;
 			for(int i=0; i<InputImageType::ImageDimension; i++)
@@ -110,27 +118,21 @@ namespace GeodesicTrainingSegmentation
 				if (dimSpacingDiff > 0.1 || dimSpacingDiff < -0.1)
 				{
 					shouldNormalizeSpacing = true;
-				}
-			}
 
-			// This variable holds the normal image size if spacing will not be changed,
-			// or it will hold the value of the new size that will result from changing the spacing.
-			typename InputImageType::SizeType tSize = m_original_input_image_size;
-
-			// Find out if size should be normalized (i.e. the pixel count is big)
-			bool shouldNormalizeSize = false;
-			if (m_limit_pixels) 
-			{
-				if (shouldNormalizeSpacing)
-				{
 					// Find how the size would look if we (theoretically) just normalized the spacing
 					for (unsigned int i=0; i < InputImageType::ImageDimension; i++) {
 						tSize[i] = m_original_input_image_size[i] * (
 							static_cast<double>(m_original_input_image_spacing[i]) / minSpacing
 						);
 					}
+					break;
 				}
+			}
 
+			// Find out if size should be normalized (i.e. the pixel count is big)
+			bool shouldNormalizeSize = false;
+			if (m_limit_pixels) 
+			{
 				int  pixelCount = 1;
 				for(int i=0; i<InputImageType::ImageDimension; i++)
 				{
@@ -141,6 +143,84 @@ namespace GeodesicTrainingSegmentation
 					shouldNormalizeSize = true; 
 				}
 			}
+
+			// // ------ Make labels larger
+			// if (shouldNormalizeSize || shouldNormalizeSpacing)
+			// {			
+			// 	startTimer();
+
+			// 	// Find the index of every label in labels image
+			// 	std::vector<itk::Index<LabelsImageType::ImageDimension>> indices;
+			// 	itk::ImageRegionIteratorWithIndex<LabelsImageType> iter_l(labels, labels->GetRequestedRegion());
+			// 	for (iter_l.GoToBegin(); !iter_l.IsAtEnd(); ++iter_l)
+			// 	{
+			// 		if (iter_l.Get() != 0)
+			// 		{
+			// 			indices.push_back(iter_l.GetIndex());
+			// 		}
+			// 	}
+
+			// 	// Find original pixel count
+			// 	int  originalPixelCount = 1;
+			// 	for(int i=0; i<InputImageType::ImageDimension; i++)
+			// 	{
+			// 		originalPixelCount *= m_original_labels_image_size[i];
+			// 	}
+			// 	// Find how many pixels there would be in the labels 
+			// 	int  pixelCount = 1;
+			// 	for(int i=0; i<InputImageType::ImageDimension; i++)
+			// 	{
+			// 		pixelCount *= tSize[i];
+			// 	}
+			// 	if (shouldNormalizeSize && pixelCount > m_pixel_limit) 
+			// 	{ 
+			// 		pixelCount = m_pixel_limit; 
+			// 	}
+			// 	typename LabelsImageType::SizeType fSize;
+			// 	for (unsigned int i = 0; i < LabelsImageType::ImageDimension; ++i)
+			// 	{
+			// 		if (!shouldNormalizeSize) { fSize[i] = tSize[i]; }
+			// 		else { 
+			// 			double ratio = 1.0 * pixelCount / originalPixelCount;
+			// 			double ratioPerDimension = std::pow(ratio, 1.0 / LabelsImageType::ImageDimension);
+
+			// 			fSize[i] = tSize[i] * ratioPerDimension;
+			// 		}
+			// 	}
+
+			// 	typename itk::NeighborhoodIterator<LabelsImageType>::RadiusType radius;
+			// 	for (unsigned int i = 0; i < LabelsImageType::ImageDimension; ++i)
+			// 	{ 
+			// 		radius[i] = (fSize[i] / m_original_labels_image_size[i]) / 2; 
+			// 	}
+			// 	if (m_verbose) { std::cout << "Radius elected for making labels larger: " << radius; }
+			// 	itk::NeighborhoodIterator<LabelsImageType> it(radius, labels, labels->GetRequestedRegion());
+			// 	for (it.GoToBegin(); !it.IsAtEnd(); ++it)
+			// 	{
+			// 		bool foundIt = false;
+			// 		for (auto& index : indices)
+			// 		{
+			// 			if ()
+			// 		}
+			// 		if (indices.find(it.GetIndex()) != indices.end())
+			// 		{
+			// 			for (unsigned int i = 0; i < it.Size(); ++i)
+			// 			{    
+			// 				if (it.GetPixel(i) == 0) { it.SetPixel(i, it.GetCenterPixel()); }
+			// 			}
+			// 		}
+			// 	}
+			// 	// for (const typename LabelsImageType::IndexType& index : indices)
+			// 	// {
+			// 	// 	it.SetIndex(index);
+			// 	// 	for (unsigned int i = 0; i < it.Size(); ++i)
+			// 	// 	{    
+			// 	// 		if (it.GetPixel(i) == 0) { it.SetPixel(i, it.Get()); }
+			// 	// 	}
+			// 	// }
+
+			// 	stopTimerAndReport("Making labels larger");
+			// }
 
 			// ------ Different size/spacing operations (and nothing when both booleans are false) ------
 			startTimer();
@@ -206,9 +286,9 @@ namespace GeodesicTrainingSegmentation
 			// Save the intermediate images if saveall is set
 			if (m_save_all)
 			{
+				int y = 0;
 				for (auto& image : inputImages) 
 				{
-					static int y = 0;
 					cbica::WriteImage<InputImageType>( image, m_output_folder + "/" +
 						std::string("pre_image_pre_size_origin") + std::to_string(++y) + ".nii.gz"
 					);
@@ -231,10 +311,10 @@ namespace GeodesicTrainingSegmentation
 				stopTimerAndReport("Preprocessing: Statistical image normalization");
 
 				if (m_save_all)
-				{				
+				{		
+					int w = 0;		
 					for (auto& image : inputImages)
 					{
-						static int w = 0;
 						cbica::WriteImage<InputImageType>( image, m_output_folder + "/" +
 							std::string("statistical_norm_image") + std::to_string(++w) + std::string(".nii.gz")
 						);
@@ -246,11 +326,11 @@ namespace GeodesicTrainingSegmentation
 			{
 				startTimer();
 				if (m_verbose) { std::cout << "\tFiltering images\n"; }
+				int z = 0;
 				for (auto& image : inputImages) {
 					image = ItkUtilGTS::curvatureAnisotropicDiffusionImageFilter<InputImageType>(image);
 					if (m_save_all)
 					{				
-						static int z = 0;
 						cbica::WriteImage<InputImageType>( image, m_output_folder + "/" +
 							std::string("cadf_image") + std::to_string(++z) + std::string(".nii.gz")
 						);
@@ -315,7 +395,7 @@ namespace GeodesicTrainingSegmentation
 
 		bool  m_limit_pixels = true, m_do_curvature_anisotropic = true, m_do_statistical_normalization = true,
 		      m_verbose = false, m_save_all = false, m_timer_enabled = false;
-		int   m_pixel_limit  = 5000000;
+		int   m_pixel_limit  = 10000000;
 		float m_image_to_agd_maps_ratio = 6;
 		std::string m_output_folder = cbica::getExecutablePath();
 		SvmSuiteUtil::Timer m_timer;
