@@ -166,7 +166,7 @@ void GeodesicTrainingGUI::DataRemovedFromSelectedSubjectHandler(long iid)
 
 void GeodesicTrainingGUI::OnRunClicked()
 {
-  qDebug() << "GeodesicTrainingGUI::OnRunClicked";
+	qDebug() << "GeodesicTrainingGUI::OnRunClicked";
 	long uid = m_DataView->GetCurrentSubjectID(); // For convenience
 
 	if (uid == -1)
@@ -188,6 +188,7 @@ void GeodesicTrainingGUI::OnRunClicked()
     return;
   }
 
+  qDebug() << "Attempting to get subject edit lock";
   std::unique_lock<std::mutex> ul(*m_DataManager->GetSubjectEditMutexPointer(uid));
 	
   qDebug() << QString("(Run) uid:  ") << QString::number(uid);
@@ -202,7 +203,7 @@ void GeodesicTrainingGUI::OnRunClicked()
     }
   }
 
-	AlgorithmModuleBase* algorithm = new GeodesicTrainingModule();
+  AlgorithmModuleBase* algorithm = new GeodesicTrainingModule();
 
   algorithm->SetDataManager(m_DataManager);
   algorithm->SetUid(uid);
@@ -221,7 +222,7 @@ void GeodesicTrainingGUI::OnRunClicked()
   );
 
   ul.unlock();
-  CustomMitkDataStorage::GetInstance()->WriteChangesToFileForAllImagesOfCurrentSubject();
+  //CustomMitkDataStorage::GetInstance()->WriteChangesToFileForAllImagesOfCurrentSubject();
   m_Scheduler->QueueAlgorithm(algorithm);
 }
 
