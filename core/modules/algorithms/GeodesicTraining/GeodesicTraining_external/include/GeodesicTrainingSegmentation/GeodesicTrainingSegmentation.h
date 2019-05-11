@@ -39,6 +39,7 @@
 #include "AdaptiveGeodesicDistance.h"
 #include "SvmSuite.h"
 #include "RandomForestSuite.h"
+#include "Processing.h"
 
 namespace GeodesicTrainingSegmentation
 {
@@ -91,7 +92,7 @@ namespace GeodesicTrainingSegmentation
 	const bool          DEFAULT_BALANCED_SUBSAMPLE             = true;
 	const float         DEFAULT_INPUT_IMAGES_TO_AGD_MAPS_RATIO = 6;
 
-	/**Class for all the Geodesic Training Segmentation Operations*/
+	/** Class for all the Geodesic Training Segmentation operations */
 	template<typename PixelType = float, unsigned int Dimensions = 3>
 	class Coordinator
 	{
@@ -107,6 +108,9 @@ namespace GeodesicTrainingSegmentation
 		typedef typename LabelsImageType::Pointer             LabelsImagePointer;
 		typedef typename PseudoProbImageType::Pointer         PseudoProbImagePointer;
 
+		/** Everything that the class does gets returned with this.
+		 *  Not every field gets used every time
+		 */
 		typedef struct Result 
 		{
 			PseudoProbImagePointer posImage;
@@ -159,36 +163,52 @@ namespace GeodesicTrainingSegmentation
 				m_change_labels_map[m_label_HT] = 0;
 			}
 
-			// Normalize input (if applicable). Note: AGD maps are capped at 255
-			ItkUtilGTS::statisticalImageVectorNormalization<InputImageType>(m_input_images, std::lround(255 * m_image_to_agd_maps_ratio));
-			//ItkUtilGTS::statisticalImageMapNormalization<MODALITY_MRI, InputImageType>(m_input_images_MRI, std::lround(255 * m_image_to_agd_maps_ratio));
-			
+			// // Normalize input (if applicable). Note: AGD maps are capped at 255
+			// ItkUtilGTS::statisticalImageVectorNormalization<InputImageType>(m_input_images, std::lround(255 * m_image_to_agd_maps_ratio));
+			// //ItkUtilGTS::statisticalImageMapNormalization<MODALITY_MRI, InputImageType>(m_input_images_MRI, std::lround(255 * m_image_to_agd_maps_ratio));
+			m_processing.SetVerbose(m_verbose);
+			m_processing.SetSaveAll(m_save_all);
+			m_processing.SetOutputFolder(m_output_folder);
+			m_processing.SetTimerEnabled(m_timer_enabled);
+			m_processing.SetNumberOfThreads((m_max_threads)?32:m_number_of_threads);
+
 			switch (m_mode) {
 			case SVM_PSEUDO:
 			{
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
+				m_processing.PreProcess(m_input_images, m_labels_image);
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 				
 				if (!validLabels(gtsResult, labelsCountMap, 2)) { return gtsResult; }
 				
 				addToInputImagesMRI(); // Nothing special happens for the different modalities here
+				
+				addCoordinatorMapsIfNecessary();
 
 				// Construct pseudoprobability maps (~distance to hyperplane)
 				svm<PixelType>(m_input_images, m_labels_image, gtsResult, labelsCountMap, true);
+
+				m_processing.template PostProcessNormalImage<PseudoProbImageType>(gtsResult->posImage);
+				m_processing.template PostProcessNormalImage<PseudoProbImageType>(gtsResult->negImage);
 
 			} break;
 			case SVM_LABELS:
 			{
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
+				m_processing.PreProcess(m_input_images, m_labels_image);
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
 				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
 
 				addToInputImagesMRI(); // Nothing special happens for the different modalities here
 
+				addCoordinatorMapsIfNecessary();
+
 				// Construct a labeled image using SVM(s)
 				svm<PixelType>(m_input_images, m_labels_image, gtsResult, labelsCountMap, false);
 				if (!gtsResult->ok) { break; }
+
+				m_processing.PostProcessLabelsImage(gtsResult->labelsImage);
 
 				// Change labels if necessary
 				changeLabels(gtsResult->labelsImage, m_change_labels_map);
@@ -201,6 +221,7 @@ namespace GeodesicTrainingSegmentation
 			case AGD:
 			{
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
+				m_processing.PreProcess(m_input_images, m_labels_image);
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 				
 				if (!validLabels(gtsResult, labelsCountMap, 1)) { return gtsResult; }
@@ -209,6 +230,8 @@ namespace GeodesicTrainingSegmentation
 
 				// Construct AGD maps
 				gtsResult->agdMapImage = agd<PixelType>(m_input_images[0], m_label_of_interest, true);
+
+				m_processing.template PostProcessNormalImage<AgdImageType>(gtsResult->agdMapImage);
 
 				gtsResult->labelsImage = thresholdSingleImageToLabel<AgdImageType>(gtsResult->agdMapImage, m_threshold, m_label_of_interest);
 
@@ -246,6 +269,7 @@ namespace GeodesicTrainingSegmentation
 			case REVERSE_GEOTRAIN_SPORADIC:
 			{
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
+				m_processing.PreProcess(m_input_images, m_labels_image);
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
 				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
@@ -290,9 +314,13 @@ namespace GeodesicTrainingSegmentation
 				}
 				message("Converting AGD maps...", "Converting", 100);
 
+				addCoordinatorMapsIfNecessary();
+
 				// SVM_LABELS
 				svm<PixelType>(m_input_images, m_labels_image, gtsResult, labelsCountMap, false);
 				if (!gtsResult->ok) { break; }
+
+				m_processing.PostProcessLabelsImage(gtsResult->labelsImage);
 
 				// Change labels if necessary
 				changeLabels(gtsResult->labelsImage, m_change_labels_map);
@@ -305,6 +333,7 @@ namespace GeodesicTrainingSegmentation
 			case REVERSE_GEOTRAIN:
 			{
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
+				m_processing.PreProcess(m_input_images, m_labels_image);
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
 				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
@@ -344,9 +373,13 @@ namespace GeodesicTrainingSegmentation
 				}
 				message("Converting AGD maps...", "Converting", 100);
 
+				addCoordinatorMapsIfNecessary();
+
 				// SVM_LABELS
 				svm<PixelType>(m_input_images, m_labels_image, gtsResult, labelsCountMap, false);
 				if (!gtsResult->ok) { break; }
+
+				m_processing.PostProcessLabelsImage(gtsResult->labelsImage);
 
 				// Change labels if necessary
 				changeLabels(gtsResult->labelsImage, m_change_labels_map);
@@ -359,15 +392,21 @@ namespace GeodesicTrainingSegmentation
 			case GEOTRAIN:
 			{
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
+				m_processing.PreProcess(m_input_images, m_labels_image);
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
 				if (!validLabels(gtsResult, labelsCountMap, 2)) { return gtsResult; }
 
 				addToInputImagesMRI(); // Nothing special happens for the different modalities here
 
+				addCoordinatorMapsIfNecessary();
+
 				// SVM_PSEUDO
 				svm<PixelType>(m_input_images, m_labels_image, gtsResult, labelsCountMap, true);
 				if (!gtsResult->ok) { break; }
+
+				m_processing.template PostProcessNormalImage<PseudoProbImageType>(gtsResult->posImage);
+				m_processing.template PostProcessNormalImage<PseudoProbImageType>(gtsResult->negImage);
 
 				// AGD
 				AgdImagePointer agdMapPos = agd<PseudoProbPixelType>(gtsResult->posImage, gtsResult->posLabel, true);
@@ -385,6 +424,7 @@ namespace GeodesicTrainingSegmentation
 			case GEOTRAIN_FULL:
 			{
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
+				m_processing.PreProcess(m_input_images, m_labels_image);
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
 				if (!validLabels(gtsResult, labelsCountMap, 2)) { return gtsResult; }
@@ -421,6 +461,8 @@ namespace GeodesicTrainingSegmentation
 					m_agd_maps_count++;
 				}
 
+				addCoordinatorMapsIfNecessary();
+
 				// SVM_PSEUDO
 				svm<PixelType>(m_input_images, m_labels_image, gtsResult, labelsCountMap, true);
 				if (!gtsResult->ok) { break; }
@@ -429,8 +471,11 @@ namespace GeodesicTrainingSegmentation
 				AgdImagePointer agdMapPos = agd<PseudoProbPixelType>(gtsResult->posImage, gtsResult->posLabel, true);
 				AgdImagePointer agdMapNeg = agd<PseudoProbPixelType>(gtsResult->negImage, gtsResult->negLabel, true);
 
-				// THRESHOLD
 				gtsResult->labelsImage = thresholdSingleImageToLabel<AgdImageType>(agdMapPos, m_threshold, gtsResult->posLabel);
+				
+				m_processing.PostProcessLabelsImage(gtsResult->labelsImage);
+
+				// THRESHOLD
 				thresholdSingleImageToLabel<AgdImageType>(agdMapNeg, m_threshold, gtsResult->negLabel);
 
 				if (m_ground_truth_set) {
@@ -441,13 +486,18 @@ namespace GeodesicTrainingSegmentation
 			case RF:
 			{
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
+				m_processing.PreProcess(m_input_images, m_labels_image);
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
 				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
 
 				addToInputImagesMRI(); // Nothing special happens for the different modalities here
 
+				addCoordinatorMapsIfNecessary();
+
 				gtsResult->labelsImage = rf(false);
+
+				m_processing.PostProcessLabelsImage(gtsResult->labelsImage);
 
 				// Change labels if necessary
 				changeLabels(gtsResult->labelsImage, m_change_labels_map);
@@ -459,6 +509,7 @@ namespace GeodesicTrainingSegmentation
 			case AGD_RF:
 			{
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
+				m_processing.PreProcess(m_input_images, m_labels_image);
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
 				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
@@ -495,8 +546,12 @@ namespace GeodesicTrainingSegmentation
 					m_agd_maps_count++;
 				}
 
+				addCoordinatorMapsIfNecessary();
+
 				// RF
 				gtsResult->labelsImage = rf(false);
+
+				m_processing.PostProcessLabelsImage(gtsResult->labelsImage);
 
 				// Change labels if necessary
 				changeLabels(gtsResult->labelsImage, m_change_labels_map);
@@ -508,13 +563,18 @@ namespace GeodesicTrainingSegmentation
 			case RF_AUTO:
 			{
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
+				m_processing.PreProcess(m_input_images, m_labels_image);
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
 				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
 
 				addToInputImagesMRI(); // Nothing special happens for the different modalities here
 
+				addCoordinatorMapsIfNecessary();
+
 				gtsResult->labelsImage = rf(true);
+
+				m_processing.PostProcessLabelsImage(gtsResult->labelsImage);
 
 				// Change labels if necessary
 				changeLabels(gtsResult->labelsImage, m_change_labels_map);
@@ -526,6 +586,7 @@ namespace GeodesicTrainingSegmentation
 			case AGD_RF_AUTO:
 			{
 				message("Number of modalities: " + std::to_string(m_input_images.size() + m_input_images_MRI.size()) + "\n");
+				m_processing.PreProcess(m_input_images, m_labels_image);
 				auto labelsCountMap = ParserGTS::CountsOfEachLabel<LabelsImageType>(m_labels_image);
 
 				if (!validLabels(gtsResult, labelsCountMap)) { return gtsResult; }
@@ -562,7 +623,11 @@ namespace GeodesicTrainingSegmentation
 					m_agd_maps_count++;
 				}
 
+				addCoordinatorMapsIfNecessary();
+
 				gtsResult->labelsImage = rf(true);
+
+				m_processing.PostProcessLabelsImage(gtsResult->labelsImage);
 
 				// Change labels if necessary
 				changeLabels(gtsResult->labelsImage, m_change_labels_map);
@@ -680,6 +745,23 @@ namespace GeodesicTrainingSegmentation
 				this->SetOutputPath(path);
 			}
 		}
+		void SetDoCoordinateMaps(bool doCoordinateMaps = true)
+		{
+			m_do_coordinate_maps = doCoordinateMaps;
+		}
+		void SetProcessing(bool onOrOff, float imageToAgdMapsRatio = 6, 
+			bool doStatFilter = true, bool doCurvatureFilter = false, 
+			bool limitPixels = true, int pixelLimit = 5000000)
+		{
+			m_process = onOrOff;
+
+			if (m_process)
+			{			
+				m_processing.SetLimitPixels(limitPixels, pixelLimit);
+				m_processing.SetDoStatisticalNormalization(doStatFilter, imageToAgdMapsRatio);
+				m_processing.SetDoCurvatureAnisotropic(doCurvatureFilter);
+			}
+		}
 		void SetSaveAll(bool saveAll) {
 			m_save_all = saveAll;
 		}
@@ -786,9 +868,9 @@ namespace GeodesicTrainingSegmentation
 		void SetBalancedSubsampling(bool balancedSubsample) {
 			m_balanced_subsample = balancedSubsample;
 		}
-		void SetInputImageToAgdMapsRatio(float ratio) {
-			m_image_to_agd_maps_ratio = ratio;
-		}
+		// void SetInputImageToAgdMapsRatio(float ratio) {
+		// 	m_image_to_agd_maps_ratio = ratio;
+		// }
 
 	private:
 		LabelsImagePointer                                     m_labels_image;
@@ -809,12 +891,14 @@ namespace GeodesicTrainingSegmentation
                                                                m_image_to_agd_maps_ratio = DEFAULT_INPUT_IMAGES_TO_AGD_MAPS_RATIO;
 		bool            m_save_all = false, m_timer_enabled = false, m_subsample = true, m_balanced_subsample = DEFAULT_BALANCED_SUBSAMPLE,
                         m_file_extension_set_manually = false, m_verbose = false, m_were_images_shrunk = false, m_save_only_seg = false,
-                        m_ground_truth_set = false, m_max_threads = false, m_changed_labels_map_manually_set = false;
+                        m_ground_truth_set = false, m_max_threads = false, m_changed_labels_map_manually_set = false, 
+                        m_do_coordinate_maps = true, m_process = true;
 		std::string     m_config_file_path = "", m_rf_config_file_path = "", m_save_only_seg_name = "",
                         m_file_extension = DEFAULT_FILE_EXTENSION, m_output_folder = cbica::getExecutablePath();
 		LabelsPixelType m_label_TC = DEFAULT_LABEL_TC, m_label_ET = DEFAULT_LABEL_ET,
                         m_label_ED = DEFAULT_LABEL_ED, m_label_HT = DEFAULT_LABEL_HT,
                         m_label_of_interest = DEFAULT_LABEL_OF_INTEREST;
+        GeodesicTrainingSegmentation::Processing<PixelType, Dimensions> m_processing;
 
 		// For SVM
 
@@ -1642,6 +1726,60 @@ namespace GeodesicTrainingSegmentation
 		}
 
 		// Util
+
+		void addCoordinatorMapsIfNecessary()
+		{
+			if (m_do_coordinate_maps)
+			{				
+				for (const InputImagePointer& image : GenerateCoordinateMaps<InputImageType>(m_input_images[0]))
+				{
+					m_input_images.push_back(image);
+				}
+			}
+		}
+
+		/** Coordinate maps means that for each dimension, a 3D map is generated
+		 *  where the pixel values are distance to the leftmost pixels of that dimension. */
+		template <class ImageType>
+		static std::vector<typename ImageType::Pointer>
+		GenerateCoordinateMaps(typename ImageType::Pointer reference)
+		{
+			typedef itk::ImageRegionIteratorWithIndex<ImageType> Iterator;
+
+			std::vector<typename ImageType::Pointer> outputVector;
+			std::vector<Iterator> outputIterators;
+
+			for (int i=0; i<ImageType::ImageDimension; i++)
+			{
+			  outputVector.push_back(ItkUtilGTS::initializeOutputImageBasedOn<ImageType>(reference));
+			  outputIterators.push_back(
+			    Iterator(outputVector[i], outputVector[i]->GetLargestPossibleRegion())
+			  );
+			  // outputIterators[i].GoToBegin();
+			}
+
+			Iterator iter_i(reference, reference->GetLargestPossibleRegion()); 
+
+			// These needs to be initialized beforehand for optimization
+			itk::Index<ImageType::ImageDimension> index;
+			int i;
+
+			for (iter_i.GoToBegin(); !iter_i.IsAtEnd(); 
+			     ++iter_i)
+			{
+			  if (iter_i.Get() == 0) { continue; } // Save some time
+			  index = iter_i.GetIndex();
+			  
+			  for (i=0; i<ImageType::ImageDimension; i++)
+			  {
+			    outputIterators[i].SetIndex(index);
+			    // std::cout << index << "," << outputIterators[i].GetIndex() << "\n";
+			    outputIterators[i].Set(index[i]);
+			    // ++outputIterators[i];
+			  }
+			}
+			return outputVector;
+		}
 
 		void shrinkImagesIfNecessary()
 		{
