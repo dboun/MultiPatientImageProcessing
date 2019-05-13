@@ -251,7 +251,7 @@ QPushButton:pressed {
     border-style: solid;
     background: #151515;
     background-color: #212121;
-    width: 13px;
+    width: 20px;
 }
 /*margin: 21px 0 21px 0;*/
 #rightPanel QScrollBar::handle:vertical {
