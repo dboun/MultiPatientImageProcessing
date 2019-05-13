@@ -44,4 +44,4 @@ target_include_directories( ${MODULE_NAME} PUBLIC
   ${PROJECT_SOURCE_DIR}
 )
 
-add_subdirectory(test)
+#add_subdirectory(test)
