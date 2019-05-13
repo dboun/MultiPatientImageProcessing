@@ -11,6 +11,9 @@
 #include <QGridLayout>
 #include <QGraphicsDropShadowEffect>
 #include <QDebug>
+#include <QApplication>
+#include <QGuiApplication>
+#include <QScreen>
 
 #include <vector>
 
@@ -61,6 +64,14 @@ MainWindow::MainWindow(QWidget *parent) :
   // Initialize UI
   ui->setupUi(this);
   this->setWindowTitle(m_AppName);
+
+  // Fix panel sizing
+  QScreen* screen = QGuiApplication::primaryScreen();
+  QRect  screenGeometry = screen->geometry();
+  ui->leftPanel->setFixedWidth(screenGeometry.width() / 5);
+  ui->dataViewContainer->setFixedWidth(screenGeometry.width() / 5);
+  ui->rightPanel->setFixedWidth(screenGeometry.width() / 5);
+  ui->rightSideContainer->setFixedWidth(screenGeometry.width() / 5);
 
   // Initialize DataView
   m_DataView = new DataTreeView(this);

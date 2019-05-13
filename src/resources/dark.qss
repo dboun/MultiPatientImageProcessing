@@ -185,7 +185,7 @@ QMenu::item:hover
 QPushButton {
     border: 1px solid gray;
     border-radius: 3px;
-    font-size:12px;
+    /*font-size:12px;*/
     padding-left: 6px;
     padding-right: 6px;
     padding-top: 3px;
@@ -224,7 +224,7 @@ QPushButton:pressed {
     padding-bottom: 5px;
 }
 /*margin-left: 7px;*/
-QPushButton {
+/*QPushButton {
     border: 1px solid gray;
     border-radius: 3px;
     font-size:12px;
@@ -232,7 +232,7 @@ QPushButton {
     padding-right: 6px;
     padding-top: 3px;
     padding-bottom: 3px;
-}
+}*/
 #rightPanel QPushButton:hover {
     background-color: #646464;
 }
