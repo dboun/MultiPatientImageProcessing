@@ -76,13 +76,14 @@ QScrollView {
 
 #warningInfoLabel {
     font: italic;
-    font-size:13px;
+    /*font-size:13px;*/
+    font-size:9pt;
 }
 /*background-color: #bf360c;
 color: #ffffff;*/
 
 #rightPanel #warningInfoPushButton {
-    font-size:17px; 
+    /*font-size:17px; */
     border-color: #172d44; 
     background-color: #26190d;
     padding-left: 8px;
@@ -103,7 +104,8 @@ color: #ffffff;*/
 #rightPanel #warningInfoLabel {
     background-color: #1f1f1f;
     font: italic;
-    font-size:13px;
+    /*font-size:13px;*/
+    font-size:9pt;
 }
 /*color: #ffffff;*/
 
@@ -120,11 +122,12 @@ color: #ffffff;*/
     background-color: #bf360c;
     color: #ffffff;
     font: italic;
-    font-size:13px;
+    /*font-size:13px;*/
+    font-size:9pt;
 }
 
 #rightPanel #warningCriticalPushButton {
-    font-size:17px; 
+    /*font-size:17px; */
     border-color: #172d44; 
     background-color: #26190d;
     padding-left: 8px;
@@ -202,7 +205,8 @@ QPushButton:pressed {
 }
 
 #rightPanel RunPushButton { 
-    font-size:18px; 
+    /*font-size:18px; */
+    font-size:12pt;
     color: white;
     border-color: #a5d6a7;
     background-color:#2E7d32; 
@@ -215,7 +219,8 @@ QPushButton:pressed {
 }
 
 #rightPanel ActionPushButton {
-    font-size:17px; 
+    /*font-size:17px; */
+    font-size:11pt; 
     border-color: #172d44; 
     background-color: #0d1a26; 
     padding-left: 8px;
@@ -607,20 +612,23 @@ QTabBar::tab {
     border-top-right-radius: 0px;
     min-width: 18ex;
     padding: 3px;
+    font-size: 9pt;
 }
 
 QTabBar::tab:selected, QTabBar::tab:hover {
 	color: #EEEEEE;
     background: #6D6D6D;
 
-    font-size:12px;
+    /*font-size:12px;*/
+    font-size:8pt;
 }
 
 QTabBar::tab:!selected {
 	background: #363636;
 
     margin-top: 2px; /* make non-selected tabs look smaller */
-    font-size:11px;
+    /*font-size:11px;*/
+    font-size:8pt;
 }
 
 /*------------------------ ComboBox -------------------------------*/
