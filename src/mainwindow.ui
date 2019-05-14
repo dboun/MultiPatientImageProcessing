@@ -222,7 +222,7 @@
      <x>0</x>
      <y>0</y>
      <width>986</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -248,8 +248,15 @@
     </property>
     <addaction name="actionToggle_fullscreen"/>
    </widget>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menuAbout"/>
   </widget>
   <action name="actionOpen_Dicom">
    <property name="text">
@@ -289,6 +296,11 @@
   <action name="actionToggle_fullscreen">
    <property name="text">
     <string>Toggle fullscreen</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>
