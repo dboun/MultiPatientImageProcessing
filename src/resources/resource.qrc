@@ -1,7 +1,8 @@
 <RCC>
-    <qresource prefix="/">
-        <file>dark.qss</file>
-        <file>baseline_arrow_drop_up_white_18dp.png</file>
-        <file>baseline_arrow_drop_down_white_18dp.png</file>
-    </qresource>
+  <qresource prefix="/">
+    <file>dark.qss</file>
+    <file>cbica-logo.jpg</file>
+    <file>baseline_arrow_drop_up_white_18dp.png</file>
+    <file>baseline_arrow_drop_down_white_18dp.png</file>
+  </qresource>
 </RCC>

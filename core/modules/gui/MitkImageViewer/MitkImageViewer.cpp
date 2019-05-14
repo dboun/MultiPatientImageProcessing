@@ -45,6 +45,16 @@ MitkImageViewer::MitkImageViewer(QWidget *parent) : ImageViewerBase(parent),
 	m_MitkWidget->AddDisplayPlaneSubTree();
 	m_MitkWidget->AddPlanesToDataStorage();
 	m_MitkWidget->SetWidgetPlanesVisibility(true);
+
+	//logo
+	QFileInfo fileInfo(qApp->applicationDirPath() + "/../../../src/resources/cbica-logo.jpg");
+	std::string logoPath = fileInfo.absoluteFilePath().toStdString();
+	if (fileInfo.exists() && fileInfo.isReadable())
+	{
+		m_MitkWidget->DisableDepartmentLogo();
+		m_MitkWidget->SetDepartmentLogo(logoPath.c_str());
+		m_MitkWidget->EnableDepartmentLogo();
+	}
 }
 
 void MitkImageViewer::OpacitySliderHandler(int value) 
