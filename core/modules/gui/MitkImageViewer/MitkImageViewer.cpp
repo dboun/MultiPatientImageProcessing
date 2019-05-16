@@ -47,7 +47,7 @@ MitkImageViewer::MitkImageViewer(QWidget *parent) : ImageViewerBase(parent),
 	m_MitkWidget->SetWidgetPlanesVisibility(true);
 
 	//logo
-	QFileInfo fileInfo(qApp->applicationDirPath() + "/../../../src/resources/cbica-logo.jpg");
+	QFileInfo fileInfo(qApp->applicationDirPath() + "/cbica-logo.jpg");
 	std::string logoPath = fileInfo.absoluteFilePath().toStdString();
 	if (fileInfo.exists() && fileInfo.isReadable())
 	{

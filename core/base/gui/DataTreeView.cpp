@@ -146,7 +146,7 @@ void DataTreeView::SubjectAddedHandler(long uid)
 
 	// Setup a layout for everything
 	QHBoxLayout* hLayout = new QHBoxLayout();
-	hLayout->setContentsMargins(7,9,7,9);
+	hLayout->setContentsMargins(7,9,14,9);
 	hLayout->setSpacing(15);
 	hLayout->addWidget(subjectNameLabel, Qt::AlignLeft);
 	hLayout->addWidget(progressBarAndText, Qt::AlignRight);

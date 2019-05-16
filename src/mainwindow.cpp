@@ -196,6 +196,9 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(ui->actionToggle_fullscreen, SIGNAL(triggered()),
     this, SLOT(OnToggleFullscreen())
   );
+
+  // Temporarily turn off Help in menu
+  delete ui->menuHelp;
 }
 
 MainWindow::~MainWindow()

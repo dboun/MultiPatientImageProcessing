@@ -1,11 +1,11 @@
 ; The name of the installer
-Name "MLL_v0.3_installer"
+Name "MLL_v0.7_installer"
 
 ; The file to write
-OutFile "MLL_v0.3_installer.exe"
+OutFile "MLL_v0.7_installer.exe"
 
 ; The default installation directory
-InstallDir "C:\MLL\0.3.0"
+InstallDir "C:\MLL\v0.7"
 
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)
