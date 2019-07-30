@@ -394,7 +394,7 @@ QSlider::add-page:horizontal {
 QSlider::handle:horizontal {
     background-color: #0277bd;
     border: 1px solid #777;
-    width: 13px;
+    width: 80px;
     margin-top: -2px;
     margin-bottom: -2px;
     border-radius: 4px;
