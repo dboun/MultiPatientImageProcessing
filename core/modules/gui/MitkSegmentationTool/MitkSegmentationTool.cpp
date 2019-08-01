@@ -301,13 +301,13 @@ void MitkSegmentationTool::AutoGenerateLabels()
   }
   labelNames.push_back("Label 5"); 
   {
-    mitk::Color color; color.SetRed(0.03f); color.SetGreen(0.37f); color.SetBlue(0.00f); 
-    colorNames.push_back(color);
+	mitk::Color color; color.SetRed(0.33f); color.SetGreen(0.33f); color.SetBlue(0.33f);
+	colorNames.push_back(color);
   }
   labelNames.push_back("Background tissue"); 
   {
-    mitk::Color color; color.SetRed(0.33f); color.SetGreen(0.33f); color.SetBlue(0.33f); 
-    colorNames.push_back(color);
+	mitk::Color color; color.SetRed(0.03f); color.SetGreen(0.37f); color.SetBlue(0.00f);
+	colorNames.push_back(color);
   }
 
   for (int i=0; i<labelNames.size(); i++)
