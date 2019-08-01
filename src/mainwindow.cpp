@@ -68,10 +68,10 @@ MainWindow::MainWindow(QWidget *parent) :
   // Fix panel sizing
   QScreen* screen = QGuiApplication::primaryScreen();
   QRect  screenGeometry = screen->geometry();
-  ui->leftPanel->setFixedWidth(screenGeometry.width() / 5);
-  ui->dataViewContainer->setFixedWidth(screenGeometry.width() / 5);
-  ui->rightPanel->setFixedWidth(screenGeometry.width() / 5);
-  ui->rightSideContainer->setFixedWidth(screenGeometry.width() / 5);
+  ui->leftPanel->setFixedWidth(screenGeometry.width() / 4.5);
+  ui->dataViewContainer->setFixedWidth(screenGeometry.width() / 4.5);
+  ui->rightPanel->setFixedWidth(screenGeometry.width() / 4.5);
+  ui->rightSideContainer->setFixedWidth(screenGeometry.width() / 4.5);
 
   // Initialize DataView
   m_DataView = new DataTreeView(this);
