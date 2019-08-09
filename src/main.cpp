@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
 
 	QApplication a(argc, argv);
 	a.setAttribute(Qt::AA_EnableHighDpiScaling, true);
+    a.setWindowIcon(QIcon(":/mll_icon.ico"));
 	MainWindow w;
 	w.show();
 
