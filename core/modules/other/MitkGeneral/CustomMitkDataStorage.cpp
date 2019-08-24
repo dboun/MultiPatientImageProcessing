@@ -715,7 +715,12 @@ void CustomMitkDataStorage::ExportDataHandler(long iid, QString fileName)
 	QString filePathTemp = fileName;
 	filePathTemp.replace("\\", "/", Qt::CaseSensitive);
 	QStringList filePathSplit = filePathTemp.split("/");
-	QString parentDirOfFile = filePathSplit.value(filePathSplit.length() - 2);
+	QString parentDirOfFile = filePathSplit.value(0);
+	for (int i=1; i < filePathSplit.length()-1; i++)
+	{
+		parentDirOfFile += QString("/") + filePathSplit.value(i);
+	}
+	qDebug() << "File path " << filePathTemp;
 	qDebug() << "Parent dir of file" << parentDirOfFile;
 
 	// Create output directory if it doesn't exist
