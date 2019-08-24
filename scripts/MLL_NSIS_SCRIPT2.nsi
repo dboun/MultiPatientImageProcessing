@@ -84,10 +84,10 @@ Section "MLL (required)"
   
   ; Write the uninstall keys for Windows
 ;   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Example2" "DisplayName" "NSIS Example2"
-;   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Example2" "UninstallString" '"$INSTDIR\files\uninstall.exe"'
+;   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Example2" "UninstallString" '"$INSTDIR\uninstall.exe"'
 ;   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Example2" "NoModify" 1
 ;   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Example2" "NoRepair" 1
-  WriteUninstaller "files\uninstall.exe"
+  WriteUninstaller "uninstall.exe"
   
 SectionEnd
 
@@ -95,7 +95,7 @@ SectionEnd
 Section "Start Menu Shortcuts"
 
   CreateDirectory "$SMPROGRAMS\MLL Semi-Automatic Segmentation"
-  CreateShortcut "$SMPROGRAMS\Example2\Uninstall.lnk" "$INSTDIR\files\uninstall.exe" "" "$INSTDIR\files\uninstall.exe" 0
+  CreateShortcut "$SMPROGRAMS\Example2\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
   CreateShortcut "$SMPROGRAMS\MLL Semi-Automatic Segmentation\MLL Semi-Automatic Segmentation.lnk" "$INSTDIR\MLL.exe" "" "$INSTDIR\MLL.exe" 0
   
 SectionEnd
@@ -112,7 +112,7 @@ Section "Uninstall"
 
   ; Remove files and uninstaller
 ;   Delete $INSTDIR\example2.nsi
-;   Delete $INSTDIR\files\uninstall.exe
+;   Delete $INSTDIR\uninstall.exe
 
   ; Remove shortcuts, if any
   Delete "$SMPROGRAMS\MLL Semi-Automatic Segmentation\*.*"
