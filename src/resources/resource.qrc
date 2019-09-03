@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="/">
     <file>dark.qss</file>
+    <file>material_dark.qss</file>
     <file>cbica-logo.jpg</file>
     <file>mll_icon2.ico</file>
     <file>baseline_arrow_drop_up_white_18dp.png</file>

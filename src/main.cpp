@@ -16,8 +16,8 @@ int main(int argc, char *argv[])
 	//QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
 #endif
 
+	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
 	QApplication a(argc, argv);
-	a.setAttribute(Qt::AA_EnableHighDpiScaling, true);
     a.setWindowIcon(QIcon(":/mll_icon2.ico"));
 	MainWindow w;
 	w.show();

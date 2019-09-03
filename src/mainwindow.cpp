@@ -90,8 +90,8 @@ MainWindow::MainWindow(QWidget *parent) :
   // Initialize ImageViewer
 #ifdef BUILD_MODULE_MitkImageViewer
   m_ImageViewer = new MitkImageViewer(ui->viewerContainer);
-  m_ImageViewer->setMinimumWidth(600);
-  m_ImageViewer->setMinimumHeight(500);
+  //m_ImageViewer->setMinimumWidth(600);
+  //m_ImageViewer->setMinimumHeight(500);
 #else
   qDebug() << "Using abstract image viewer";
   m_ImageViewer = new ImageViewerBase(ui->viewerContainer);

@@ -22,7 +22,7 @@ GeodesicTrainingWarningGUI::~GeodesicTrainingWarningGUI()
 void GeodesicTrainingWarningGUI::SetWidgetContainer(QWidget* container)
 {
     m_Container = container;
-    m_Container->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+    //m_Container->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 	QGridLayout *layout = new QGridLayout(m_Container);
 	layout->addWidget(this, 0, 0);
     layout->setContentsMargins(0,0,0,0);
